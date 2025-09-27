@@ -1,0 +1,26 @@
+[
+  {
+    "company": "Cardiovascular Institute of Orlando",
+    "role": "Software Engineer",
+    "period": "Jul 2025 - Present",
+    "location": "Orlando, Florida, United States · Remote",
+    "description": "Developing agents that are going to reshape healthcare.",
+    "skills": ["Open AI", "Artificial Intelligence (AI)", "Next.js", "Software as a Service (SaaS)", "Software Design", "Software Installation"]
+  },
+  {
+    "company": "Cloudoplus",
+    "role": "AI Engineer",
+    "period": "Apr 2025 - Aug 2025",
+    "location": "Santa Ana, California, United States · Remote",
+    "description": "",
+    "skills": []
+  },
+  {
+    "company": "Chatsguru",
+    "role": "AI Engineer",
+    "period": "Sep 2024 - Apr 2025",
+    "location": "Ahmedabad, Gujarat, India · Remote",
+    "description": "",
+    "skills": ["Next.js", "React.js", "Tailwind CSS", "Agile Project Management", "GitLab", "Full-Stack Development"]
+  }
+]
