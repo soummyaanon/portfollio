@@ -151,9 +151,8 @@ const DockIcon = ({
         disableMagnification && "hover:bg-muted-foreground transition-colors",
         className
       )}
-      {...props}
     >
-      <div>{children}</div>
+      <div {...props}>{children}</div>
     </motion.div>
   )
 
@@ -188,7 +187,7 @@ DockSeparator.displayName = "DockSeparator"
 
 const NavigationDock = () => {
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.location.href = '/'
   }
 
   const navigateToBlogs = () => {
