@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import matter from 'front-matter'
+import matter from 'gray-matter'
 import { remark } from 'remark'
 import remarkHtml from 'remark-html'
 
@@ -14,13 +14,6 @@ export interface BlogPost {
   htmlContent: string
 }
 
-interface BlogFrontmatter {
-  title: string
-  date: string
-  excerpt: string
-  slug: string
-  tags?: string[]
-}
 
 const blogsDirectory = path.join(process.cwd(), 'src', 'blogs')
 
@@ -50,22 +43,22 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost> {
   const fileContents = fs.readFileSync(fullPath, 'utf8')
 
   // Parse frontmatter
-  const { attributes, body } = matter<BlogFrontmatter>(fileContents)
+  const { data, content } = matter(fileContents)
 
   // Convert markdown to HTML
   const processedContent = await remark()
     .use(remarkHtml, { sanitize: false })
-    .process(body)
+    .process(content)
 
   const htmlContent = processedContent.toString()
 
   return {
-    title: attributes.title,
-    date: attributes.date,
-    excerpt: attributes.excerpt,
-    slug: attributes.slug,
-    tags: attributes.tags || [],
-    content: body,
+    title: data.title,
+    date: data.date,
+    excerpt: data.excerpt,
+    slug: data.slug,
+    tags: data.tags || [],
+    content: content,
     htmlContent,
   }
 }

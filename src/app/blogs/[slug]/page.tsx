@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         description: post.excerpt,
       },
     }
-  } catch (error) {
+  } catch {
     return {
       title: 'Blog Post Not Found | Soumya Ram',
       description: 'The requested blog post could not be found.',
@@ -138,7 +138,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
         </div>
       </main>
     )
-  } catch (error) {
+  } catch {
     notFound()
   }
 }

@@ -19,7 +19,7 @@ export default async function Blogs() {
               <p className="text-muted-foreground text-lg">No blog posts yet</p>
             </div>
           ) : (
-            blogPosts.map((post, index) => {
+            blogPosts.map((post) => {
               // Format the date
               const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
                 year: 'numeric',
