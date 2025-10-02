@@ -208,7 +208,7 @@ const NavigationDock = () => {
   }
 
   const navigateToEmail = () => {
-    window.location.href = 'mailto:your.email@example.com'
+    window.location.href = 'mailto:your.soumyaranjanpanda910@gmail.com'
   }
 
   return (
