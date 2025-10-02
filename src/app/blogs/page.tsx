@@ -1,48 +1,73 @@
-export default function Blogs() {
-  const blogPosts = [
-    {
-      title: "Building Healthcare AI Systems with Next.js",
-      date: "September 2025",
-      excerpt: "My journey in developing HIPAA-compliant AI applications using modern web technologies.",
-      slug: "healthcare-ai-nextjs"
-    },
-    {
-      title: "OpenAI Agent SDK: Real-world Implementation",
-      date: "August 2025",
-      excerpt: "Deep dive into building intelligent agents with TypeScript and OpenAI's latest SDK.",
-      slug: "openai-agent-sdk-implementation"
-    },
-    {
-      title: "Modern Full-Stack Development in 2025",
-      date: "July 2025",
-      excerpt: "Exploring the latest trends in web development including vector databases and AI integration.",
-      slug: "modern-fullstack-2025"
-    }
-  ]
+import Link from 'next/link'
+import { Calendar, Tag } from 'lucide-react'
+import { getAllBlogPosts } from '@/lib/blogs'
+
+export default async function Blogs() {
+  const blogPosts = await getAllBlogPosts()
 
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900">
+    <main className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Blog</h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">Thoughts on technology, development, and building the future.</p>
+          <h1 className="text-3xl font-bold text-foreground mb-4">Blog</h1>
+          <p className="text-muted-foreground leading-relaxed">Thoughts on technology, development, and building the future.</p>
         </div>
 
         <div className="space-y-8">
-          {blogPosts.map((post, index) => (
-            <article key={index} className="border-b border-gray-200 dark:border-gray-700 pb-8">
-              <div className="mb-2">
-                <span className="text-sm text-gray-500 dark:text-gray-400">{post.date}</span>
-              </div>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
-                {post.title}
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{post.excerpt}</p>
-              <div className="mt-4">
-                <span className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">Read more →</span>
-              </div>
-            </article>
-          ))}
+          {blogPosts.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-lg">No blog posts yet</p>
+            </div>
+          ) : (
+            blogPosts.map((post, index) => {
+              // Format the date
+              const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+
+              return (
+                <article key={post.slug} className="border-b border-border pb-8">
+                  <div className="mb-3">
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {formattedDate}
+                    </div>
+                  </div>
+
+                  <Link href={`/blogs/${post.slug}`} className="group block">
+                    <h2 className="text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors leading-tight">
+                      {post.title}
+                    </h2>
+                  </Link>
+
+                  <p className="text-muted-foreground leading-relaxed mb-4 text-base">{post.excerpt}</p>
+
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="flex items-center flex-wrap gap-2 mb-4">
+                      <Tag className="w-4 h-4 text-muted-foreground mr-1" />
+                      {post.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs font-medium"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <Link
+                    href={`/blogs/${post.slug}`}
+                    className="inline-flex items-center text-primary hover:text-primary/80 transition-colors font-medium text-sm"
+                  >
+                    Read more →
+                  </Link>
+                </article>
+              )
+            })
+          )}
         </div>
       </div>
     </main>

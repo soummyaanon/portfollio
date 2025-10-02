@@ -1,0 +1,77 @@
+import fs from 'fs'
+import path from 'path'
+import matter from 'front-matter'
+import { remark } from 'remark'
+import remarkHtml from 'remark-html'
+
+export interface BlogPost {
+  title: string
+  date: string
+  excerpt: string
+  slug: string
+  tags?: string[]
+  content: string
+  htmlContent: string
+}
+
+interface BlogFrontmatter {
+  title: string
+  date: string
+  excerpt: string
+  slug: string
+  tags?: string[]
+}
+
+const blogsDirectory = path.join(process.cwd(), 'src', 'blogs')
+
+export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  // Get all .md files from the blogs directory
+  const fileNames = fs.readdirSync(blogsDirectory).filter(fileName => fileName.endsWith('.md'))
+
+  const allPostsData = await Promise.all(
+    fileNames.map(async (fileName) => {
+      const slug = fileName.replace(/\.md$/, '')
+      return await getBlogPostBySlug(slug)
+    })
+  )
+
+  // Sort posts by date (newest first)
+  return allPostsData.sort((a, b) => {
+    if (a.date < b.date) {
+      return 1
+    } else {
+      return -1
+    }
+  })
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost> {
+  const fullPath = path.join(blogsDirectory, `${slug}.md`)
+  const fileContents = fs.readFileSync(fullPath, 'utf8')
+
+  // Parse frontmatter
+  const { attributes, body } = matter<BlogFrontmatter>(fileContents)
+
+  // Convert markdown to HTML
+  const processedContent = await remark()
+    .use(remarkHtml, { sanitize: false })
+    .process(body)
+
+  const htmlContent = processedContent.toString()
+
+  return {
+    title: attributes.title,
+    date: attributes.date,
+    excerpt: attributes.excerpt,
+    slug: attributes.slug,
+    tags: attributes.tags || [],
+    content: body,
+    htmlContent,
+  }
+}
+
+export async function getAllBlogSlugs(): Promise<string[]> {
+  const fileNames = fs.readdirSync(blogsDirectory).filter(fileName => fileName.endsWith('.md'))
+
+  return fileNames.map(fileName => fileName.replace(/\.md$/, ''))
+}
