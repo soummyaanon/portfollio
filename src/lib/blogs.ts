@@ -18,6 +18,11 @@ export interface BlogPost {
 const blogsDirectory = path.join(process.cwd(), 'src', 'blogs')
 
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  // Check if blogs directory exists
+  if (!fs.existsSync(blogsDirectory)) {
+    return []
+  }
+
   // Get all .md files from the blogs directory
   const fileNames = fs.readdirSync(blogsDirectory).filter(fileName => fileName.endsWith('.md'))
 
@@ -64,6 +69,11 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost> {
 }
 
 export async function getAllBlogSlugs(): Promise<string[]> {
+  // Check if blogs directory exists
+  if (!fs.existsSync(blogsDirectory)) {
+    return []
+  }
+
   const fileNames = fs.readdirSync(blogsDirectory).filter(fileName => fileName.endsWith('.md'))
 
   return fileNames.map(fileName => fileName.replace(/\.md$/, ''))
