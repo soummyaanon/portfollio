@@ -12,15 +12,15 @@
     "role": "AI Engineer",
     "period": "Apr 2025 - Aug 2025",
     "location": "Santa Ana, California, United States · Remote",
-    "description": "",
-    "skills": []
+    "description": "Developed an AI-powered QA agent to streamline and automate the quality assurance process, improving testing efficiency and reducing manual effort.",
+    "skills": ["Artificial Intelligence (AI)", "Machine Learning", "Python", "QA Automation", "Next.js", "React.js", "Node.js"]
   },
   {
     "company": "Chatsguru",
     "role": "AI Engineer",
     "period": "Sep 2024 - Apr 2025",
     "location": "Ahmedabad, Gujarat, India · Remote",
-    "description": "",
-    "skills": ["Next.js", "React.js", "Tailwind CSS", "Agile Project Management", "GitLab", "Full-Stack Development"]
+    "description": "Developed 2-3 AI-powered products including an AI-based social media platform for unified posting across all social media channels by just connecting them, and a customized bot prediction platform where users can create their own personalized AI bots.",
+    "skills": ["Next.js", "React.js", "Tailwind CSS", "Artificial Intelligence (AI)", "Machine Learning", "API Integration", "Bot Development", "Social Media APIs", "Agile Project Management", "GitLab", "Full-Stack Development"]
   }
 ]

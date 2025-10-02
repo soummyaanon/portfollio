@@ -125,16 +125,16 @@
 }
 
 .dark {
-  --background: oklch(0.1797 0.0043 308.1928);
+  --background: #000000;
   --foreground: oklch(0.8109 0 0);
-  --card: oklch(0.1822 0 0);
+  --card: #000000;
   --card-foreground: oklch(0.8109 0 0);
-  --popover: oklch(0.1797 0.0043 308.1928);
+  --popover: #000000;
   --popover-foreground: oklch(0.8109 0 0);
   --primary: oklch(0.7214 0.1337 49.9802);
-  --primary-foreground: oklch(0.1797 0.0043 308.1928);
+  --primary-foreground: #000000;
   --secondary: oklch(0.5940 0.0443 196.0233);
-  --secondary-foreground: oklch(0.1797 0.0043 308.1928);
+  --secondary-foreground: #000000;
   --muted: oklch(0.2520 0 0);
   --muted-foreground: oklch(0.6268 0 0);
   --accent: oklch(0.3211 0 0);
@@ -148,15 +148,15 @@
   --chart-3: oklch(0.8721 0.0864 68.5474);
   --chart-4: oklch(0.6268 0 0);
   --chart-5: oklch(0.6830 0 0);
-  --sidebar: oklch(0.1822 0 0);
+  --sidebar: #000000;
   --sidebar-foreground: oklch(0.8109 0 0);
   --sidebar-primary: oklch(0.7214 0.1337 49.9802);
-  --sidebar-primary-foreground: oklch(0.1797 0.0043 308.1928);
+  --sidebar-primary-foreground: #000000;
   --sidebar-accent: oklch(0.3211 0 0);
   --sidebar-accent-foreground: oklch(0.8109 0 0);
   --sidebar-border: oklch(0.2520 0 0);
   --sidebar-ring: oklch(0.7214 0.1337 49.9802);
-  --destructive-foreground: oklch(0.1797 0.0043 308.1928);
+  --destructive-foreground: #000000;
   --radius: 0.75rem;
   --font-sans: Geist Mono, ui-monospace, monospace;
   --font-serif: serif;
@@ -238,4 +238,9 @@ body {
 .dark .prose blockquote {
   border-left-color: rgb(75 85 99);
   color: rgb(156 163 175);
+}
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
 }
