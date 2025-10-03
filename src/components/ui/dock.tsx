@@ -235,7 +235,9 @@ const NavigationDock = () => {
         </DockIcon>
         <DockSeparator />
         <DockIcon tooltip="Toggle theme">
-          <AnimatedThemeToggler className="size-6" />
+          <div className="flex items-center justify-center w-full h-full">
+            <AnimatedThemeToggler className="size-6" />
+          </div>
         </DockIcon>
       </Dock>
     </div>
