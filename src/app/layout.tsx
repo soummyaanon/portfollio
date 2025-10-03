@@ -9,16 +9,21 @@ export const metadata: Metadata = {
   keywords: ['Full Stack Developer', 'Next.js', 'TypeScript', 'AI Systems', 'Healthcare'],
   authors: [{ name: 'Soumya Panda' }],
   openGraph: {
-    title: 'Soumya Panda - Software Developer',
+    title: 'Soumya Panda - Software Engineer',
     description: 'Full-stack Developer specializing in Next.js, TypeScript, and AI systems',
     type: 'website',
-    images: ['/og-image.jpg'],
+    images: [{
+      url: '/api/og',
+      width: 1200,
+      height: 630,
+      alt: 'Soumya Panda - Software Engineer Portfolio',
+    }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Soumya Panda - Software Developer',
+    title: 'Soumya Panda - Software Engineer',
     description: 'Full-stack Developer specializing in Next.js, TypeScript, and AI systems',
-    images: ['/og-image.jpg'],
+    images: ['/api/og'],
   },
 }
 
