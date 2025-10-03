@@ -16,7 +16,7 @@ export default function Hero() {
           </div>
           <div className="flex-shrink-0">
             <Image
-              src="https://github.com/soummyaanon.png"
+              src={`https://github.com/soummyaanon.png?v=${Date.now()}`}
               alt="Soumyaranjan Panda"
               width={80}
               height={80}
