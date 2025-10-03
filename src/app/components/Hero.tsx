@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { HyperText } from'@/components/ui/hyper-text'
+import { HyperText } from '@/components/ui/hyper-text'
 
 export default function Hero() {
   return (
@@ -11,16 +11,17 @@ export default function Hero() {
               Hi, I&apos;m <HyperText className="text-primary">Soumyaranjan</HyperText>
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground mb-2">
-             Your friendly neighborhood Software Engineer.
+              Your friendly neighborhood Software Engineer.
             </p>
           </div>
           <div className="flex-shrink-0">
             <Image
               src="https://github.com/soummyaanon.png"
-              alt="Profile Picture"
+              alt="Soumyaranjan Panda"
               width={80}
               height={80}
               className="w-20 h-20 rounded-full shadow-lg ring-2 ring-primary"
+              priority
             />
           </div>
         </div>

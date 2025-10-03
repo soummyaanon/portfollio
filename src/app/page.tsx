@@ -1,10 +1,24 @@
 'use client'
 
+import { ComponentType } from 'react'
 import { motion } from 'framer-motion'
 import Hero from './components/Hero'
 import About from './components/About'
 import Experience from './components/Experience'
 import Skills from './components/Skills'
+
+type SectionConfig = {
+  key: string
+  Component: ComponentType
+  delay: number
+}
+
+const sections: SectionConfig[] = [
+  { key: 'hero', Component: Hero, delay: 0.1 },
+  { key: 'about', Component: About, delay: 0.3 },
+  { key: 'experience', Component: Experience, delay: 0.5 },
+  { key: 'skills', Component: Skills, delay: 0.7 }
+]
 
 export default function Home() {
   return (
@@ -15,34 +29,16 @@ export default function Home() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          <Hero />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <About />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <Experience />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-        >
-          <Skills />
-        </motion.div>
+        {sections.map(({ key, Component, delay }) => (
+          <motion.section
+            key={key}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay }}
+          >
+            <Component />
+          </motion.section>
+        ))}
       </motion.div>
     </main>
   )
