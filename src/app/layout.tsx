@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     description: 'Full-stack Developer specializing in Next.js, TypeScript, and AI systems',
     type: 'website',
     images: [{
-      url: '/api/og',
+      url: '/og.png',
       width: 1200,
       height: 630,
       alt: 'Soumya Panda - Software Engineer Portfolio',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Soumya Panda - Software Engineer',
     description: 'Full-stack Developer specializing in Next.js, TypeScript, and AI systems',
-    images: ['/api/og'],
+    images: ['/og.png'],
   },
 }
 
