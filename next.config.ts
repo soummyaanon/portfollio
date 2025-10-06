@@ -1,30 +1,15 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  output: 'export',
   images: {
+    unoptimized: true,
     domains: ['images.unsplash.com', 'avatars.githubusercontent.com', 'github.com'],
     formats: ['image/webp', 'image/avif'],
   },
   experimental: {
     optimizeCss: true,
     webVitalsAttribution: ['CLS', 'LCP'],
-  },
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-        ],
-      },
-    ]
   },
 }
 

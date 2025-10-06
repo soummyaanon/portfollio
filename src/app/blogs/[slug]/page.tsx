@@ -12,6 +12,12 @@ interface BlogPostPageProps {
 export async function generateStaticParams() {
   const slugs = await getAllBlogSlugs()
 
+  // For static export, we need at least one path. If no blog posts exist,
+  // return a placeholder that will result in a 404
+  if (slugs.length === 0) {
+    return [{ slug: 'placeholder' }]
+  }
+
   return slugs.map((slug) => ({
     slug,
   }))

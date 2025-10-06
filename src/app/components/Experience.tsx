@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ChevronDown } from 'lucide-react'
+import experiencesData from '@/data/experiences.json'
 
 interface Experience {
   company: string
@@ -42,50 +43,36 @@ export default function Experience() {
   const [experiences, setExperiences] = useState<Experience[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [refreshIndex, setRefreshIndex] = useState(0)
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    const controller = new AbortController()
-
-    async function loadExperiences() {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const response = await fetch('/api/experiences', { signal: controller.signal })
-        if (!response.ok) {
-          throw new Error('Failed to fetch experiences')
-        }
-
-        const data: Experience[] = await response.json()
-
-        if (!controller.signal.aborted) {
-          setExperiences(data)
-        }
-      } catch (err) {
-        if (controller.signal.aborted) {
-          return
-        }
-
-        console.error('Error fetching experiences:', err)
-        setExperiences([])
-        setError(err instanceof Error ? err.message : 'An unexpected error occurred')
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false)
-        }
-      }
+    // Load experiences data directly
+    try {
+      setExperiences(experiencesData)
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Error loading experiences:', err)
+      setExperiences([])
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      setIsLoading(false)
     }
-
-    loadExperiences()
-
-    return () => controller.abort()
-  }, [refreshIndex])
+  }, [])
 
   const handleRetry = () => {
     setOpenItems(new Set())
-    setRefreshIndex((count) => count + 1)
+    setExperiences([])
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      setExperiences(experiencesData)
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Error loading experiences:', err)
+      setExperiences([])
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      setIsLoading(false)
+    }
   }
 
   const handleItemToggle = (itemKey: string) => (open: boolean) => {
