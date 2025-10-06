@@ -79,6 +79,8 @@ export default function Experience() {
     setOpenItems((previous) => {
       const next = new Set(previous)
       if (open) {
+        // Close all other items and open only the current one
+        next.clear()
         next.add(itemKey)
       } else {
         next.delete(itemKey)
@@ -138,7 +140,7 @@ function ExperienceList({ experiences, openItems, onOpenChange }: ExperienceList
           >
             <div>
               <CollapsibleTrigger className="w-full text-left group">
-                <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200 hover:bg-muted/50 hover:shadow-sm">
+                <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200">
                   <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                     <AvatarImage
                       src={`/company-logos/${getCompanyLogo(experience.company)}`}
@@ -149,21 +151,25 @@ function ExperienceList({ experiences, openItems, onOpenChange }: ExperienceList
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-1">
-                    <h3 className="text-sm sm:text-base font-medium text-foreground">
-                      {experience.company}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {experience.role} · {experience.period}
-                    </p>
-                    {experience.location && (
-                      <p className="text-xs text-muted-foreground">{experience.location}</p>
-                    )}
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-sm sm:text-base font-medium text-foreground">
+                          {experience.company}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {experience.role} · {experience.period}
+                        </p>
+                        {experience.location && (
+                          <p className="text-xs text-muted-foreground">{experience.location}</p>
+                        )}
+                      </div>
+                      <ChevronDown
+                        className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ml-2 ${
+                          openItems.has(itemKey) ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </div>
                   </div>
-                  <ChevronDown
-                    className={`w-4 h-4 text-muted-foreground transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100 transform ${
-                      openItems.has(itemKey) ? 'rotate-180' : ''
-                    }`}
-                  />
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-3 sm:mt-4 space-y-2 sm:space-y-3 ml-10 sm:ml-14 overflow-hidden">
@@ -212,7 +218,7 @@ function EducationSection({ isOpen, onOpenChange }: EducationSectionProps) {
         <Collapsible open={isOpen} onOpenChange={onOpenChange}>
           <div>
             <CollapsibleTrigger className="w-full text-left group">
-              <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200 hover:bg-muted/50 hover:shadow-sm">
+              <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200">
                 <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                   <AvatarImage
                     src={`/company-logos/${getCompanyLogo('Visvesvaraya Technological University')}`}
@@ -223,26 +229,30 @@ function EducationSection({ isOpen, onOpenChange }: EducationSectionProps) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
-                  <h3 className="text-sm sm:text-base font-medium text-foreground">
-                    <a
-                      href="https://www.linkedin.com/in/soumyapanda12/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-primary transition-colors duration-200"
-                    >
-                      Visvesvaraya Technological University
-                    </a>
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Master of Computer Applications - MCA, Computer Science
-                  </p>
-                  <p className="text-xs text-muted-foreground">Dec 2022 - Oct 2024</p>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-sm sm:text-base font-medium text-foreground">
+                        <a
+                          href="https://www.linkedin.com/in/soumyapanda12/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-primary transition-colors duration-200"
+                        >
+                          Visvesvaraya Technological University
+                        </a>
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Master of Computer Applications - MCA, Computer Science
+                      </p>
+                      <p className="text-xs text-muted-foreground">Dec 2022 - Oct 2024</p>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ml-2 ${
+                        isOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </div>
                 </div>
-                <ChevronDown
-                  className={`w-4 h-4 text-muted-foreground transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100 transform ${
-                    isOpen ? 'rotate-180' : ''
-                  }`}
-                />
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-3 sm:mt-4 space-y-2 sm:space-y-3 ml-10 sm:ml-14 overflow-hidden">
