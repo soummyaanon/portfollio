@@ -2,7 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { ThemeProvider } from './components/ThemeProvider'
 import { NavigationDock } from '@/components/ui/dock'
-import '../lib/instrumentation-client'
+import { PostHogProvider } from '../components/PostHogProvider'
 
 export const metadata: Metadata = {
   title: 'Soumya Panda - Software Developer',
@@ -36,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
+        <PostHogProvider />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <NavigationDock />
