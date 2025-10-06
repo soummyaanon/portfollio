@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import experiences from '../../../data/experiences.json'
 
+export const dynamic = 'force-static'
+
 export async function GET() {
   try {
     // TODO: Integrate with LinkedIn API or third-party service
