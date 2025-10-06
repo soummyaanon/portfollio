@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { ThemeProvider } from './components/ThemeProvider'
 import { NavigationDock } from '@/components/ui/dock'
+import '../instrumentation-client'
 
 export const metadata: Metadata = {
   title: 'Soumya Panda - Software Developer',
