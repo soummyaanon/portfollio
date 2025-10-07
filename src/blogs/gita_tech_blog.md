@@ -96,3 +96,7 @@ As Krishna told Arjuna: **"Now stand up and fight."**
 In today's language: Log off when you need to. But when you're in the arena—create, build, contribute—do it with full presence and zero attachment to the applause.
 
 That's the real revolution.
+
+<div style="text-align: center;">
+  <img src="https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/604fe3e0-240c-511c-afd2-bce94511f39a/cbdf3837-d087-5cfc-9990-bbdf29cecb79.jpg" alt="Ancient wisdom meets modern technology - Bhagavad Gita in the digital age" style="max-width: 100%; height: auto;" />
+</div>
