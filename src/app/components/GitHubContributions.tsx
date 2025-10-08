@@ -27,7 +27,7 @@ export default function GitHubContributions({ year = new Date().getFullYear(), c
         const token = process.env.NEXT_PUBLIC_GITHUB_PAT
 
         // Try without authentication first to see if public access works
-        let headers: Record<string, string> = {
+        const headers: Record<string, string> = {
           'Content-Type': 'application/json',
         }
 
