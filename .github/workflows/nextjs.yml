@@ -57,8 +57,9 @@ jobs:
         run: |
           echo "NEXT_PUBLIC_POSTHOG_KEY=${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}" >> .env.local
           echo "NEXT_PUBLIC_POSTHOG_HOST=${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}" >> .env.local
+          echo "NEXT_PUBLIC_GITHUB_PAT=${{ secrets.NEXT_PUBLIC_GITHUB_PAT }}" >> .env.local
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v4
         with:
           # Automatically inject basePath in your Next.js configuration file and disable
           # server side image optimization (https://nextjs.org/docs/api-reference/next/image#unoptimized).

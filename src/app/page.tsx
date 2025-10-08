@@ -6,6 +6,7 @@ import Hero from './components/Hero'
 import About from './components/About'
 import Experience from './components/Experience'
 import Skills from './components/Skills'
+import GitHubContributions from './components/GitHubContributions'
 
 type SectionConfig = {
   key: string
@@ -17,7 +18,8 @@ const sections: SectionConfig[] = [
   { key: 'hero', Component: Hero, delay: 0.1 },
   { key: 'about', Component: About, delay: 0.3 },
   { key: 'experience', Component: Experience, delay: 0.5 },
-  { key: 'skills', Component: Skills, delay: 0.7 }
+  { key: 'github-contributions', Component: GitHubContributions, delay: 0.7 },
+  { key: 'skills', Component: Skills, delay: 0.9 }
 ]
 
 export default function Home() {
