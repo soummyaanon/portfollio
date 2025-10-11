@@ -1,6 +1,6 @@
 "use client"
 
-import React, { PropsWithChildren, useRef } from "react"
+import React, { PropsWithChildren, useRef, useState } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import {
   motion,
@@ -16,25 +16,25 @@ import { AnimatedThemeToggler } from "./animated-theme-toggler"
 
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { Separator } from "@/components/ui/separator"
 
 export interface DockProps extends VariantProps<typeof dockVariants> {
   className?: string
-  iconSize?: number
+  iconSize?: number | MotionValue<number>
   iconMagnification?: number
   disableMagnification?: boolean
   iconDistance?: number
   direction?: "top" | "middle" | "bottom"
+  dockHeight?: number | MotionValue<number>
   children: React.ReactNode
 }
 
-const DEFAULT_SIZE = 40
-const DEFAULT_MAGNIFICATION = 60
-const DEFAULT_DISTANCE = 140
+const DEFAULT_SIZE = 32
+const DEFAULT_MAGNIFICATION = 50
+const DEFAULT_DISTANCE = 100
 const DEFAULT_DISABLEMAGNIFICATION = false
 
 const dockVariants = cva(
-  "supports-backdrop-blur:bg-white/10 supports-backdrop-blur:dark:bg-black/10 mx-auto mt-8 flex h-[58px] w-max items-center justify-center gap-2 rounded-2xl border p-2 backdrop-blur-md"
+  "supports-backdrop-blur:bg-neutral-300/20 supports-backdrop-blur:dark:bg-neutral-300/10 mx-auto mt-8 flex h-[48px] w-max items-center justify-center border border-black/30 dark:border-white/30 backdrop-blur-lg"
 )
 
 const Dock = React.forwardRef<HTMLDivElement, DockProps>(
@@ -47,11 +47,73 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
       disableMagnification = DEFAULT_DISABLEMAGNIFICATION,
       iconDistance = DEFAULT_DISTANCE,
       direction = "middle",
+      dockHeight,
       ...props
     },
     ref
   ) => {
     const mouseX = useMotionValue(Infinity)
+    const iconBaseSize = useMotionValue(
+      typeof iconSize === "number"
+        ? iconSize
+        : iconSize?.get?.() ?? DEFAULT_SIZE
+    )
+
+    // Create reactive height MotionValue
+    const heightMotionValue = useMotionValue(dockHeight ?
+      (typeof dockHeight === 'number' ? dockHeight : dockHeight.get()) : 48)
+
+    // Update height when dockHeight changes
+    React.useEffect(() => {
+      if (dockHeight) {
+        if (typeof dockHeight === 'number') {
+          heightMotionValue.set(dockHeight)
+        } else {
+          const updateHeight = (value: number) => {
+            heightMotionValue.set(value)
+          }
+          updateHeight(dockHeight.get())
+          const unsubscribe = dockHeight.on('change', updateHeight)
+          return unsubscribe
+        }
+      } else {
+        heightMotionValue.set(48) // default height
+      }
+    }, [dockHeight, heightMotionValue])
+
+    React.useEffect(() => {
+      if (typeof iconSize === "number") {
+        iconBaseSize.set(iconSize)
+        return
+      }
+
+      if (!iconSize) {
+        iconBaseSize.set(DEFAULT_SIZE)
+        return
+      }
+
+      const update = (value: number) => {
+        iconBaseSize.set(value)
+      }
+
+      update(iconSize.get())
+      const unsubscribe = iconSize.on("change", update)
+
+      return () => {
+        unsubscribe()
+      }
+    }, [iconSize, iconBaseSize])
+
+    const dockScale = useTransform(iconBaseSize, (size) => size / DEFAULT_SIZE)
+    const dockPadding = useTransform(dockScale, (scale) =>
+      Math.max(6, Math.min(20, 8 * scale))
+    )
+    const dockGap = useTransform(dockScale, (scale) =>
+      Math.max(8, Math.min(20, 12 * scale))
+    )
+    const dockBorderRadius = useTransform(dockScale, (scale) =>
+      Math.max(16, Math.min(28, 22 * scale))
+    )
 
     const renderChildren = () => {
       return React.Children.map(children, (child) => {
@@ -78,11 +140,22 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
         onMouseMove={(e) => mouseX.set(e.pageX)}
         onMouseLeave={() => mouseX.set(Infinity)}
         {...props}
-        className={cn(dockVariants({ className }), {
-          "items-start": direction === "top",
-          "items-center": direction === "middle",
-          "items-end": direction === "bottom",
-        })}
+        style={{
+          height: heightMotionValue,
+          padding: dockPadding,
+          gap: dockGap,
+          borderRadius: dockBorderRadius,
+        }}
+        className={cn(
+          "supports-backdrop-blur:bg-neutral-300/20 supports-backdrop-blur:dark:bg-neutral-300/10 mx-auto mt-8 flex w-max items-center justify-center border border-black/30 dark:border-white/30 backdrop-blur-lg",
+          dockHeight ? "" : "h-[48px]", // Only use fixed height if no dockHeight provided
+          {
+            "items-start": direction === "top",
+            "items-center": direction === "middle",
+            "items-end": direction === "bottom",
+          },
+          className
+        )}
       >
         {renderChildren()}
       </motion.div>
@@ -94,7 +167,7 @@ Dock.displayName = "Dock"
 
 export interface DockIconProps
   extends Omit<MotionProps & React.HTMLAttributes<HTMLDivElement>, "children"> {
-  size?: number
+  size?: number | MotionValue<number>
   magnification?: number
   disableMagnification?: boolean
   distance?: number
@@ -107,6 +180,10 @@ export interface DockIconProps
 
 export interface DockSeparatorProps {
   className?: string
+  onResizeStart?: (currentSize: number) => void
+  onResize?: (newSize: number) => void
+  onResizeEnd?: () => void
+  currentSize?: number
 }
 
 const DockIcon = ({
@@ -121,39 +198,118 @@ const DockIcon = ({
   ...props
 }: DockIconProps) => {
   const ref = useRef<HTMLDivElement>(null)
-  const padding = Math.max(6, size * 0.2)
   const defaultMouseX = useMotionValue(Infinity)
+  const sizeMotionValue = useMotionValue(
+    typeof size === "number"
+      ? size
+      : size?.get?.() ?? DEFAULT_SIZE
+  )
+
+  React.useEffect(() => {
+    if (typeof size === "number") {
+      sizeMotionValue.set(size)
+      return
+    }
+
+    if (!size) {
+      sizeMotionValue.set(DEFAULT_SIZE)
+      return
+    }
+
+    const updateSize = (value: number) => {
+      sizeMotionValue.set(value)
+    }
+
+    updateSize(size.get())
+    const unsubscribe = size.on("change", updateSize)
+
+    return () => {
+      unsubscribe()
+    }
+  }, [size, sizeMotionValue])
 
   const distanceCalc = useTransform(mouseX ?? defaultMouseX, (val: number) => {
     const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 }
     return val - bounds.x - bounds.width / 2
   })
 
-  const targetSize = disableMagnification ? size : magnification
+  const baseSize = sizeMotionValue
 
-  const sizeTransform = useTransform(
-    distanceCalc,
-    [-distance, 0, distance],
-    [size, targetSize, size]
-  )
+  // Create a combined transform that responds to both mouse position and base size changes
+  const combinedSize = useMotionValue(0)
 
-  const scaleSize = useSpring(sizeTransform, {
-    mass: 0.1,
-    stiffness: 150,
-    damping: 12,
+  React.useEffect(() => {
+    const updateSize = () => {
+      const dist = distanceCalc.get()
+      const currentBaseSize = baseSize.get()
+      const target = disableMagnification ? currentBaseSize : magnification
+      const progress = Math.abs(dist) / distance
+      const clampedProgress = Math.max(0, Math.min(1, progress))
+      const newSize = currentBaseSize + (target - currentBaseSize) * (1 - clampedProgress)
+      combinedSize.set(newSize)
+    }
+
+    // Update immediately
+    updateSize()
+
+    // Subscribe to changes
+    const unsubscribe1 = distanceCalc.on('change', updateSize)
+    const unsubscribe2 = baseSize.on('change', updateSize)
+
+    return () => {
+      unsubscribe1()
+      unsubscribe2()
+    }
+  }, [distanceCalc, baseSize, magnification, distance, disableMagnification, combinedSize])
+
+  const scaleSize = useSpring(combinedSize, {
+    mass: 0.15,
+    stiffness: 200,
+    damping: 18,
+  })
+
+  const paddingValue = useTransform(sizeMotionValue, (s) => Math.max(6, s * 0.2))
+  const iconScale = useTransform(scaleSize, (s) => s / DEFAULT_SIZE)
+
+  const sizedChildren = React.Children.map(children, (child) => {
+    if (!React.isValidElement(child)) {
+      return child
+    }
+
+    const { className: childClassName, style: childStyle, ...restProps } = child.props as {
+      className?: string
+      style?: React.CSSProperties
+      [key: string]: unknown
+    }
+
+    return React.cloneElement(child, {
+      ...restProps,
+      className: cn("h-full w-full", childClassName),
+      style: {
+        ...(childStyle ?? {}),
+        width: "100%",
+        height: "100%",
+      },
+    }) as React.ReactElement
   })
 
   const iconElement = (
     <motion.div
       ref={ref}
-      style={{ width: scaleSize, height: scaleSize, padding }}
+      {...props}
+      style={{ width: scaleSize, height: scaleSize, padding: paddingValue }}
       className={cn(
         "flex aspect-square cursor-pointer items-center justify-center rounded-full",
         disableMagnification && "hover:bg-muted-foreground transition-colors",
         className
       )}
     >
-      <div {...props}>{children}</div>
+      <motion.div
+        style={{ scale: iconScale }}
+        className="flex h-full w-full items-center justify-center"
+      >
+        {sizedChildren}
+      </motion.div>
     </motion.div>
   )
 
@@ -175,18 +331,88 @@ const DockIcon = ({
 
 DockIcon.displayName = "DockIcon"
 
-const DockSeparator = ({ className }: DockSeparatorProps) => {
+const DockSeparator = ({
+  className,
+  onResizeStart,
+  onResize,
+  onResizeEnd,
+  currentSize = DEFAULT_SIZE
+}: DockSeparatorProps) => {
+  const [isDragging, setIsDragging] = useState(false)
+  const [startY, setStartY] = useState(0)
+  const [startSize, setStartSize] = useState(DEFAULT_SIZE)
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    setStartY(e.clientY)
+    setStartSize(currentSize)
+    onResizeStart?.(currentSize)
+    e.preventDefault()
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaY = startY - e.clientY
+      const newSize = Math.max(16, Math.min(80, startSize + deltaY * 0.8))
+      onResize?.(newSize)
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+      onResizeEnd?.()
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  const separatorHeight = 48
+
   return (
-    <Separator
-      orientation="vertical"
-      className={cn("h-8 w-px bg-border", className)}
-    />
+    <div
+      className={cn(
+        "w-2 bg-border cursor-ns-resize hover:bg-primary/50 transition-all duration-200 rounded-sm flex items-center justify-center",
+        isDragging && "bg-primary scale-110 shadow-lg",
+        className
+      )}
+      style={{ height: separatorHeight }}
+      onMouseDown={handleMouseDown}
+      title="Drag to resize dock"
+    >
+      <div className="w-0.5 h-4 bg-current opacity-60"></div>
+    </div>
   )
 }
 
 DockSeparator.displayName = "DockSeparator"
 
 const NavigationDock = () => {
+  const [dockSize, setDockSize] = useState(DEFAULT_SIZE)
+  const dockSizeSpring = useSpring(dockSize, {
+    mass: 0.2,
+    stiffness: 120,
+    damping: 20,
+  })
+
+  // Calculate dock height based on icon size (48px default height for 32px icons)
+  const dockHeightSpring = useTransform(dockSizeSpring, (size) => {
+    const baseIconSize = DEFAULT_SIZE // 32px
+    const baseDockHeight = 48 // 48px
+    return (size / baseIconSize) * baseDockHeight
+  })
+
+  const handleResizeStart = () => {
+    // Could add visual feedback here
+  }
+
+  const handleResize = (newSize: number) => {
+    setDockSize(newSize)
+  }
+
+  const handleResizeEnd = () => {
+    // Could add cleanup here
+  }
+
   const scrollToTop = () => {
     window.location.href = '/'
   }
@@ -213,27 +439,37 @@ const NavigationDock = () => {
 
   return (
     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-      <Dock direction="middle">
+      <Dock direction="middle" iconSize={dockSizeSpring} dockHeight={dockHeightSpring}>
         <DockIcon tooltip="Home" onClick={scrollToTop}>
-          <Icons.home className="size-6" />
+          <Icons.home className="size-6" strokeWidth={1} />
         </DockIcon>
         <DockIcon tooltip="Blogs" onClick={navigateToBlogs}>
-          <Icons.blogs className="size-6" />
+          <Icons.blogs className="size-6" strokeWidth={1} />
         </DockIcon>
-        <DockSeparator />
+        <DockSeparator
+          currentSize={dockSize}
+          onResizeStart={handleResizeStart}
+          onResize={handleResize}
+          onResizeEnd={handleResizeEnd}
+        />
         <DockIcon tooltip="GitHub" onClick={navigateToGitHub}>
-          <Icons.gitHub className="size-6" />
+          <Icons.gitHub className="size-6" strokeWidth={1} />
         </DockIcon>
         <DockIcon tooltip="LinkedIn" onClick={navigateToLinkedIn}>
-          <Icons.linkedin className="size-6" />
+          <Icons.linkedin className="size-6" strokeWidth={1} />
         </DockIcon>
         <DockIcon tooltip="X" onClick={navigateToTwitter}>
-          <Icons.x className="size-6" />
+          <Icons.x className="size-6" strokeWidth={1} />
         </DockIcon>
         <DockIcon tooltip="Email" onClick={navigateToEmail}>
-          <Icons.email className="size-6" />
+          <Icons.email className="size-6" strokeWidth={1} />
         </DockIcon>
-        <DockSeparator />
+        <DockSeparator
+          currentSize={dockSize}
+          onResizeStart={handleResizeStart}
+          onResize={handleResize}
+          onResizeEnd={handleResizeEnd}
+        />
         <DockIcon tooltip="Toggle theme">
           <div className="flex items-center justify-center w-full h-full">
             <AnimatedThemeToggler className="size-6" />
