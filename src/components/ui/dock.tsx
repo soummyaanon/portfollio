@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 export interface DockProps extends VariantProps<typeof dockVariants> {
   className?: string
   iconSize?: number | MotionValue<number>
+  baseIconSize?: number | MotionValue<number>
   iconMagnification?: number
   disableMagnification?: boolean
   iconDistance?: number
@@ -32,9 +33,26 @@ const DEFAULT_SIZE = 32
 const DEFAULT_MAGNIFICATION = 50
 const DEFAULT_DISTANCE = 100
 const DEFAULT_DISABLEMAGNIFICATION = false
+const MIN_ICON_SIZE = 30
+const MAX_ICON_SIZE = 60
+
+const clampIconSize = (value: number) =>
+  Math.max(MIN_ICON_SIZE, Math.min(MAX_ICON_SIZE, value))
+
+const isMotionValueNumber = (
+  value: unknown
+): value is MotionValue<number> => {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "on" in value &&
+    typeof (value as MotionValue<number>).on === "function" &&
+    typeof (value as MotionValue<number>).get === "function"
+  )
+}
 
 const dockVariants = cva(
-  "supports-backdrop-blur:bg-neutral-300/20 supports-backdrop-blur:dark:bg-neutral-300/10 mx-auto mt-8 flex h-[48px] w-max items-center justify-center border border-black/30 dark:border-white/30 backdrop-blur-lg"
+  "supports-backdrop-blur:bg-neutral-300/20 supports-backdrop-blur:dark:bg-neutral-300/10 mx-auto mt-8 flex h-[48px] w-max items-center justify-center gap-3 rounded-2xl border border-black/30 dark:border-white/30 p-2 backdrop-blur-lg"
 )
 
 const Dock = React.forwardRef<HTMLDivElement, DockProps>(
@@ -43,6 +61,7 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
       className,
       children,
       iconSize = DEFAULT_SIZE,
+      baseIconSize,
       iconMagnification = DEFAULT_MAGNIFICATION,
       disableMagnification = DEFAULT_DISABLEMAGNIFICATION,
       iconDistance = DEFAULT_DISTANCE,
@@ -53,11 +72,25 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
     ref
   ) => {
     const mouseX = useMotionValue(Infinity)
-    const iconBaseSize = useMotionValue(
-      typeof iconSize === "number"
-        ? iconSize
-        : iconSize?.get?.() ?? DEFAULT_SIZE
-    )
+    const resolvedBaseSize = (() => {
+      if (typeof baseIconSize === "number") {
+        return baseIconSize
+      }
+      if (isMotionValueNumber(baseIconSize)) {
+        return baseIconSize.get()
+      }
+      if (typeof iconSize === "number") {
+        return iconSize
+      }
+      if (isMotionValueNumber(iconSize)) {
+        return iconSize.get()
+      }
+      return DEFAULT_SIZE
+    })()
+
+    const initialBaseSize = clampIconSize(resolvedBaseSize)
+
+    const iconBaseSize = useMotionValue(initialBaseSize)
 
     // Create reactive height MotionValue
     const heightMotionValue = useMotionValue(dockHeight ?
@@ -82,38 +115,40 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
     }, [dockHeight, heightMotionValue])
 
     React.useEffect(() => {
+      if (typeof baseIconSize === "number") {
+        iconBaseSize.set(clampIconSize(baseIconSize))
+        return
+      }
+
+      if (isMotionValueNumber(baseIconSize)) {
+        const update = (value: number) => {
+          iconBaseSize.set(clampIconSize(value))
+        }
+
+        update(baseIconSize.get())
+        const unsubscribe = baseIconSize.on("change", update)
+        return () => unsubscribe()
+      }
+
       if (typeof iconSize === "number") {
-        iconBaseSize.set(iconSize)
+        iconBaseSize.set(clampIconSize(iconSize))
         return
       }
 
-      if (!iconSize) {
-        iconBaseSize.set(DEFAULT_SIZE)
-        return
+      if (isMotionValueNumber(iconSize)) {
+        const update = (value: number) => {
+          iconBaseSize.set(clampIconSize(value))
+        }
+
+        update(iconSize.get())
+        const unsubscribe = iconSize.on("change", update)
+        return () => unsubscribe()
       }
 
-      const update = (value: number) => {
-        iconBaseSize.set(value)
-      }
-
-      update(iconSize.get())
-      const unsubscribe = iconSize.on("change", update)
-
-      return () => {
-        unsubscribe()
-      }
-    }, [iconSize, iconBaseSize])
+      iconBaseSize.set(DEFAULT_SIZE)
+    }, [baseIconSize, iconSize, iconBaseSize])
 
     const dockScale = useTransform(iconBaseSize, (size) => size / DEFAULT_SIZE)
-    const dockPadding = useTransform(dockScale, (scale) =>
-      Math.max(6, Math.min(20, 8 * scale))
-    )
-    const dockGap = useTransform(dockScale, (scale) =>
-      Math.max(8, Math.min(20, 12 * scale))
-    )
-    const dockBorderRadius = useTransform(dockScale, (scale) =>
-      Math.max(16, Math.min(28, 22 * scale))
-    )
 
     const renderChildren = () => {
       return React.Children.map(children, (child) => {
@@ -142,12 +177,12 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
         {...props}
         style={{
           height: heightMotionValue,
-          padding: dockPadding,
-          gap: dockGap,
-          borderRadius: dockBorderRadius,
+          scale: dockScale,
+          originX: 0.5,
+          originY: 1,
         }}
         className={cn(
-          "supports-backdrop-blur:bg-neutral-300/20 supports-backdrop-blur:dark:bg-neutral-300/10 mx-auto mt-8 flex w-max items-center justify-center border border-black/30 dark:border-white/30 backdrop-blur-lg",
+          dockVariants(),
           dockHeight ? "" : "h-[48px]", // Only use fixed height if no dockHeight provided
           {
             "items-start": direction === "top",
@@ -276,11 +311,13 @@ const DockIcon = ({
       return child
     }
 
-    const { className: childClassName, style: childStyle, ...restProps } = child.props as {
-      className?: string
-      style?: React.CSSProperties
-      [key: string]: unknown
-    }
+    const childProps = child.props as Record<string, unknown>
+    const childClassName = childProps.className as string | undefined
+    const childStyle = childProps.style as React.CSSProperties | undefined
+
+    // Create restProps by omitting className and style
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { className, style, ...restProps } = childProps
 
     return React.cloneElement(child, {
       ...restProps,
@@ -290,7 +327,7 @@ const DockIcon = ({
         width: "100%",
         height: "100%",
       },
-    }) as React.ReactElement
+    } as React.HTMLAttributes<HTMLElement> & Record<string, unknown>)
   })
 
   const iconElement = (
@@ -345,13 +382,13 @@ const DockSeparator = ({
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true)
     setStartY(e.clientY)
-    setStartSize(currentSize)
+    setStartSize(clampIconSize(currentSize))
     onResizeStart?.(currentSize)
     e.preventDefault()
 
     const handleMouseMove = (e: MouseEvent) => {
       const deltaY = startY - e.clientY
-      const newSize = Math.max(16, Math.min(80, startSize + deltaY * 0.8))
+      const newSize = clampIconSize(startSize + deltaY * 1.2)
       onResize?.(newSize)
     }
 
@@ -366,7 +403,7 @@ const DockSeparator = ({
     document.addEventListener('mouseup', handleMouseUp)
   }
 
-  const separatorHeight = 48
+  const separatorHeight = 32
 
   return (
     <div
@@ -389,24 +426,21 @@ DockSeparator.displayName = "DockSeparator"
 const NavigationDock = () => {
   const [dockSize, setDockSize] = useState(DEFAULT_SIZE)
   const dockSizeSpring = useSpring(dockSize, {
-    mass: 0.2,
-    stiffness: 120,
-    damping: 20,
+    mass: 0.12,
+    stiffness: 220,
+    damping: 24,
   })
 
-  // Calculate dock height based on icon size (48px default height for 32px icons)
-  const dockHeightSpring = useTransform(dockSizeSpring, (size) => {
-    const baseIconSize = DEFAULT_SIZE // 32px
-    const baseDockHeight = 48 // 48px
-    return (size / baseIconSize) * baseDockHeight
-  })
+  React.useEffect(() => {
+    dockSizeSpring.set(dockSize)
+  }, [dockSize, dockSizeSpring])
 
   const handleResizeStart = () => {
     // Could add visual feedback here
   }
 
   const handleResize = (newSize: number) => {
-    setDockSize(newSize)
+    setDockSize(clampIconSize(newSize))
   }
 
   const handleResizeEnd = () => {
@@ -439,7 +473,11 @@ const NavigationDock = () => {
 
   return (
     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-      <Dock direction="middle" iconSize={dockSizeSpring} dockHeight={dockHeightSpring}>
+      <Dock
+        direction="middle"
+        iconSize={DEFAULT_SIZE}
+        baseIconSize={dockSizeSpring}
+      >
         <DockIcon tooltip="Home" onClick={scrollToTop}>
           <Icons.home className="size-6" strokeWidth={1} />
         </DockIcon>
