@@ -10,16 +10,16 @@ export default function Footer() {
           </p>
           <div className="flex space-x-4">
             <a href="https://github.com/soummyaanon" className="text-muted-foreground hover:text-foreground">
-              <Github size={20} />
+              <Github size={24} />
             </a>
             <a href="https://www.linkedin.com/in/soumyapanda12/" className="text-muted-foreground hover:text-foreground">
-              <Linkedin size={20} />
+              <Linkedin size={24} />
             </a>
             <a href="https://x.com/SoumyapX" className="text-muted-foreground hover:text-foreground">
-              <Twitter size={20} />
+              <Twitter size={24} />
             </a>
             <a href="mailto:your.email@example.com" className="text-muted-foreground hover:text-foreground">
-              <Mail size={20} />
+              <Mail size={24} />
             </a>
           </div>
         </div>
