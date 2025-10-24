@@ -159,6 +159,7 @@ function ExperienceList({ experiences, openItems, onOpenChange }: ExperienceList
                         className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ${
                           openItems.has(itemKey) ? 'rotate-180 opacity-100' : ''
                         }`}
+                        strokeWidth={3}
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -242,6 +243,7 @@ function EducationSection({ isOpen, onOpenChange }: EducationSectionProps) {
                       className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ${
                         isOpen ? 'rotate-180 opacity-100' : ''
                       }`}
+                      strokeWidth={2.5}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
