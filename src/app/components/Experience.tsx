@@ -150,37 +150,35 @@ function ExperienceList({ experiences, openItems, onOpenChange }: ExperienceList
                       {getCompanyInitials(experience.company)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-sm sm:text-base font-medium text-foreground">
-                          {experience.company}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {experience.role} · {experience.period}
-                        </p>
-                        {experience.location && (
-                          <p className="text-xs text-muted-foreground">{experience.location}</p>
-                        )}
-                      </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm sm:text-base font-medium text-foreground">
+                        {experience.company}
+                      </h3>
                       <ChevronDown
-                        className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ml-2 ${
-                          openItems.has(itemKey) ? 'rotate-180' : ''
+                        className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ${
+                          openItems.has(itemKey) ? 'rotate-180 opacity-100' : ''
                         }`}
                       />
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {experience.role} · {experience.period}
+                    </p>
+                    {experience.location && (
+                      <p className="text-xs text-muted-foreground">{experience.location}</p>
+                    )}
                   </div>
                 </div>
               </CollapsibleTrigger>
-              <CollapsibleContent className="mt-3 sm:mt-4 space-y-2 sm:space-y-3 ml-10 sm:ml-14 overflow-hidden">
-                <div className="animate-in slide-in-from-top-2 fade-in duration-300 ease-in-out">
+              <CollapsibleContent className="overflow-hidden">
+                <div className="animate-in slide-in-from-top-2 fade-in duration-300 ease-in-out mt-3 sm:mt-4 space-y-2 sm:space-y-3 pl-11 sm:pl-14">
                   {experience.description && (
-                    <p className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                       {experience.description}
                     </p>
                   )}
                   {experience.skills && experience.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="flex flex-wrap gap-2">
                       {experience.skills.map((skill, index) => (
                         <Badge
                           key={skill}
@@ -228,39 +226,37 @@ function EducationSection({ isOpen, onOpenChange }: EducationSectionProps) {
                     VTU
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-sm sm:text-base font-medium text-foreground">
-                        <a
-                          href="https://www.linkedin.com/in/soumyapanda12/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-primary transition-colors duration-200"
-                        >
-                          Visvesvaraya Technological University
-                        </a>
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Master of Computer Applications - MCA, Computer Science
-                      </p>
-                      <p className="text-xs text-muted-foreground">Dec 2022 - Oct 2024</p>
-                    </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-medium text-foreground">
+                      <a
+                        href="https://www.linkedin.com/in/soumyapanda12/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-primary transition-colors duration-200"
+                      >
+                        Visvesvaraya Technological University
+                      </a>
+                    </h3>
                     <ChevronDown
-                      className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ml-2 ${
-                        isOpen ? 'rotate-180' : ''
+                      className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ${
+                        isOpen ? 'rotate-180 opacity-100' : ''
                       }`}
                     />
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Master of Computer Applications - MCA, Computer Science
+                  </p>
+                  <p className="text-xs text-muted-foreground">Dec 2022 - Oct 2024</p>
                 </div>
               </div>
             </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3 sm:mt-4 space-y-2 sm:space-y-3 ml-10 sm:ml-14 overflow-hidden">
-              <div className="animate-in slide-in-from-top-2 fade-in duration-300 ease-in-out">
-                <p className="text-xs text-muted-foreground leading-relaxed">
+            <CollapsibleContent className="overflow-hidden">
+              <div className="animate-in slide-in-from-top-2 fade-in duration-300 ease-in-out mt-3 sm:mt-4 space-y-2 sm:space-y-3 pl-11 sm:pl-14">
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   Completed Master of Computer Applications with a focus on Computer Science, gaining comprehensive knowledge in software development, algorithms, data structures, and modern programming paradigms.
                 </p>
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap gap-2">
                   {['Computer Science', 'Software Development', 'Algorithms', 'Data Structures', 'Programming'].map(
                     (skill, index) => (
                       <Badge
