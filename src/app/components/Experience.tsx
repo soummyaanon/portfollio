@@ -18,6 +18,7 @@ interface Experience {
 
 const companyLogoMap: Record<string, string> = {
   'Cardiovascular Institute of Orlando': 'cio.png',
+  Wybit: 'cio.png',
   Cloudoplus: 'claudo plus.png',
   Chatsguru: 'chatguru.png',
   'Visvesvaraya Technological University': 'visvesvaraya-technological-university.png'
@@ -141,10 +142,11 @@ function ExperienceList({ experiences, openItems, onOpenChange }: ExperienceList
             <div>
               <CollapsibleTrigger className="w-full text-left group">
                 <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200">
-                  <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
+                  <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 ring-2 ring-border bg-background">
                     <AvatarImage
                       src={`/company-logos/${getCompanyLogo(experience.company)}`}
                       alt={experience.company}
+                      className="object-contain p-1"
                     />
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
                       {getCompanyInitials(experience.company)}
@@ -159,7 +161,7 @@ function ExperienceList({ experiences, openItems, onOpenChange }: ExperienceList
                         className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ${
                           openItems.has(itemKey) ? 'rotate-180 opacity-100' : ''
                         }`}
-                        strokeWidth={3}
+                        strokeWidth={2.5}
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -218,10 +220,11 @@ function EducationSection({ isOpen, onOpenChange }: EducationSectionProps) {
           <div>
             <CollapsibleTrigger className="w-full text-left group">
               <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200">
-                <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
+                <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 ring-2 ring-border bg-background">
                   <AvatarImage
                     src={`/company-logos/${getCompanyLogo('Visvesvaraya Technological University')}`}
                     alt="Visvesvaraya Technological University"
+                    className="object-contain p-1"
                   />
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
                     VTU
