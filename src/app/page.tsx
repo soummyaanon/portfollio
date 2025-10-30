@@ -7,6 +7,7 @@ import About from './components/About'
 import Experience from './components/Experience'
 import Skills from './components/Skills'
 import GitHubContributions from './components/GitHubContributions'
+import { DottedGlowBackground } from '@/components/ui/dotted-glow-background'
 
 type SectionConfig = {
   key: string
@@ -24,8 +25,25 @@ const sections: SectionConfig[] = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-background">
-      <motion.div
+    <>
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <DottedGlowBackground
+          className="w-full h-full"
+          opacity={0.4}
+          gap={20}
+          radius={1.5}
+          colorLightVar="--color-neutral-500"
+          glowColorLightVar="--color-neutral-600"
+          colorDarkVar="--color-neutral-500"
+          glowColorDarkVar="--color-sky-800"
+          backgroundOpacity={0}
+          speedMin={0.2}
+          speedMax={0.8}
+          speedScale={1}
+        />
+      </div>
+      <main className="min-h-screen relative z-10">
+        <motion.div
         className="max-w-2xl mx-auto px-3 sm:px-4 py-1 sm:py-2 space-y-0.5 sm:space-y-1"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -41,7 +59,8 @@ export default function Home() {
             <Component />
           </motion.section>
         ))}
-      </motion.div>
-    </main>
+        </motion.div>
+      </main>
+    </>
   )
 }
