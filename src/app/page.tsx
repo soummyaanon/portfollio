@@ -25,10 +25,9 @@ const sections: SectionConfig[] = [
 
 export default function Home() {
   return (
-    <>
+    <div>
       <div className="fixed inset-0 pointer-events-none z-0">
         <DottedGlowBackground
-          className="w-full h-full"
           opacity={0.4}
           gap={20}
           radius={1.5}
@@ -61,6 +60,6 @@ export default function Home() {
         ))}
         </motion.div>
       </main>
-    </>
+    </div>
   )
 }
