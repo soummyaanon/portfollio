@@ -34,13 +34,13 @@ const MONTHS = [
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-// Contribution level colors (GitHub-style)
+// Contribution level colors (GitHub-style) - using theme chart colors
 const CONTRIBUTION_COLORS = [
   "bg-muted", // Level 0 - No contributions (light gray)
-  "bg-green-200", // Level 1 (light green)
-  "bg-green-300", // Level 2
-  "bg-green-400", // Level 3
-  "bg-green-600", // Level 4 - Max contributions (dark green)
+  "bg-[var(--chart-1)]", // Level 1 - Chart color 1
+  "bg-[var(--chart-2)]", // Level 2 - Chart color 2
+  "bg-[var(--chart-3)]", // Level 3 - Chart color 3
+  "bg-[var(--chart-4)]", // Level 4 - Chart color 4, max intensity
 ]
 
 const CONTRIBUTION_LEVELS = [0, 1, 2, 3, 4]
