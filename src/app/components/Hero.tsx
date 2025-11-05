@@ -1,7 +1,11 @@
 import Image from 'next/image'
 import { HyperText } from '@/components/ui/hyper-text'
+import { GolangDark } from '@/components/ui/svgs/golangDark'
 
 export default function Hero() {
+  // 🎯 UPDATE HERE: Change this to reflect what you're currently learning
+  const currentlyLearning = "Go Lang basics"
+
   return (
     <section className="py-6 sm:py-12">
       <div className="max-w-4xl mx-auto px-4">
@@ -13,6 +17,17 @@ export default function Hero() {
             <p className="text-base sm:text-lg text-muted-foreground mb-2">
               Your friendly neighborhood Software Engineer.
             </p>
+
+            {/* Learning Indicator */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground/80 mt-3">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              <span>Currently learning:</span>
+              <GolangDark className="w-4 h-4" />
+              <span className="text-foreground font-medium">{currentlyLearning}</span>
+            </div>
           </div>
           <div className="flex-shrink-0">
             <Image
