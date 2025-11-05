@@ -15,7 +15,7 @@ export default function Hero() {
               Hi, I&apos;m <HyperText className="text-primary">Soumyaranjan</HyperText>
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground mb-2">
-              Your friendly neighborhood Software Engineer.
+              A Software Engineer.
             </p>
 
             {/* Learning Indicator */}
