@@ -1,8 +1,9 @@
 import type { SVGProps } from "react";
+import { cn } from "@/lib/utils";
 
-const Golang = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...props} viewBox="0 0 207 78">
-    <g fill="#000000" fillRule="evenodd">
+const Golang = ({ className, ...props }: SVGProps<SVGSVGElement>) => (
+  <svg {...props} className={cn("text-sky-500", className)} viewBox="0 0 207 78">
+    <g fill="currentColor" fillRule="evenodd">
       <path d="m16.2 24.1c-.4 0-.5-.2-.3-.5l2.1-2.7c.2-.3.7-.5 1.1-.5h35.7c.4 0 .5.3.3.6l-1.7 2.6c-.2.3-.7.6-1 .6z" />
       <path d="m1.1 33.3c-.4 0-.5-.2-.3-.5l2.1-2.7c.2-.3.7-.5 1.1-.5h45.6c.4 0 .6.3.5.6l-.8 2.4c-.1.4-.5.6-.9.6z" />
       <path d="m25.3 42.5c-.4 0-.5-.3-.3-.6l1.4-2.5c.2-.3.6-.6 1-.6h20c.4 0 .6.3.6.7l-.2 2.4c0 .4-.4.7-.7.7z" />

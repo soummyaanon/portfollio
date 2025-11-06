@@ -116,7 +116,7 @@ export default function GitHubContributions({ year = new Date().getFullYear(), c
       <section className={`py-6 sm:py-12 ${className}`}>
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 text-center">
-            GitHub Contributions
+            Work activity
           </h2>
           <div className="bg-background rounded-lg border p-4">
             <div className="animate-pulse space-y-4">
@@ -142,7 +142,7 @@ export default function GitHubContributions({ year = new Date().getFullYear(), c
       <section className={`py-6 sm:py-12 ${className}`}>
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 text-center">
-            GitHub Contributions
+            Work activity
           </h2>
           <div className="bg-background rounded-lg border p-4">
             <div className="text-center text-muted-foreground">
@@ -160,7 +160,7 @@ export default function GitHubContributions({ year = new Date().getFullYear(), c
     <section className={`py-4 sm:py-8 ${className}`}>
       <div className="max-w-4xl mx-auto">
         <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6">
-          GitHub Contributions
+          Work activity
         </h2>
 
         <div className="bg-background rounded-lg border p-4">
@@ -175,12 +175,14 @@ export default function GitHubContributions({ year = new Date().getFullYear(), c
 
         <div className="text-center mt-4">
           <a
-            href={`https://github.com/soummyaanon`}
+            href="https://codetime.dev"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline text-sm"
           >
-            View on GitHub →
+            <img
+              alt="CodeTime Badge"
+              src="https://shields.jannchie.com/endpoint?style=social&color=222&url=https%3A%2F%2Fapi.codetime.dev%2Fv3%2Fusers%2Fshield%3Fuid%3D30864"
+            />
           </a>
         </div>
       </div>

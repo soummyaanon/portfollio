@@ -9,7 +9,7 @@ export default function About() {
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             I create with{" "}
             <HyperText
-              className="inline text-xs sm:text-sm font-medium bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 bg-clip-text text-transparent"
+              className="inline text-xs sm:text-sm font-medium"
               duration={600}
               startOnView={true}
             >
@@ -17,7 +17,7 @@ export default function About() {
             </HyperText>{" "}
             and love{" "}
             <HyperText
-              className="inline text-xs sm:text-sm font-medium bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-400 bg-clip-text text-transparent"
+              className="inline text-xs sm:text-sm font-medium"
               duration={600}
               startOnView={true}
               delay={200}
@@ -26,7 +26,7 @@ export default function About() {
             </HyperText>
             . Also into{" "}
             <HyperText
-              className="inline text-xs sm:text-sm font-medium bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 bg-clip-text text-transparent"
+              className="inline text-xs sm:text-sm font-medium"
               duration={600}
               startOnView={true}
               delay={400}
@@ -35,7 +35,7 @@ export default function About() {
             </HyperText>{" "}
             and exploring consciousness. Just trying to understand this wild{" "}
             <HyperText
-              className="inline text-xs sm:text-sm font-medium bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 bg-clip-text text-transparent"
+              className="inline text-xs sm:text-sm font-medium"
               duration={600}
               startOnView={true}
               delay={600}
