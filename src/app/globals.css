@@ -262,3 +262,28 @@ body {
     animation: none;
     mix-blend-mode: normal;
 }
+
+/* Custom text selection colors - Dark Pink Gradient */
+*::selection {
+  background-image: linear-gradient(135deg, #ff69b4 0%, #e91e63 50%, #c2185b 100%) !important;
+  background-color: #c2185b !important;
+  color: #ffffff !important;
+}
+
+*::-moz-selection {
+  background-image: linear-gradient(135deg, #ff69b4 0%, #e91e63 50%, #c2185b 100%) !important;
+  background-color: #c2185b !important;
+  color: #ffffff !important;
+}
+
+.dark *::selection {
+  background-image: linear-gradient(135deg, #ff6b9d 0%, #e91e63 50%, #c2185b 100%) !important;
+  background-color: #c2185b !important;
+  color: #ffffff !important;
+}
+
+.dark *::-moz-selection {
+  background-image: linear-gradient(135deg, #ff6b9d 0%, #e91e63 50%, #c2185b 100%) !important;
+  background-color: #c2185b !important;
+  color: #ffffff !important;
+}
