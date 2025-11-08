@@ -263,27 +263,27 @@ body {
     mix-blend-mode: normal;
 }
 
-/* Custom text selection colors - Dark Pink Gradient */
+/* Custom text selection colors - 2F4F4F Gradient */
 *::selection {
-  background-image: linear-gradient(135deg, #ff69b4 0%, #e91e63 50%, #c2185b 100%) !important;
-  background-color: #c2185b !important;
+  background-image: linear-gradient(135deg, #4a6a6a 0%, #2f4f4f 50%, #1f3535 100%) !important;
+  background-color: #2f4f4f !important;
   color: #ffffff !important;
 }
 
 *::-moz-selection {
-  background-image: linear-gradient(135deg, #ff69b4 0%, #e91e63 50%, #c2185b 100%) !important;
-  background-color: #c2185b !important;
+  background-image: linear-gradient(135deg, #4a6a6a 0%, #2f4f4f 50%, #1f3535 100%) !important;
+  background-color: #2f4f4f !important;
   color: #ffffff !important;
 }
 
 .dark *::selection {
-  background-image: linear-gradient(135deg, #ff6b9d 0%, #e91e63 50%, #c2185b 100%) !important;
-  background-color: #c2185b !important;
+  background-image: linear-gradient(135deg, #5a7a7a 0%, #2f4f4f 50%, #1a2a2a 100%) !important;
+  background-color: #2f4f4f !important;
   color: #ffffff !important;
 }
 
 .dark *::-moz-selection {
-  background-image: linear-gradient(135deg, #ff6b9d 0%, #e91e63 50%, #c2185b 100%) !important;
-  background-color: #c2185b !important;
+  background-image: linear-gradient(135deg, #5a7a7a 0%, #2f4f4f 50%, #1a2a2a 100%) !important;
+  background-color: #2f4f4f !important;
   color: #ffffff !important;
 }
