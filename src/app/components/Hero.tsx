@@ -10,23 +10,87 @@ import { useTheme } from 'next-themes'
 export default function Hero() {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [commitCount, setCommitCount] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // 🎯 UPDATE HERE: Change this to reflect what you're currently learning
+  useEffect(() => {
+    const fetchCommitCount = async () => {
+      try {
+        setLoading(true)
+        // Fetch directly from GitHub API since we're using static export
+        const owner = 'soummyaanon'
+        const repo = 'learning-Go'
+        
+        let totalCommits = 0
+        let page = 1
+        const perPage = 100
+        let hasMore = true
 
-  // 🎯 UPDATE HERE: Set the date when you started learning (format: YYYY-MM-DD)
-  const learningStartDate = new Date()
-  learningStartDate.setDate(learningStartDate.getDate() - 1) // Started yesterday
+        // Fetch all commits by paginating through pages
+        while (hasMore) {
+          const response = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/commits?per_page=${perPage}&page=${page}`,
+            {
+              headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'portfolio-app',
+              },
+            }
+          )
 
-  // Calculate learning progress based on start date (30-day learning period)
-  const now = new Date()
-  const daysSinceStart = Math.floor((now.getTime() - learningStartDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 // +1 to include start day
-  const learningPeriodDays = 30 // 30-day learning period
-  const monthlyProgress = Math.min((daysSinceStart / learningPeriodDays) * 100, 100) // Cap at 100%
-  const progressPercentage = Math.round(monthlyProgress)
+          if (!response.ok) {
+            if (response.status === 404) {
+              console.warn('Repository not found')
+              break
+            }
+            if (response.status === 403) {
+              console.warn('Rate limited or access denied')
+              break
+            }
+            throw new Error(`GitHub API error: ${response.status}`)
+          }
+
+          const commits = await response.json()
+          const pageCommitCount = Array.isArray(commits) ? commits.length : 0
+          totalCommits += pageCommitCount
+
+          // Check if there are more pages using Link header
+          const linkHeader = response.headers.get('link')
+          if (linkHeader && linkHeader.includes('rel="next"')) {
+            page++
+          } else {
+            hasMore = false
+          }
+
+          // Safety limit: stop after 10 pages (1000 commits) to avoid infinite loops
+          if (page > 10) {
+            hasMore = false
+          }
+        }
+
+        setCommitCount(totalCommits)
+      } catch (error) {
+        console.error('Error fetching commit count:', error)
+        // Set to 0 on error so progress shows 0%
+        setCommitCount(0)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCommitCount()
+  }, [])
+
+  // Calculate learning progress based on commits (2% per commit, max 100%)
+  // Each commit = 2% progress, so 50 commits = 100%
+  const progressPercentage = commitCount !== null 
+    ? Math.min(commitCount * 2, 100) 
+    : 0
+  const progressValue = progressPercentage
   
   // Use resolvedTheme to avoid hydration mismatch
   const isDark = mounted && resolvedTheme === 'dark'
@@ -44,45 +108,56 @@ export default function Hero() {
             </p>
 
             {/* Learning Indicator */}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground/80 mt-3">
-              {/* Monthly Progress Loader */}
+            <a
+              href="https://github.com/soummyaanon/learning-Go"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-muted-foreground/80 mt-3 hover:text-foreground transition-colors cursor-pointer group"
+            >
+              {/* Progress Circle Loader */}
               <div className="relative w-4 h-4">
-                <svg className="w-4 h-4 transform -rotate-90" viewBox="0 0 36 36">
-                  {/* Background circle */}
-                  <path
-                    d="M18 2.0845
-                      a 15.9155 15.9155 0 0 1 0 31.831
-                      a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeOpacity="0.2"
-                    className="text-green-500"
-                  />
-                  {/* Progress circle */}
-                  <path
-                    d="M18 2.0845
-                      a 15.9155 15.9155 0 0 1 0 31.831
-                      a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeDasharray={`${monthlyProgress}, 100`}
-                    className="text-green-500 transition-all duration-1000 ease-out"
-                  />
-                </svg>
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-green-500/20 border-t-green-500 rounded-full animate-spin" />
+                ) : (
+                  <svg className="w-4 h-4 transform -rotate-90" viewBox="0 0 36 36">
+                    {/* Background circle */}
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeOpacity="0.2"
+                      className="text-green-500"
+                    />
+                    {/* Progress circle */}
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeDasharray={`${progressValue}, 100`}
+                      className="text-green-500 transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                )}
               </div>
-              <span className="text-xs font-medium text-green-500">{progressPercentage}%</span>
+              <span className="text-xs font-medium text-green-500">
+                {loading ? '...' : `${Math.round(progressPercentage)}%`}
+              </span>
               <span>Currently learning:</span>
               {!mounted ? (
-                <GolangDark className="w-6 h-6" />
+                <GolangDark className="w-6 h-6 group-hover:scale-110 transition-transform" />
               ) : isDark ? (
-                <Golang className="w-6 h-6" />
+                <Golang className="w-6 h-6 group-hover:scale-110 transition-transform" />
               ) : (
-                <GolangDark className="w-6 h-6" />
+                <GolangDark className="w-6 h-6 group-hover:scale-110 transition-transform" />
               )}
-            </div>
+            </a>
           </div>
           <div className="flex-shrink-0">
             <Image
