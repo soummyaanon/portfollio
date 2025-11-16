@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { HyperText } from '@/components/ui/hyper-text'
 import { GolangDark } from '@/components/ui/svgs/golangDark'
 import { Golang } from '@/components/ui/svgs/golang'
+import { ShineBorder } from '@/components/ui/shine-border'
 import { useTheme } from 'next-themes'
 
 export default function Hero() {
@@ -159,14 +160,20 @@ export default function Hero() {
               )}
             </a>
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 relative overflow-hidden rounded-full">
             <Image
               src={`https://github.com/soummyaanon.png?v=${new Date().toISOString().split('T')[0]}`}
               alt="Soumyaranjan Panda"
-              width={80}
-              height={80}
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full shadow-lg ring-2 ring-primary"
+              width={96}
+              height={96}
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full shadow-lg"
               priority
+            />
+            <ShineBorder
+              borderWidth={3}
+              duration={3}
+              shineColor={["#64748b", "#475569", "#334155"]}
+              className="rounded-full"
             />
           </div>
         </div>
