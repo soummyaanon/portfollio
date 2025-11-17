@@ -15,6 +15,7 @@ interface GitHubContributionDay {
 
 export default function GitHubContributions({ year = new Date().getFullYear(), className = '' }: GitHubContributionsProps) {
   const [contributionData, setContributionData] = useState<ContributionData[]>([])
+  const [totalContributions, setTotalContributions] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -77,11 +78,14 @@ export default function GitHubContributions({ year = new Date().getFullYear(), c
 
         // Transform the data to match ContributionGraph format
         const transformedData: ContributionData[] = []
+        let totalCount = 0
         const weeks = data.data.user.contributionsCollection.contributionCalendar.weeks
 
         weeks.forEach((week: { contributionDays: GitHubContributionDay[] }) => {
           week.contributionDays.forEach((day: GitHubContributionDay) => {
             const count = day.contributionCount
+            totalCount += count
+
             // Calculate level based on contribution count (GitHub style)
             let level = 0
             if (count > 0) {
@@ -100,6 +104,7 @@ export default function GitHubContributions({ year = new Date().getFullYear(), c
         })
 
         setContributionData(transformedData)
+        setTotalContributions(totalCount)
       } catch (err) {
         console.error('Error fetching GitHub contributions:', err)
         setError(err instanceof Error ? err.message : 'Failed to load contributions')
@@ -171,6 +176,10 @@ export default function GitHubContributions({ year = new Date().getFullYear(), c
             showTooltips={true}
             className="w-full"
           />
+
+          <div className="text-center mt-3 text-sm text-muted-foreground">
+            {totalContributions.toLocaleString()} contributions in {year}
+          </div>
         </div>
 
         <div className="text-center mt-4">

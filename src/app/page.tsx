@@ -1,6 +1,7 @@
 'use client'
 
 import { ComponentType } from 'react'
+import { JSX } from 'react'
 import { motion } from 'framer-motion'
 import Hero from './components/Hero'
 import About from './components/About'
@@ -10,7 +11,7 @@ import GitHubContributions from './components/GitHubContributions'
 
 type SectionConfig = {
   key: string
-  Component: ComponentType
+  Component: ComponentType | (() => JSX.Element)
   delay: number
 }
 
@@ -18,7 +19,7 @@ const sections: SectionConfig[] = [
   { key: 'hero', Component: Hero, delay: 0.1 },
   { key: 'about', Component: About, delay: 0.3 },
   { key: 'experience', Component: Experience, delay: 0.5 },
-  { key: 'github-contributions', Component: GitHubContributions, delay: 0.7 },
+  { key: 'github-contributions', Component: () => <GitHubContributions year={2025} />, delay: 0.7 },
   { key: 'skills', Component: Skills, delay: 0.9 }
 ]
 
