@@ -468,7 +468,10 @@ const NavigationDock = () => {
   }
 
   const navigateToEmail = () => {
-    window.location.href = 'mailto:your.soumyaranjanpanda910@gmail.com'
+    const email = 'soumyaranjanpanda910@gmail.com'
+    const subject = encodeURIComponent('Project Inquiry')
+    const body = encodeURIComponent('Hi Soumya,\n\nI came across your portfolio and would like to discuss...')
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`, '_blank')
   }
 
   return (
