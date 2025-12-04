@@ -4,7 +4,20 @@ const nextConfig: NextConfig = {
   output: 'export',
   images: {
     unoptimized: true,
-    domains: ['images.unsplash.com', 'avatars.githubusercontent.com', 'github.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'github.com',
+      },
+    ],
     formats: ['image/webp', 'image/avif'],
   },
   experimental: {

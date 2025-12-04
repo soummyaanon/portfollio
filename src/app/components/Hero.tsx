@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { HyperText } from '@/components/ui/hyper-text'
 import { GolangDark } from '@/components/ui/svgs/golangDark'
@@ -8,176 +8,262 @@ import { Golang } from '@/components/ui/svgs/golang'
 import { ShineBorder } from '@/components/ui/shine-border'
 import { useTheme } from 'next-themes'
 
-export default function Hero() {
+// Constants
+const GITHUB_USERNAME = 'soummyaanon'
+const LEARNING_REPO = 'learning-Go'
+const GITHUB_API_BASE = 'https://api.github.com'
+const COMMITS_PER_PAGE = 100
+const MAX_PAGES = 10
+
+const PROFILE_IMAGE = {
+  width: 96,
+  height: 96,
+  alt: 'Soumyaranjan Panda',
+} as const
+
+const SHINE_BORDER_CONFIG = {
+  borderWidth: 3,
+  duration: 3,
+  shineColor: ['#64748b', '#475569', '#334155'] as [string, string, string],
+} as const
+
+// Progress calculation: 2% per commit, max 100%
+const PROGRESS_PER_COMMIT = 2
+const MAX_PROGRESS = 100
+
+// Types
+interface CommitFetchState {
+  readonly count: number | null
+  readonly loading: boolean
+  readonly error: boolean
+}
+
+/**
+ * Custom hook for fetching commit count from GitHub
+ */
+function useCommitCount(owner: string, repo: string) {
+  const [state, setState] = useState<CommitFetchState>({
+    count: null,
+    loading: true,
+    error: false,
+  })
+
+  const fetchCommitCount = useCallback(async () => {
+    try {
+      setState({ count: null, loading: true, error: false })
+      
+      let totalCommits = 0
+      let page = 1
+      let hasMore = true
+
+      while (hasMore) {
+        const response = await fetch(
+          `${GITHUB_API_BASE}/repos/${owner}/${repo}/commits?per_page=${COMMITS_PER_PAGE}&page=${page}`,
+          {
+            headers: {
+              Accept: 'application/vnd.github.v3+json',
+              'User-Agent': 'portfolio-app',
+            },
+          }
+        )
+
+        if (!response.ok) {
+          if (response.status === 404 || response.status === 403) {
+            console.warn(`Repository access issue: ${response.status}`)
+            break
+          }
+          throw new Error(`GitHub API error: ${response.status}`)
+        }
+
+        const commits = await response.json()
+        const pageCommitCount = Array.isArray(commits) ? commits.length : 0
+        totalCommits += pageCommitCount
+
+        const linkHeader = response.headers.get('link')
+        hasMore = Boolean(linkHeader?.includes('rel="next"')) && page < MAX_PAGES
+        page++
+      }
+
+      setState({ count: totalCommits, loading: false, error: false })
+    } catch (error) {
+      console.error('Error fetching commit count:', error)
+      setState({ count: 0, loading: false, error: true })
+    }
+  }, [owner, repo])
+
+  useEffect(() => {
+    fetchCommitCount()
+  }, [fetchCommitCount])
+
+  return state
+}
+
+/**
+ * Progress circle SVG component
+ */
+interface ProgressCircleProps {
+  readonly progress: number
+  readonly loading: boolean
+}
+
+const ProgressCircle = memo(function ProgressCircle({ progress, loading }: ProgressCircleProps) {
+  if (loading) {
+    return (
+      <div 
+        className="w-4 h-4 border-2 border-green-500/20 border-t-green-500 rounded-full animate-spin"
+        role="status"
+        aria-label="Loading progress"
+      />
+    )
+  }
+
+  return (
+    <svg 
+      className="w-4 h-4 transform -rotate-90" 
+      viewBox="0 0 36 36"
+      role="img"
+      aria-label={`${Math.round(progress)}% complete`}
+    >
+      {/* Background circle */}
+      <path
+        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeOpacity="0.2"
+        className="text-green-500"
+      />
+      {/* Progress circle */}
+      <path
+        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeDasharray={`${progress}, 100`}
+        className="text-green-500 transition-all duration-1000 ease-out"
+      />
+    </svg>
+  )
+})
+
+/**
+ * Learning indicator component
+ */
+interface LearningIndicatorProps {
+  readonly progress: number
+  readonly loading: boolean
+  readonly isDark: boolean
+  readonly mounted: boolean
+}
+
+const LearningIndicator = memo(function LearningIndicator({
+  progress,
+  loading,
+  isDark,
+  mounted,
+}: LearningIndicatorProps) {
+  const GolangIcon = !mounted || !isDark ? GolangDark : Golang
+
+  return (
+    <a
+      href={`https://github.com/${GITHUB_USERNAME}/${LEARNING_REPO}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 text-sm text-muted-foreground/80 mt-3 hover:text-foreground transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
+      aria-label={`Currently learning Go - ${Math.round(progress)}% progress (opens GitHub repository)`}
+    >
+      <div className="relative w-4 h-4">
+        <ProgressCircle progress={progress} loading={loading} />
+      </div>
+      <span className="text-xs font-medium text-green-500" aria-hidden="true">
+        {loading ? '...' : `${Math.round(progress)}%`}
+      </span>
+      <span>Currently learning:</span>
+      <GolangIcon 
+        className="w-6 h-6 group-hover:scale-110 transition-transform" 
+        aria-hidden="true"
+      />
+    </a>
+  )
+})
+
+/**
+ * Profile image with shine border effect
+ */
+const ProfileImage = memo(function ProfileImage() {
+  const imageUrl = `https://github.com/${GITHUB_USERNAME}.png?v=${new Date().toISOString().split('T')[0]}`
+
+  return (
+    <div className="flex-shrink-0 relative overflow-hidden rounded-full">
+      <Image
+        src={imageUrl}
+        alt={PROFILE_IMAGE.alt}
+        width={PROFILE_IMAGE.width}
+        height={PROFILE_IMAGE.height}
+        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full shadow-lg"
+        priority
+      />
+      <ShineBorder
+        borderWidth={SHINE_BORDER_CONFIG.borderWidth}
+        duration={SHINE_BORDER_CONFIG.duration}
+        shineColor={SHINE_BORDER_CONFIG.shineColor}
+        className="rounded-full"
+      />
+    </div>
+  )
+})
+
+/**
+ * Hero section component
+ */
+function Hero() {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const [commitCount, setCommitCount] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { count: commitCount, loading } = useCommitCount(GITHUB_USERNAME, LEARNING_REPO)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  useEffect(() => {
-    const fetchCommitCount = async () => {
-      try {
-        setLoading(true)
-        // Fetch directly from GitHub API since we're using static export
-        const owner = 'soummyaanon'
-        const repo = 'learning-Go'
-        
-        let totalCommits = 0
-        let page = 1
-        const perPage = 100
-        let hasMore = true
-
-        // Fetch all commits by paginating through pages
-        while (hasMore) {
-          const response = await fetch(
-            `https://api.github.com/repos/${owner}/${repo}/commits?per_page=${perPage}&page=${page}`,
-            {
-              headers: {
-                'Accept': 'application/vnd.github.v3+json',
-                'User-Agent': 'portfolio-app',
-              },
-            }
-          )
-
-          if (!response.ok) {
-            if (response.status === 404) {
-              console.warn('Repository not found')
-              break
-            }
-            if (response.status === 403) {
-              console.warn('Rate limited or access denied')
-              break
-            }
-            throw new Error(`GitHub API error: ${response.status}`)
-          }
-
-          const commits = await response.json()
-          const pageCommitCount = Array.isArray(commits) ? commits.length : 0
-          totalCommits += pageCommitCount
-
-          // Check if there are more pages using Link header
-          const linkHeader = response.headers.get('link')
-          if (linkHeader && linkHeader.includes('rel="next"')) {
-            page++
-          } else {
-            hasMore = false
-          }
-
-          // Safety limit: stop after 10 pages (1000 commits) to avoid infinite loops
-          if (page > 10) {
-            hasMore = false
-          }
-        }
-
-        setCommitCount(totalCommits)
-      } catch (error) {
-        console.error('Error fetching commit count:', error)
-        // Set to 0 on error so progress shows 0%
-        setCommitCount(0)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchCommitCount()
-  }, [])
-
-  // Calculate learning progress based on commits (2% per commit, max 100%)
-  // Each commit = 2% progress, so 50 commits = 100%
+  // Calculate learning progress
   const progressPercentage = commitCount !== null 
-    ? Math.min(commitCount * 2, 100) 
+    ? Math.min(commitCount * PROGRESS_PER_COMMIT, MAX_PROGRESS) 
     : 0
-  const progressValue = progressPercentage
   
-  // Use resolvedTheme to avoid hydration mismatch
   const isDark = mounted && resolvedTheme === 'dark'
 
   return (
-    <section className="py-6 sm:py-12">
+    <section 
+      className="py-6 sm:py-12"
+      aria-labelledby="hero-heading"
+    >
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex flex-row items-center justify-center sm:justify-between gap-4 sm:gap-6">
           <div className="flex-1 text-left">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3">
-              Hi, I&apos;m <HyperText className="text-primary">Soumyaranjan</HyperText>
+            <h1 
+              id="hero-heading"
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3"
+            >
+              Hi, I&apos;m{' '}
+              <HyperText className="text-primary">Soumyaranjan</HyperText>
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground mb-2">
               A Software Engineer.
             </p>
 
-            {/* Learning Indicator */}
-            <a
-              href="https://github.com/soummyaanon/learning-Go"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-muted-foreground/80 mt-3 hover:text-foreground transition-colors cursor-pointer group"
-            >
-              {/* Progress Circle Loader */}
-              <div className="relative w-4 h-4">
-                {loading ? (
-                  <div className="w-4 h-4 border-2 border-green-500/20 border-t-green-500 rounded-full animate-spin" />
-                ) : (
-                  <svg className="w-4 h-4 transform -rotate-90" viewBox="0 0 36 36">
-                    {/* Background circle */}
-                    <path
-                      d="M18 2.0845
-                        a 15.9155 15.9155 0 0 1 0 31.831
-                        a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeOpacity="0.2"
-                      className="text-green-500"
-                    />
-                    {/* Progress circle */}
-                    <path
-                      d="M18 2.0845
-                        a 15.9155 15.9155 0 0 1 0 31.831
-                        a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeDasharray={`${progressValue}, 100`}
-                      className="text-green-500 transition-all duration-1000 ease-out"
-                    />
-                  </svg>
-                )}
-              </div>
-              <span className="text-xs font-medium text-green-500">
-                {loading ? '...' : `${Math.round(progressPercentage)}%`}
-              </span>
-              <span>Currently learning:</span>
-              {!mounted ? (
-                <GolangDark className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              ) : isDark ? (
-                <Golang className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              ) : (
-                <GolangDark className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              )}
-            </a>
-          </div>
-          <div className="flex-shrink-0 relative overflow-hidden rounded-full">
-            <Image
-              src={`https://github.com/soummyaanon.png?v=${new Date().toISOString().split('T')[0]}`}
-              alt="Soumyaranjan Panda"
-              width={96}
-              height={96}
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full shadow-lg"
-              priority
-            />
-            <ShineBorder
-              borderWidth={3}
-              duration={3}
-              shineColor={["#64748b", "#475569", "#334155"]}
-              className="rounded-full"
+            <LearningIndicator
+              progress={progressPercentage}
+              loading={loading}
+              isDark={isDark}
+              mounted={mounted}
             />
           </div>
+          <ProfileImage />
         </div>
       </div>
     </section>
   )
 }
+
+export default memo(Hero)

@@ -1,101 +1,140 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ChevronDown } from 'lucide-react'
 import experiencesData from '@/data/experiences.json'
 
+// Types
 interface Experience {
-  company: string
-  period: string
-  role: string
-  description: string
-  location?: string
-  skills?: string[]
+  readonly company: string
+  readonly period: string
+  readonly role: string
+  readonly description: string
+  readonly location?: string
+  readonly skills?: readonly string[]
 }
 
-const companyLogoMap: Record<string, string> = {
+// Constants
+const COMPANY_LOGO_MAP: Readonly<Record<string, string>> = {
   'Cardiovascular Institute of Orlando': 'cio.png',
   Wybit: 'cio.png',
   Cloudoplus: 'claudo plus.png',
   Chatsguru: 'chatguru.png',
-  'Visvesvaraya Technological University': 'visvesvaraya-technological-university.png'
-}
+  'Visvesvaraya Technological University': 'visvesvaraya-technological-university.png',
+} as const
 
 const LOADING_PLACEHOLDER_COUNT = 3
 const EDUCATION_KEY = 'education'
+const COMPANY_LOGOS_PATH = '/company-logos'
 
+// Utility functions
 function getCompanyLogo(company: string): string {
-  return companyLogoMap[company] || `${company.toLowerCase().replace(/\s+/g, '-')}.png`
+  return COMPANY_LOGO_MAP[company] ?? `${company.toLowerCase().replace(/\s+/g, '-')}.png`
 }
 
 function getCompanyInitials(company: string): string {
   return company
     .split(' ')
-    .map((word) => word[0] || '')
+    .map((word) => word[0] ?? '')
     .join('')
     .slice(0, 2)
     .toUpperCase()
 }
 
-export default function Experience() {
+function getCompanyLogoUrl(company: string): string {
+  return `${COMPANY_LOGOS_PATH}/${getCompanyLogo(company)}`
+}
+
+/**
+ * Custom hook for managing experiences data
+ */
+function useExperiences() {
   const [experiences, setExperiences] = useState<Experience[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [openItems, setOpenItems] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    // Load experiences data directly
+  const loadExperiences = useCallback(() => {
+    setIsLoading(true)
+    setError(null)
+    
     try {
-      setExperiences(experiencesData)
-      setIsLoading(false)
+      setExperiences(experiencesData as Experience[])
     } catch (err) {
       console.error('Error loading experiences:', err)
       setExperiences([])
       setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+    } finally {
       setIsLoading(false)
     }
   }, [])
 
-  const handleRetry = () => {
+  useEffect(() => {
+    loadExperiences()
+  }, [loadExperiences])
+
+  const retry = useCallback(() => {
+    loadExperiences()
+  }, [loadExperiences])
+
+  return { experiences, isLoading, error, retry }
+}
+
+/**
+ * Custom hook for managing accordion-style open items
+ */
+function useAccordion(initialOpen = new Set<string>()) {
+  const [openItems, setOpenItems] = useState<Set<string>>(initialOpen)
+
+  const handleToggle = useCallback(
+    (itemKey: string) => (open: boolean) => {
+      setOpenItems((previous) => {
+        const next = new Set<string>()
+        if (open) {
+          next.add(itemKey)
+        }
+        return next
+      })
+    },
+    []
+  )
+
+  const reset = useCallback(() => {
     setOpenItems(new Set())
-    setExperiences([])
-    setIsLoading(true)
-    setError(null)
+  }, [])
 
-    try {
-      setExperiences(experiencesData)
-      setIsLoading(false)
-    } catch (err) {
-      console.error('Error loading experiences:', err)
-      setExperiences([])
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
-      setIsLoading(false)
-    }
-  }
+  return { openItems, handleToggle, reset }
+}
 
-  const handleItemToggle = (itemKey: string) => (open: boolean) => {
-    setOpenItems((previous) => {
-      const next = new Set(previous)
-      if (open) {
-        // Close all other items and open only the current one
-        next.clear()
-        next.add(itemKey)
-      } else {
-        next.delete(itemKey)
-      }
-      return next
-    })
-  }
+/**
+ * Experience section main component
+ */
+function Experience() {
+  const { experiences, isLoading, error, retry } = useExperiences()
+  const { openItems, handleToggle, reset } = useAccordion()
+
+  const handleRetry = useCallback(() => {
+    reset()
+    retry()
+  }, [reset, retry])
 
   const hasExperiences = experiences.length > 0
 
   return (
-    <section id="experience" className="py-4 sm:py-8">
+    <section 
+      id="experience" 
+      className="py-4 sm:py-8"
+      aria-labelledby="experience-heading"
+    >
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6">Experience</h2>
+        <h2 
+          id="experience-heading"
+          className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6"
+        >
+          Experience
+        </h2>
 
         {isLoading && <ExperienceSkeletonList />}
 
@@ -106,11 +145,11 @@ export default function Experience() {
             <ExperienceList
               experiences={experiences}
               openItems={openItems}
-              onOpenChange={handleItemToggle}
+              onOpenChange={handleToggle}
             />
             <EducationSection
               isOpen={openItems.has(EDUCATION_KEY)}
-              onOpenChange={handleItemToggle(EDUCATION_KEY)}
+              onOpenChange={handleToggle(EDUCATION_KEY)}
             />
           </>
         )}
@@ -121,109 +160,184 @@ export default function Experience() {
   )
 }
 
-type ExperienceListProps = {
-  experiences: Experience[]
-  openItems: Set<string>
-  onOpenChange: (itemKey: string) => (open: boolean) => void
+// Sub-component prop types
+interface ExperienceListProps {
+  readonly experiences: readonly Experience[]
+  readonly openItems: ReadonlySet<string>
+  readonly onOpenChange: (itemKey: string) => (open: boolean) => void
 }
 
-function ExperienceList({ experiences, openItems, onOpenChange }: ExperienceListProps) {
-  return (
-    <div className="space-y-2 sm:space-y-4">
-      {experiences.map((experience) => {
-        const itemKey = experience.company
+interface ExperienceItemProps {
+  readonly experience: Experience
+  readonly isOpen: boolean
+  readonly onOpenChange: (open: boolean) => void
+}
 
-        return (
-          <Collapsible
-            key={itemKey}
-            open={openItems.has(itemKey)}
-            onOpenChange={onOpenChange(itemKey)}
-          >
-            <div>
-              <CollapsibleTrigger className="w-full text-left group">
-                <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200">
-                  <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 ring-2 ring-border bg-background">
-                    <AvatarImage
-                      src={`/company-logos/${getCompanyLogo(experience.company)}`}
-                      alt={experience.company}
-                      className="object-contain p-1"
-                    />
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
-                      {getCompanyInitials(experience.company)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm sm:text-base font-medium text-foreground">
-                        {experience.company}
-                      </h3>
-                      <ChevronDown
-                        className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ${
-                          openItems.has(itemKey) ? 'rotate-180 opacity-100' : ''
-                        }`}
-                        strokeWidth={2.5}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {experience.role} · {experience.period}
-                    </p>
-                    {experience.location && (
-                      <p className="text-xs text-muted-foreground">{experience.location}</p>
-                    )}
-                  </div>
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="overflow-hidden">
-                <div className="animate-in slide-in-from-top-2 fade-in duration-300 ease-in-out mt-3 sm:mt-4 space-y-2 sm:space-y-3 pl-11 sm:pl-14">
-                  {experience.description && (
-                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                      {experience.description}
-                    </p>
-                  )}
-                  {experience.skills && experience.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {experience.skills.map((skill, index) => (
-                        <Badge
-                          key={skill}
-                          variant="outline"
-                          className="text-xs animate-in slide-in-from-left-2 fade-in duration-300 ease-in-out"
-                          style={{ animationDelay: `${index * 50}ms` }}
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CollapsibleContent>
+interface SkillBadgeProps {
+  readonly skill: string
+  readonly index: number
+}
+
+/**
+ * Individual skill badge with staggered animation
+ */
+const SkillBadge = memo(function SkillBadge({ skill, index }: SkillBadgeProps) {
+  return (
+    <Badge
+      variant="outline"
+      className="text-xs animate-in slide-in-from-left-2 fade-in duration-300 ease-in-out"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      {skill}
+    </Badge>
+  )
+})
+
+/**
+ * Single experience item with collapsible details
+ */
+const ExperienceItem = memo(function ExperienceItem({ 
+  experience, 
+  isOpen, 
+  onOpenChange 
+}: ExperienceItemProps) {
+  const chevronClassName = useMemo(
+    () =>
+      `w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ${
+        isOpen ? 'rotate-180 opacity-100' : ''
+      }`,
+    [isOpen]
+  )
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={onOpenChange}>
+      <div>
+        <CollapsibleTrigger 
+          className="w-full text-left group"
+          aria-expanded={isOpen}
+        >
+          <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200">
+            <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 ring-2 ring-border bg-background">
+              <AvatarImage
+                src={getCompanyLogoUrl(experience.company)}
+                alt=""
+                className="object-contain p-1"
+              />
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
+                {getCompanyInitials(experience.company)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-medium text-foreground">
+                  {experience.company}
+                </h3>
+                <ChevronDown
+                  className={chevronClassName}
+                  strokeWidth={2.5}
+                  aria-hidden="true"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {experience.role} · {experience.period}
+              </p>
+              {experience.location && (
+                <p className="text-xs text-muted-foreground">{experience.location}</p>
+              )}
             </div>
-          </Collapsible>
-        )
-      })}
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="overflow-hidden">
+          <div className="animate-in slide-in-from-top-2 fade-in duration-300 ease-in-out mt-3 sm:mt-4 space-y-2 sm:space-y-3 pl-11 sm:pl-14">
+            {experience.description && (
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                {experience.description}
+              </p>
+            )}
+            {experience.skills && experience.skills.length > 0 && (
+              <div className="flex flex-wrap gap-2" role="list" aria-label="Skills">
+                {experience.skills.map((skill, index) => (
+                  <SkillBadge key={skill} skill={skill} index={index} />
+                ))}
+              </div>
+            )}
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  )
+})
+
+/**
+ * List of experience items
+ */
+const ExperienceList = memo(function ExperienceList({ 
+  experiences, 
+  openItems, 
+  onOpenChange 
+}: ExperienceListProps) {
+  return (
+    <div className="space-y-2 sm:space-y-4" role="list">
+      {experiences.map((experience) => (
+        <ExperienceItem
+          key={experience.company}
+          experience={experience}
+          isOpen={openItems.has(experience.company)}
+          onOpenChange={onOpenChange(experience.company)}
+        />
+      ))}
     </div>
   )
+})
+
+// Education constants
+const EDUCATION_DATA = {
+  university: 'Visvesvaraya Technological University',
+  degree: 'Master of Computer Applications - MCA, Computer Science',
+  period: 'Dec 2022 - Oct 2024',
+  description:
+    'Completed Master of Computer Applications with a focus on Computer Science, gaining comprehensive knowledge in software development, algorithms, data structures, and modern programming paradigms.',
+  skills: ['Computer Science', 'Software Development', 'Algorithms', 'Data Structures', 'Programming'],
+  linkedInUrl: 'https://www.linkedin.com/in/soumyapanda12/',
+} as const
+
+interface EducationSectionProps {
+  readonly isOpen: boolean
+  readonly onOpenChange: (open: boolean) => void
 }
 
-type EducationSectionProps = {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-}
+/**
+ * Education section with collapsible details
+ */
+const EducationSection = memo(function EducationSection({ isOpen, onOpenChange }: EducationSectionProps) {
+  const chevronClassName = useMemo(
+    () =>
+      `w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ${
+        isOpen ? 'rotate-180 opacity-100' : ''
+      }`,
+    [isOpen]
+  )
 
-function EducationSection({ isOpen, onOpenChange }: EducationSectionProps) {
   return (
     <>
-      <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4 sm:mb-6 mt-8 sm:mt-12">
+      <h3 
+        id="education-heading"
+        className="text-sm sm:text-base font-semibold text-foreground mb-4 sm:mb-6 mt-8 sm:mt-12"
+      >
         Education
       </h3>
-      <div className="space-y-2 sm:space-y-4">
+      <div className="space-y-2 sm:space-y-4" role="list" aria-labelledby="education-heading">
         <Collapsible open={isOpen} onOpenChange={onOpenChange}>
           <div>
-            <CollapsibleTrigger className="w-full text-left group">
+            <CollapsibleTrigger 
+              className="w-full text-left group"
+              aria-expanded={isOpen}
+            >
               <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200">
                 <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 ring-2 ring-border bg-background">
                   <AvatarImage
-                    src={`/company-logos/${getCompanyLogo('Visvesvaraya Technological University')}`}
-                    alt="Visvesvaraya Technological University"
+                    src={getCompanyLogoUrl(EDUCATION_DATA.university)}
+                    alt=""
                     className="object-contain p-1"
                   />
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
@@ -232,48 +346,38 @@ function EducationSection({ isOpen, onOpenChange }: EducationSectionProps) {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm sm:text-base font-medium text-foreground">
+                    <h4 className="text-sm sm:text-base font-medium text-foreground">
                       <a
-                        href="https://www.linkedin.com/in/soumyapanda12/"
+                        href={EDUCATION_DATA.linkedInUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-primary transition-colors duration-200"
+                        className="hover:text-primary transition-colors duration-200 focus:outline-none focus-visible:underline"
                       >
-                        Visvesvaraya Technological University
+                        {EDUCATION_DATA.university}
                       </a>
-                    </h3>
+                    </h4>
                     <ChevronDown
-                      className={`w-4 h-4 text-muted-foreground transition-all duration-200 ease-out opacity-0 group-hover:opacity-100 flex-shrink-0 transform ${
-                        isOpen ? 'rotate-180 opacity-100' : ''
-                      }`}
+                      className={chevronClassName}
                       strokeWidth={2.5}
+                      aria-hidden="true"
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Master of Computer Applications - MCA, Computer Science
+                    {EDUCATION_DATA.degree}
                   </p>
-                  <p className="text-xs text-muted-foreground">Dec 2022 - Oct 2024</p>
+                  <p className="text-xs text-muted-foreground">{EDUCATION_DATA.period}</p>
                 </div>
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="overflow-hidden">
               <div className="animate-in slide-in-from-top-2 fade-in duration-300 ease-in-out mt-3 sm:mt-4 space-y-2 sm:space-y-3 pl-11 sm:pl-14">
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Completed Master of Computer Applications with a focus on Computer Science, gaining comprehensive knowledge in software development, algorithms, data structures, and modern programming paradigms.
+                  {EDUCATION_DATA.description}
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {['Computer Science', 'Software Development', 'Algorithms', 'Data Structures', 'Programming'].map(
-                    (skill, index) => (
-                      <Badge
-                        key={skill}
-                        variant="outline"
-                        className="text-xs animate-in slide-in-from-left-2 fade-in duration-300 ease-in-out"
-                        style={{ animationDelay: `${index * 50}ms` }}
-                      >
-                        {skill}
-                      </Badge>
-                    )
-                  )}
+                <div className="flex flex-wrap gap-2" role="list" aria-label="Education skills">
+                  {EDUCATION_DATA.skills.map((skill, index) => (
+                    <SkillBadge key={skill} skill={skill} index={index} />
+                  ))}
                 </div>
               </div>
             </CollapsibleContent>
@@ -282,11 +386,18 @@ function EducationSection({ isOpen, onOpenChange }: EducationSectionProps) {
       </div>
     </>
   )
-}
+})
 
-function ExperienceSkeletonList() {
+/**
+ * Skeleton loading state for experiences
+ */
+const ExperienceSkeletonList = memo(function ExperienceSkeletonList() {
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div 
+      className="space-y-3 sm:space-y-4" 
+      role="status" 
+      aria-label="Loading experiences"
+    >
       {Array.from({ length: LOADING_PLACEHOLDER_COUNT }).map((_, index) => (
         <div key={index} className="animate-pulse space-y-2 p-2 rounded-lg">
           <div className="flex items-start gap-3 sm:gap-4">
@@ -301,33 +412,51 @@ function ExperienceSkeletonList() {
           </div>
         </div>
       ))}
+      <span className="sr-only">Loading experience data...</span>
     </div>
   )
+})
+
+interface ExperienceErrorStateProps {
+  readonly onRetry: () => void
 }
 
-type ExperienceErrorStateProps = {
-  onRetry: () => void
-}
-
-function ExperienceErrorState({ onRetry }: ExperienceErrorStateProps) {
+/**
+ * Error state component with retry functionality
+ */
+const ExperienceErrorState = memo(function ExperienceErrorState({ onRetry }: ExperienceErrorStateProps) {
   return (
-    <div className="text-center py-6 sm:py-8">
-      <p className="text-sm sm:text-base text-muted-foreground">Failed to load experience data</p>
+    <div 
+      className="text-center py-6 sm:py-8" 
+      role="alert"
+      aria-live="polite"
+    >
+      <p className="text-sm sm:text-base text-muted-foreground">
+        Failed to load experience data
+      </p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-3 sm:mt-4 px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 text-sm sm:text-base"
+        className="mt-3 sm:mt-4 px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 text-sm sm:text-base transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         Try Again
       </button>
     </div>
   )
-}
+})
 
-function ExperienceEmptyState() {
+/**
+ * Empty state when no experiences are available
+ */
+const ExperienceEmptyState = memo(function ExperienceEmptyState() {
   return (
-    <div className="border border-dashed border-muted rounded-lg px-4 py-6 text-center text-sm text-muted-foreground">
+    <div 
+      className="border border-dashed border-muted rounded-lg px-4 py-6 text-center text-sm text-muted-foreground"
+      role="status"
+    >
       No professional experience entries are available right now.
     </div>
   )
-}
+})
+
+export default memo(Experience)
