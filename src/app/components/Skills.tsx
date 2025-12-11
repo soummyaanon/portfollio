@@ -22,6 +22,57 @@ import { Marquee } from '@/components/ui/marquee'
 import { Separator } from '@/components/ui/separator'
 import { useTheme } from 'next-themes'
 
+// Constants
+const IST_TIME_ZONE = 'Asia/Kolkata'
+const IST_LOCALE = 'en-IN'
+
+/**
+ * Custom hook for IST clock
+ */
+function useIstClock() {
+  const [time, setTime] = useState<string>('')
+
+  useEffect(() => {
+    const formatter = new Intl.DateTimeFormat(IST_LOCALE, {
+      timeZone: IST_TIME_ZONE,
+      hour12: true,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+
+    const updateTime = () => setTime(formatter.format(new Date()))
+    updateTime()
+
+    const intervalId = window.setInterval(updateTime, 1000)
+    return () => window.clearInterval(intervalId)
+  }, [])
+
+  return time
+}
+
+/**
+ * Time badge component
+ */
+interface TimeBadgeProps {
+  readonly time: string
+}
+
+const TimeBadge = memo(function TimeBadge({ time }: TimeBadgeProps) {
+  return (
+    <div
+      className="inline-flex items-center gap-1 px-2 py-1.5 h-8 bg-muted/30 rounded-full text-xs text-muted-foreground border border-border/60 shadow-sm w-fit"
+      role="status"
+      aria-label={`Local time in Asia/Kolkata: ${time || 'loading'}`}
+    >
+      <span className="w-1.5 h-1.5 rounded-full bg-green-500/80 animate-pulse" aria-hidden="true" />
+      <span className="font-semibold text-foreground text-[11px] leading-none">IST</span>
+      <span className="text-[11px] text-muted-foreground leading-none">Asia/Kolkata</span>
+      <span className="font-mono text-[11px] text-foreground leading-none">{time || '--:--:--'}</span>
+    </div>
+  )
+})
+
 // Types
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>
 
@@ -95,20 +146,24 @@ const SkillBadge = memo(function SkillBadge({ skill, isDark, mounted }: SkillBad
 /**
  * Quote section component
  */
-const QuoteSection = memo(function QuoteSection() {
+interface QuoteSectionProps {
+  readonly time: string
+}
+
+const QuoteSection = memo(function QuoteSection({ time }: QuoteSectionProps) {
   return (
     <>
       <div className="flex justify-center mt-12 mb-4">
         <Separator className="w-32" />
       </div>
 
-      <blockquote 
-        className="text-center mt-6 sm:mt-8 mb-2"
+      <blockquote
+        className="text-center mt-6 sm:mt-8 mb-4"
         lang="sa"
         aria-label="Sanskrit verse from Bhagavad Gita"
       >
         {QUOTE_LINES.map((line, index) => (
-          <p 
+          <p
             key={index}
             className="text-xs text-muted-foreground font-medium"
           >
@@ -116,6 +171,10 @@ const QuoteSection = memo(function QuoteSection() {
           </p>
         ))}
       </blockquote>
+
+      <div className="flex justify-center mb-4">
+        <TimeBadge time={time} />
+      </div>
 
       <div className="flex justify-center my-4">
         <Separator className="w-32" />
@@ -158,6 +217,7 @@ function Skills() {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const { firstRow, secondRow } = useSkills()
+  const istTime = useIstClock()
 
   // Track mounting to prevent hydration mismatch
   useEffect(() => {
@@ -215,7 +275,7 @@ function Skills() {
           />
         </div>
 
-        <QuoteSection />
+        <QuoteSection time={istTime} />
       </div>
     </section>
   )

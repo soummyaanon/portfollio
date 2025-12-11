@@ -17,8 +17,8 @@ const IST_TIME_ZONE = 'Asia/Kolkata'
 const IST_LOCALE = 'en-IN'
 
 const PROFILE_IMAGE = {
-  width: 96,
-  height: 96,
+  width: 80,
+  height: 80,
   alt: 'Soumyaranjan Panda',
 } as const
 
@@ -34,10 +34,10 @@ const HYPER_TEXT_CONFIG = {
 } as const
 
 const HIGHLIGHT_WORDS = [
-  { text: 'AI', delay: 0 },
-  { text: 'deep space', delay: HYPER_TEXT_CONFIG.baseDelay },
-  { text: 'spirituality', delay: HYPER_TEXT_CONFIG.baseDelay * 2 },
-  { text: 'universe', delay: HYPER_TEXT_CONFIG.baseDelay * 3 },
+  { text: 'AI-driven tools', delay: 0 },
+  { text: 'healthcare AI solutions', delay: HYPER_TEXT_CONFIG.baseDelay },
+  { text: 'deep-space science', delay: HYPER_TEXT_CONFIG.baseDelay * 2 },
+  { text: 'political developments', delay: HYPER_TEXT_CONFIG.baseDelay * 3 },
 ] as const
 
 // Types
@@ -201,7 +201,7 @@ const LearningIndicator = memo(function LearningIndicator({
       href={`https://github.com/${GITHUB_USERNAME}/${LEARNING_REPO}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/80 mt-2.5 px-2.5 py-1.5 rounded-full bg-white/40 dark:bg-slate-900/35 backdrop-blur-sm border border-white/40 dark:border-slate-800/60 shadow-sm hover:text-foreground transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 w-fit"
+      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/80 mt-2.5 px-2.5 py-1.5 h-8 rounded-full bg-white/40 dark:bg-slate-900/35 backdrop-blur-sm border border-white/40 dark:border-slate-800/60 shadow-sm hover:text-foreground transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 w-fit"
       aria-label={`Currently learning Go - ${Math.round(progress)}% progress (opens GitHub repository)`}
     >
       <div className="relative w-4 h-4">
@@ -219,24 +219,6 @@ const LearningIndicator = memo(function LearningIndicator({
   )
 })
 
-interface TimeBadgeProps {
-  readonly time: string
-}
-
-const TimeBadge = memo(function TimeBadge({ time }: TimeBadgeProps) {
-  return (
-    <div
-      className="inline-flex items-center gap-1 px-2 py-1.5 bg-muted/30 rounded-full text-xs text-muted-foreground border border-border/60 shadow-sm mt-2.5 w-fit"
-      role="status"
-      aria-label={`Local time in Asia/Kolkata: ${time || 'loading'}`}
-    >
-      <span className="w-1.5 h-1.5 rounded-full bg-green-500/80 animate-pulse" aria-hidden="true" />
-      <span className="font-semibold text-foreground text-[11px] leading-none">IST</span>
-      <span className="text-[11px] text-muted-foreground leading-none">Asia/Kolkata</span>
-      <span className="font-mono text-[11px] text-foreground leading-none">{time || '--:--:--'}</span>
-    </div>
-  )
-})
 
 interface HighlightedWordProps {
   readonly children: string
@@ -267,13 +249,13 @@ const ProfileImage = memo(function ProfileImage() {
 
   return (
     <div className="flex-shrink-0">
-      <div className="relative rounded-full p-[2px] bg-gradient-to-br from-gray-200 via-white to-gray-300 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 shadow-lg">
+      <div className="relative rounded-xl p-[2px] bg-gradient-to-br from-gray-200 via-white to-gray-300 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 shadow-lg">
         <Image
           src={imageUrl}
           alt={PROFILE_IMAGE.alt}
           width={PROFILE_IMAGE.width}
           height={PROFILE_IMAGE.height}
-          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-background"
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-background object-cover"
           priority
         />
       </div>
@@ -307,8 +289,9 @@ function Hero() {
       aria-labelledby="hero-heading"
     >
       <div className="max-w-4xl mx-auto px-4">
-        <div className="flex flex-row items-center justify-center sm:justify-between gap-4 sm:gap-6">
-          <div className="flex-1 text-left">
+        <div className="flex flex-col items-start gap-4 sm:gap-5 text-left">
+          <ProfileImage />
+          <div className="w-full">
             <h1 
               id="hero-heading"
               className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3"
@@ -316,40 +299,38 @@ function Hero() {
               Hi, I&apos;m{' '}
               <HyperText className="text-primary">Soumyaranjan</HyperText>
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground mb-2">
-              A Software Engineer.
+            <p className="text-base sm:text-lg text-muted-foreground mb-3">
+              A Full Stack web developer.
+            </p>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+              I build{' '}
+              <HighlightedWord delay={HIGHLIGHT_WORDS[0].delay}>
+                {HIGHLIGHT_WORDS[0].text}
+              </HighlightedWord>{' '}
+              that reduce human workload, currently focusing on{' '}
+              <HighlightedWord delay={HIGHLIGHT_WORDS[1].delay}>
+                {HIGHLIGHT_WORDS[1].text}
+              </HighlightedWord>{' '}
+              that streamline physicians&apos; workflows. I also enjoy{' '}
+              <HighlightedWord delay={HIGHLIGHT_WORDS[2].delay}>
+                {HIGHLIGHT_WORDS[2].text}
+              </HighlightedWord>{' '}
+              and following{' '}
+              <HighlightedWord delay={HIGHLIGHT_WORDS[3].delay}>
+                {HIGHLIGHT_WORDS[3].text}
+              </HighlightedWord>
+              .
             </p>
 
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-col items-center sm:items-start gap-2">
               <LearningIndicator
                 progress={progressPercentage}
                 loading={loading}
                 isDark={isDark}
                 mounted={mounted}
               />
-              <TimeBadge time={istTime} />
             </div>
-            <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
-              I create with{' '}
-              <HighlightedWord delay={HIGHLIGHT_WORDS[0].delay}>
-                {HIGHLIGHT_WORDS[0].text}
-              </HighlightedWord>{' '}
-              and love{' '}
-              <HighlightedWord delay={HIGHLIGHT_WORDS[1].delay}>
-                {HIGHLIGHT_WORDS[1].text}
-              </HighlightedWord>
-              . Also into{' '}
-              <HighlightedWord delay={HIGHLIGHT_WORDS[2].delay}>
-                {HIGHLIGHT_WORDS[2].text}
-              </HighlightedWord>{' '}
-              and exploring consciousness. Just trying to understand this wild{' '}
-              <HighlightedWord delay={HIGHLIGHT_WORDS[3].delay}>
-                {HIGHLIGHT_WORDS[3].text}
-              </HighlightedWord>
-              , inside and out.
-            </p>
           </div>
-          <ProfileImage />
         </div>
       </div>
     </section>

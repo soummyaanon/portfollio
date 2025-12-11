@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { useTheme } from 'next-themes'
 import { motion } from 'motion/react'
 
@@ -54,6 +54,11 @@ const GITHUB_CONTRIBUTION_COLORS_DARK = [
 
 const CONTRIBUTION_LEVELS = [0, 1, 2, 3, 4]
 
+// Responsive sizing to keep the grid inside its container without horizontal scroll
+const CELL_SIZE = 'clamp(0.25rem, 0.7vw, 0.55rem)'
+const CELL_GAP = 'clamp(0.08rem, 0.25vw, 0.25rem)'
+const DAY_LABEL_WIDTH = 'calc(var(--cell-size) * 1.8)'
+
 export function ContributionGraph({
   data = [],
   year = new Date().getFullYear(),
@@ -65,6 +70,21 @@ export function ContributionGraph({
   const [mounted, setMounted] = useState(false)
   const [hoveredDay, setHoveredDay] = useState<ContributionData | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
+  const graphStyle = useMemo(
+    () =>
+      ({
+        '--cell-size': CELL_SIZE,
+        '--cell-gap': CELL_GAP,
+      }) as CSSProperties,
+    [],
+  )
+  const tableStyle = useMemo(
+    () =>
+      ({
+        borderSpacing: 'var(--cell-gap)',
+      }) as CSSProperties,
+    [],
+  )
 
   useEffect(() => {
     setMounted(true)
@@ -226,15 +246,21 @@ export function ContributionGraph({
   }
 
   return (
-    <div className={`contribution-graph ${className}`}>
-      <div className="overflow-x-auto">
-        <table className="border-separate border-spacing-1 text-xs">
+    <div className={`contribution-graph ${className}`} style={graphStyle}>
+      <div className="overflow-hidden">
+        <table
+          className="w-full border-separate text-[10px] sm:text-xs"
+          style={tableStyle}
+        >
           <caption className="sr-only">Contribution Graph for {year}</caption>
 
           {/* Month Headers */}
           <thead>
             <tr className="h-3">
-              <td className="w-7 min-w-7"></td>
+              <td
+                className="w-7 min-w-7"
+                style={{ width: DAY_LABEL_WIDTH, minWidth: DAY_LABEL_WIDTH }}
+              ></td>
               {monthHeaders.map((header, index) => (
                 <td
                   key={index}
@@ -252,7 +278,10 @@ export function ContributionGraph({
             {Array.from({ length: 7 }, (_, dayIndex) => (
               <tr key={dayIndex} className="h-2.5">
                 {/* Day Labels */}
-                <td className="text-foreground relative w-7 min-w-7">
+                <td
+                  className="text-foreground relative"
+                  style={{ width: DAY_LABEL_WIDTH, minWidth: DAY_LABEL_WIDTH }}
+                >
                   {dayIndex % 2 === 0 && (
                     <span className="absolute -bottom-0.5 left-0 text-xs">
                       {DAYS[dayIndex]}
@@ -265,8 +294,14 @@ export function ContributionGraph({
                   const dayData = yearData[weekIndex * 7 + dayIndex]
                   if (!dayData || !dayData.date) {
                     return (
-                      <td key={weekIndex} className="h-2.5 w-2.5 p-0">
-                        <div className="h-2.5 w-2.5"></div>
+                      <td key={weekIndex} className="p-0">
+                        <div
+                          className="rounded-sm"
+                          style={{
+                            height: 'var(--cell-size)',
+                            width: 'var(--cell-size)',
+                          }}
+                        ></div>
                       </td>
                     )
                   }
@@ -274,7 +309,7 @@ export function ContributionGraph({
                   return (
                     <td
                       key={weekIndex}
-                      className="h-2.5 w-2.5 cursor-pointer p-0"
+                      className="cursor-pointer p-0"
                       onMouseEnter={(e) => handleDayHover(dayData, e)}
                       onMouseLeave={handleDayLeave}
                       title={
@@ -284,8 +319,12 @@ export function ContributionGraph({
                       }
                     >
                       <div
-                        className="h-2.5 w-2.5 rounded-sm transition-colors hover:ring-2 hover:ring-background"
-                style={{ backgroundColor: contributionColors[dayData.level] }}
+                        className="rounded-sm transition-colors hover:ring-2 hover:ring-background"
+                        style={{
+                          height: 'var(--cell-size)',
+                          width: 'var(--cell-size)',
+                          backgroundColor: contributionColors[dayData.level],
+                        }}
                       />
                     </td>
                   )
