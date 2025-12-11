@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   viewport: 'width=device-width, initial-scale=1',
   themeColor: '#000000',
+  icons: {
+    icon: '/favicon-2025.ico',
+    shortcut: '/favicon-2025.ico',
+  },
   keywords: [
     'AI Developer',
     'TypeScript Engineer',
