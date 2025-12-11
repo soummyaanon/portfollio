@@ -1,16 +1,21 @@
 import './globals.css'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { ThemeProvider } from './components/ThemeProvider'
 import { NavigationDock } from '@/components/ui/dock'
 import { PostHogProvider } from '../components/PostHogProvider'
 import Script from 'next/script'
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#000000',
+}
+
 export const metadata: Metadata = {
+  metadataBase: new URL('https://soumyapanda.me'),
   title: 'Soumya Panda - AI Developer & TypeScript Engineer | AI Product Development',
   description: 'Portfolio of Soumya Panda - AI Developer and TypeScript Engineer specializing in building AI-powered products with OpenAI, Anthropic, Vercel, Next.js, TypeScript, React, and Node.js',
   robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
-  viewport: 'width=device-width, initial-scale=1',
-  themeColor: '#000000',
   icons: {
     icon: '/favicon-2025.png?v=1',
     shortcut: '/favicon-2025.png?v=1',
@@ -271,6 +276,18 @@ export default function RootLayout({
           {children}
           <NavigationDock />
         </ThemeProvider>
+        <Script
+          id="companion-samurai"
+          src="https://cdn.jsdelivr.net/gh/Manas-Kenge/companion.js@main/companion.js"
+          strategy="afterInteractive"
+          data-variant="wanderer-magician"
+          data-height="80"
+          data-speed="9"
+          data-idle-distance="54"
+          data-death-interval="42"
+          data-death-duration="75"
+          data-persist-position="true"
+        />
       </body>
     </html>
   )
