@@ -13,6 +13,8 @@ const LEARNING_REPO = 'learning-Go'
 const GITHUB_API_BASE = 'https://api.github.com'
 const COMMITS_PER_PAGE = 100
 const MAX_PAGES = 10
+const IST_TIME_ZONE = 'Asia/Kolkata'
+const IST_LOCALE = 'en-IN'
 
 const PROFILE_IMAGE = {
   width: 96,
@@ -24,11 +26,47 @@ const PROFILE_IMAGE = {
 const PROGRESS_PER_COMMIT = 2
 const MAX_PROGRESS = 100
 
+// HyperText configuration for highlighted words
+const HYPER_TEXT_CONFIG = {
+  duration: 600,
+  baseDelay: 200,
+  className: 'inline text-xs sm:text-sm font-medium',
+} as const
+
+const HIGHLIGHT_WORDS = [
+  { text: 'AI', delay: 0 },
+  { text: 'deep space', delay: HYPER_TEXT_CONFIG.baseDelay },
+  { text: 'spirituality', delay: HYPER_TEXT_CONFIG.baseDelay * 2 },
+  { text: 'universe', delay: HYPER_TEXT_CONFIG.baseDelay * 3 },
+] as const
+
 // Types
 interface CommitFetchState {
   readonly count: number | null
   readonly loading: boolean
   readonly error: boolean
+}
+
+function useIstClock() {
+  const [time, setTime] = useState<string>('')
+
+  useEffect(() => {
+    const formatter = new Intl.DateTimeFormat(IST_LOCALE, {
+      timeZone: IST_TIME_ZONE,
+      hour12: true,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+
+    const updateTime = () => setTime(formatter.format(new Date()))
+    updateTime()
+
+    const intervalId = window.setInterval(updateTime, 1000)
+    return () => window.clearInterval(intervalId)
+  }, [])
+
+  return time
 }
 
 /**
@@ -103,7 +141,7 @@ const ProgressCircle = memo(function ProgressCircle({ progress, loading }: Progr
   if (loading) {
     return (
       <div 
-        className="w-4 h-4 border-2 border-green-500/20 border-t-green-500 rounded-full animate-spin"
+        className="w-3 h-3 border-[1.5px] border-green-500/15 border-t-green-500/70 rounded-full animate-spin"
         role="status"
         aria-label="Loading progress"
       />
@@ -112,7 +150,7 @@ const ProgressCircle = memo(function ProgressCircle({ progress, loading }: Progr
 
   return (
     <svg 
-      className="w-4 h-4 transform -rotate-90" 
+      className="w-3 h-3 transform -rotate-90" 
       viewBox="0 0 36 36"
       role="img"
       aria-label={`${Math.round(progress)}% complete`}
@@ -163,21 +201,61 @@ const LearningIndicator = memo(function LearningIndicator({
       href={`https://github.com/${GITHUB_USERNAME}/${LEARNING_REPO}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 text-sm text-muted-foreground/80 mt-3 hover:text-foreground transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
+      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/80 mt-2.5 px-2.5 py-1.5 rounded-full bg-white/40 dark:bg-slate-900/35 backdrop-blur-sm border border-white/40 dark:border-slate-800/60 shadow-sm hover:text-foreground transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 w-fit"
       aria-label={`Currently learning Go - ${Math.round(progress)}% progress (opens GitHub repository)`}
     >
       <div className="relative w-4 h-4">
         <ProgressCircle progress={progress} loading={loading} />
       </div>
-      <span className="text-xs font-medium text-green-500" aria-hidden="true">
+      <span className="text-[11px] font-semibold text-foreground" aria-hidden="true">
         {loading ? '...' : `${Math.round(progress)}%`}
       </span>
-      <span>Currently learning:</span>
+      <span className="text-[11px] text-foreground leading-none">Currently learning:</span>
       <GolangIcon 
-        className="w-6 h-6 group-hover:scale-110 transition-transform" 
+        className="w-4 h-4 text-muted-foreground group-hover:scale-105 transition-transform" 
         aria-hidden="true"
       />
     </a>
+  )
+})
+
+interface TimeBadgeProps {
+  readonly time: string
+}
+
+const TimeBadge = memo(function TimeBadge({ time }: TimeBadgeProps) {
+  return (
+    <div
+      className="inline-flex items-center gap-1 px-2 py-1.5 bg-muted/30 rounded-full text-xs text-muted-foreground border border-border/60 shadow-sm mt-2.5 w-fit"
+      role="status"
+      aria-label={`Local time in Asia/Kolkata: ${time || 'loading'}`}
+    >
+      <span className="w-1.5 h-1.5 rounded-full bg-green-500/80 animate-pulse" aria-hidden="true" />
+      <span className="font-semibold text-foreground text-[11px] leading-none">IST</span>
+      <span className="text-[11px] text-muted-foreground leading-none">Asia/Kolkata</span>
+      <span className="font-mono text-[11px] text-foreground leading-none">{time || '--:--:--'}</span>
+    </div>
+  )
+})
+
+interface HighlightedWordProps {
+  readonly children: string
+  readonly delay?: number
+}
+
+const HighlightedWord = memo(function HighlightedWord({
+  children,
+  delay = 0,
+}: HighlightedWordProps) {
+  return (
+    <HyperText
+      className={HYPER_TEXT_CONFIG.className}
+      duration={HYPER_TEXT_CONFIG.duration}
+      startOnView
+      delay={delay}
+    >
+      {children}
+    </HyperText>
   )
 })
 
@@ -210,6 +288,7 @@ function Hero() {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const { count: commitCount, loading } = useCommitCount(GITHUB_USERNAME, LEARNING_REPO)
+  const istTime = useIstClock()
 
   useEffect(() => {
     setMounted(true)
@@ -241,12 +320,34 @@ function Hero() {
               A Software Engineer.
             </p>
 
-            <LearningIndicator
-              progress={progressPercentage}
-              loading={loading}
-              isDark={isDark}
-              mounted={mounted}
-            />
+            <div className="flex flex-col items-start gap-2">
+              <LearningIndicator
+                progress={progressPercentage}
+                loading={loading}
+                isDark={isDark}
+                mounted={mounted}
+              />
+              <TimeBadge time={istTime} />
+            </div>
+            <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
+              I create with{' '}
+              <HighlightedWord delay={HIGHLIGHT_WORDS[0].delay}>
+                {HIGHLIGHT_WORDS[0].text}
+              </HighlightedWord>{' '}
+              and love{' '}
+              <HighlightedWord delay={HIGHLIGHT_WORDS[1].delay}>
+                {HIGHLIGHT_WORDS[1].text}
+              </HighlightedWord>
+              . Also into{' '}
+              <HighlightedWord delay={HIGHLIGHT_WORDS[2].delay}>
+                {HIGHLIGHT_WORDS[2].text}
+              </HighlightedWord>{' '}
+              and exploring consciousness. Just trying to understand this wild{' '}
+              <HighlightedWord delay={HIGHLIGHT_WORDS[3].delay}>
+                {HIGHLIGHT_WORDS[3].text}
+              </HighlightedWord>
+              , inside and out.
+            </p>
           </div>
           <ProfileImage />
         </div>

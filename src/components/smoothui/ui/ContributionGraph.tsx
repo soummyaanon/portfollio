@@ -1,7 +1,8 @@
-"use client"
+'use client'
 
-import React, { useMemo, useState } from "react"
-import { motion } from "motion/react"
+import React, { useEffect, useMemo, useState } from 'react'
+import { useTheme } from 'next-themes'
+import { motion } from 'motion/react'
 
 export interface ContributionData {
   date: string
@@ -18,29 +19,37 @@ export interface ContributionGraphProps {
 }
 
 const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ]
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-// Contribution level colors (GitHub-style) - using theme chart colors
-const CONTRIBUTION_COLORS = [
-  "bg-muted", // Level 0 - No contributions (light gray)
-  "bg-[var(--chart-1)]", // Level 1 - Chart color 1
-  "bg-[var(--chart-2)]", // Level 2 - Chart color 2
-  "bg-[var(--chart-3)]", // Level 3 - Chart color 3
-  "bg-[var(--chart-4)]", // Level 4 - Chart color 4, max intensity
+// GitHub contribution colors (official palettes)
+const GITHUB_CONTRIBUTION_COLORS_LIGHT = [
+  '#ebedf0', // Level 0 — no contributions
+  '#9be9a8', // Level 1
+  '#40c463', // Level 2
+  '#30a14e', // Level 3
+  '#216e39', // Level 4 — highest
+]
+
+const GITHUB_CONTRIBUTION_COLORS_DARK = [
+  '#161b22', // Level 0 — no contributions
+  '#0e4429', // Level 1
+  '#006d32', // Level 2
+  '#26a641', // Level 3
+  '#39d353', // Level 4 — highest
 ]
 
 const CONTRIBUTION_LEVELS = [0, 1, 2, 3, 4]
@@ -52,8 +61,24 @@ export function ContributionGraph({
   showLegend = true,
   showTooltips = true,
 }: ContributionGraphProps) {
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const [hoveredDay, setHoveredDay] = useState<ContributionData | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isDark = mounted && resolvedTheme === 'dark'
+
+  const contributionColors = useMemo(
+    () =>
+      isDark
+        ? GITHUB_CONTRIBUTION_COLORS_DARK
+        : GITHUB_CONTRIBUTION_COLORS_LIGHT,
+    [isDark],
+  )
 
   // Generate all days for the year
   const yearData = useMemo(() => {
@@ -259,9 +284,8 @@ export function ContributionGraph({
                       }
                     >
                       <div
-                        className={`h-2.5 w-2.5 rounded-sm ${
-                          CONTRIBUTION_COLORS[dayData.level]
-                        } hover:ring-background hover:ring-2`}
+                        className="h-2.5 w-2.5 rounded-sm transition-colors hover:ring-2 hover:ring-background"
+                style={{ backgroundColor: contributionColors[dayData.level] }}
                       />
                     </td>
                   )
@@ -278,7 +302,7 @@ export function ContributionGraph({
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
-          className="bg-primary text-foreground pointer-events-none fixed z-50 rounded-lg border px-3 py-2 text-sm shadow-lg"
+          className="pointer-events-none fixed z-50 rounded-lg border border-border bg-popover px-3 py-2 text-sm text-popover-foreground shadow-lg backdrop-blur-sm"
           style={{
             left: tooltipPosition.x + 10,
             top: tooltipPosition.y - 40,
@@ -287,7 +311,7 @@ export function ContributionGraph({
           <div className="font-semibold">
             {getContributionText(hoveredDay.count)}
           </div>
-          <div className="text-foreground/70">
+          <div className="text-muted-foreground">
             {formatDate(hoveredDay.date)}
           </div>
         </motion.div>
@@ -301,7 +325,8 @@ export function ContributionGraph({
             {CONTRIBUTION_LEVELS.map((level) => (
               <div
                 key={level}
-                className={`h-3 w-3 rounded-sm ${CONTRIBUTION_COLORS[level]}`}
+                className="h-3 w-3 rounded-sm border border-border"
+                style={{ backgroundColor: contributionColors[level] }}
               />
             ))}
           </div>

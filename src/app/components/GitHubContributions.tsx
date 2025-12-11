@@ -28,7 +28,6 @@ interface ContributionState {
 // Constants
 const GITHUB_USERNAME = 'soummyaanon'
 const GITHUB_API_URL = 'https://api.github.com/graphql'
-const CODETIME_BADGE_URL = 'https://shields.jannchie.com/endpoint?style=social&color=222&url=https%3A%2F%2Fapi.codetime.dev%2Fv3%2Fusers%2Fshield%3Fuid%3D30864'
 const SKELETON_ROWS = 7
 const SKELETON_COLS = 53
 
@@ -290,20 +289,6 @@ function GitHubContributions({
           </p>
         </div>
 
-        <div className="text-center mt-4">
-          <a
-            href="https://codetime.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View CodeTime statistics (opens in new tab)"
-          >
-            <img
-              alt="CodeTime Badge showing coding statistics"
-              src={CODETIME_BADGE_URL}
-              loading="lazy"
-            />
-          </a>
-        </div>
       </div>
     </section>
   )

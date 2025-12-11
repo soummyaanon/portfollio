@@ -4,7 +4,6 @@ import { ComponentType } from 'react'
 import { JSX } from 'react'
 import { motion } from 'framer-motion'
 import Hero from './components/Hero'
-import About from './components/About'
 import Experience from './components/Experience'
 import Skills from './components/Skills'
 import Projects from './components/Projects'
@@ -18,11 +17,10 @@ type SectionConfig = {
 
 const sections: SectionConfig[] = [
   { key: 'hero', Component: Hero, delay: 0.1 },
-  { key: 'about', Component: About, delay: 0.3 },
-  { key: 'experience', Component: Experience, delay: 0.5 },
-  { key: 'projects', Component: Projects, delay: 0.6 },
-  { key: 'github-contributions', Component: () => <GitHubContributions year={2025} />, delay: 0.7 },
-  { key: 'skills', Component: Skills, delay: 0.9 }
+  { key: 'experience', Component: Experience, delay: 0.3 },
+  { key: 'projects', Component: Projects, delay: 0.4 },
+  { key: 'github-contributions', Component: () => <GitHubContributions year={2025} />, delay: 0.5 },
+  { key: 'skills', Component: Skills, delay: 0.6 }
 ]
 
 export default function Home() {

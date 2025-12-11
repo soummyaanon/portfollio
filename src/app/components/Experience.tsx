@@ -48,6 +48,10 @@ function getCompanyLogoUrl(company: string): string {
   return `${COMPANY_LOGOS_PATH}/${getCompanyLogo(company)}`
 }
 
+function isCurrentRole(period: string): boolean {
+  return /present/i.test(period)
+}
+
 /**
  * Custom hook for managing experiences data
  */
@@ -171,6 +175,7 @@ interface ExperienceItemProps {
   readonly experience: Experience
   readonly isOpen: boolean
   readonly onOpenChange: (open: boolean) => void
+  readonly isLast: boolean
 }
 
 interface SkillBadgeProps {
@@ -199,7 +204,8 @@ const SkillBadge = memo(function SkillBadge({ skill, index }: SkillBadgeProps) {
 const ExperienceItem = memo(function ExperienceItem({ 
   experience, 
   isOpen, 
-  onOpenChange 
+  onOpenChange,
+  isLast
 }: ExperienceItemProps) {
   const chevronClassName = useMemo(
     () =>
@@ -210,25 +216,55 @@ const ExperienceItem = memo(function ExperienceItem({
   )
 
   return (
-    <Collapsible open={isOpen} onOpenChange={onOpenChange}>
+    <Collapsible open={isOpen} onOpenChange={onOpenChange} className="relative group/item">
+      {!isLast && (
+        <span
+          className="absolute left-6 top-7 -bottom-9 w-0.5 -translate-x-1/2 bg-zinc-200 shadow-[0_0_8px_rgba(16,185,129,0.2)] dark:bg-zinc-800 sm:left-7 sm:top-8 sm:-bottom-12"
+          aria-hidden="true"
+        />
+      )}
       <div>
         <CollapsibleTrigger 
           className="w-full text-left group"
           aria-expanded={isOpen}
         >
           <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200">
-            <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 ring-2 ring-border bg-background">
-              <AvatarImage
-                src={getCompanyLogoUrl(experience.company)}
-                alt=""
-                className="object-contain p-1"
-              />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
-                {getCompanyInitials(experience.company)}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative flex-shrink-0 pt-1 z-10">
+              {isCurrentRole(experience.period) && (
+                <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 flex h-1.5 w-1.5 z-20 pointer-events-none">
+                  <span
+                    className="absolute inline-flex h-full w-full animate-ping rounded-full"
+                    style={{
+                      background: 'rgba(57,255,20,0.95)', // a hint more opaque neon
+                      boxShadow: '0 0 8px 2px #39ff14, 0 0 14px 4px #39ff1477', // larger, stronger outer glow
+                      opacity: 0.92,
+                    }}
+                    aria-hidden="true"
+                  />
+                  <span
+                    className="relative inline-flex h-1.5 w-1.5 rounded-full"
+                    style={{
+                      background: '#39ff14',
+                      boxShadow: '0 0 5px 2px #39ff14, 0 0 10px 5px #39ff1499',
+                      border: '1.5px solid #191919', // a touch thicker, a bit darker
+                    }}
+                    aria-hidden="true"
+                  />
+                </span>
+              )}
+              <Avatar className="relative w-8 h-8 sm:w-10 sm:h-10 ring-2 ring-border bg-background z-10">
+                <AvatarImage
+                  src={getCompanyLogoUrl(experience.company)}
+                  alt=""
+                  className="object-cover h-full w-full"
+                />
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
+                  {getCompanyInitials(experience.company)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 flex-wrap">
                 <h3 className="text-sm sm:text-base font-medium text-foreground">
                   {experience.company}
                 </h3>
@@ -278,12 +314,13 @@ const ExperienceList = memo(function ExperienceList({
 }: ExperienceListProps) {
   return (
     <div className="space-y-2 sm:space-y-4" role="list">
-      {experiences.map((experience) => (
+      {experiences.map((experience, index) => (
         <ExperienceItem
           key={experience.company}
           experience={experience}
           isOpen={openItems.has(experience.company)}
           onOpenChange={onOpenChange(experience.company)}
+          isLast={index === experiences.length - 1}
         />
       ))}
     </div>
