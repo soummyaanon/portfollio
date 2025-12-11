@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { HyperText } from '@/components/ui/hyper-text'
 import { GolangDark } from '@/components/ui/svgs/golangDark'
 import { Golang } from '@/components/ui/svgs/golang'
-import { ShineBorder } from '@/components/ui/shine-border'
 import { useTheme } from 'next-themes'
 
 // Constants
@@ -19,12 +18,6 @@ const PROFILE_IMAGE = {
   width: 96,
   height: 96,
   alt: 'Soumyaranjan Panda',
-} as const
-
-const SHINE_BORDER_CONFIG = {
-  borderWidth: 3,
-  duration: 3,
-  shineColor: ['#64748b', '#475569', '#334155'] as [string, string, string],
 } as const
 
 // Progress calculation: 2% per commit, max 100%
@@ -189,27 +182,23 @@ const LearningIndicator = memo(function LearningIndicator({
 })
 
 /**
- * Profile image with shine border effect
+ * Profile image with gradient border
  */
 const ProfileImage = memo(function ProfileImage() {
   const imageUrl = `https://github.com/${GITHUB_USERNAME}.png?v=${new Date().toISOString().split('T')[0]}`
 
   return (
-    <div className="flex-shrink-0 relative overflow-hidden rounded-full">
-      <Image
-        src={imageUrl}
-        alt={PROFILE_IMAGE.alt}
-        width={PROFILE_IMAGE.width}
-        height={PROFILE_IMAGE.height}
-        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full shadow-lg"
-        priority
-      />
-      <ShineBorder
-        borderWidth={SHINE_BORDER_CONFIG.borderWidth}
-        duration={SHINE_BORDER_CONFIG.duration}
-        shineColor={SHINE_BORDER_CONFIG.shineColor}
-        className="rounded-full"
-      />
+    <div className="flex-shrink-0">
+      <div className="relative rounded-full p-[2px] bg-gradient-to-br from-gray-200 via-white to-gray-300 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 shadow-lg">
+        <Image
+          src={imageUrl}
+          alt={PROFILE_IMAGE.alt}
+          width={PROFILE_IMAGE.width}
+          height={PROFILE_IMAGE.height}
+          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-background"
+          priority
+        />
+      </div>
     </div>
   )
 })
