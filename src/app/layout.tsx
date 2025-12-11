@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   viewport: 'width=device-width, initial-scale=1',
   themeColor: '#000000',
   icons: {
-    icon: '/favicon-2025.ico',
-    shortcut: '/favicon-2025.ico',
+    icon: '/favicon-2025.png?v=1',
+    shortcut: '/favicon-2025.png?v=1',
   },
   keywords: [
     'AI Developer',
