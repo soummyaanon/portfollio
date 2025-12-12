@@ -300,7 +300,7 @@ function Hero() {
               <HyperText className="text-primary">Soumyaranjan</HyperText>
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground mb-3">
-              A Full Stack web developer.
+              A Software Engineer.
             </p>
             <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
               I build{' '}
