@@ -57,7 +57,8 @@ const CONTRIBUTION_LEVELS = [0, 1, 2, 3, 4]
 // Responsive sizing to keep the grid inside its container without horizontal scroll
 const CELL_SIZE = 'clamp(0.25rem, 0.7vw, 0.55rem)'
 const CELL_GAP = 'clamp(0.08rem, 0.25vw, 0.25rem)'
-const DAY_LABEL_WIDTH = 'calc(var(--cell-size) * 1.8)'
+// Ensure day labels never shrink too small (prevents overlap with the grid)
+const DAY_LABEL_WIDTH = 'clamp(1.4rem, calc(var(--cell-size) * 2.8), 2.25rem)'
 
 export function ContributionGraph({
   data = [],
@@ -247,7 +248,7 @@ export function ContributionGraph({
 
   return (
     <div className={`contribution-graph ${className}`} style={graphStyle}>
-      <div className="overflow-hidden">
+      <div className="no-scrollbar overflow-x-auto overflow-y-hidden">
         <table
           className="w-full border-separate text-[10px] sm:text-xs"
           style={tableStyle}
@@ -283,7 +284,7 @@ export function ContributionGraph({
                   style={{ width: DAY_LABEL_WIDTH, minWidth: DAY_LABEL_WIDTH }}
                 >
                   {dayIndex % 2 === 0 && (
-                    <span className="absolute -bottom-0.5 left-0 text-xs">
+                    <span className="absolute -bottom-0.5 right-1 text-xs">
                       {DAYS[dayIndex]}
                     </span>
                   )}
