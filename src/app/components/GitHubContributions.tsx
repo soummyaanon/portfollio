@@ -1,11 +1,15 @@
 'use client'
 
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { ContributionData, ContributionGraph } from '@/components/smoothui/ui/ContributionGraph'
+
+// Constants
+const CURRENT_YEAR = new Date().getFullYear()
+const YEARS_TO_SHOW = 3
 
 // Types
 interface GitHubContributionsProps {
-  readonly year?: number
+  readonly defaultYear?: number
   readonly className?: string
 }
 
@@ -216,11 +220,21 @@ const ContributionsError = memo(function ContributionsError({ error }: ErrorStat
 /**
  * GitHub Contributions component displaying contribution graph
  */
-function GitHubContributions({ 
-  year = new Date().getFullYear(), 
-  className = '' 
+function GitHubContributions({
+  defaultYear = CURRENT_YEAR,
+  className = ''
 }: GitHubContributionsProps) {
-  const { data, total, loading, error } = useGitHubContributions(year)
+  const [selectedYear, setSelectedYear] = useState(defaultYear)
+  const { data, total, loading, error } = useGitHubContributions(selectedYear)
+
+  const availableYears = useMemo(
+    () => Array.from({ length: YEARS_TO_SHOW }, (_, i) => CURRENT_YEAR - i),
+    []
+  )
+
+  const handleYearChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedYear(Number(e.target.value))
+  }, [])
 
   const sectionTitle = 'Work activity'
 
@@ -263,32 +277,45 @@ function GitHubContributions({
   }
 
   return (
-    <section 
+    <section
       className={`py-4 sm:py-8 ${className}`}
       aria-labelledby="contributions-heading"
     >
       <div className="max-w-4xl mx-auto">
-        <h2 
-          id="contributions-heading"
-          className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6"
-        >
-          {sectionTitle}
-        </h2>
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2
+            id="contributions-heading"
+            className="text-lg sm:text-xl font-bold text-foreground"
+          >
+            {sectionTitle}
+          </h2>
+          <select
+            value={selectedYear}
+            onChange={handleYearChange}
+            className="bg-background border border-border rounded-md px-3 py-1.5 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+            aria-label="Select year"
+          >
+            {availableYears.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="bg-background rounded-lg border p-4">
           <ContributionGraph
             data={data}
-            year={year}
+            year={selectedYear}
             showLegend
             showTooltips
             className="w-full"
           />
 
           <p className="text-center mt-3 text-sm text-muted-foreground">
-            {total.toLocaleString()} contributions in {year}
+            {total.toLocaleString()} contributions in {selectedYear}
           </p>
         </div>
-
       </div>
     </section>
   )
