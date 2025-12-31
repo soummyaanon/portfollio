@@ -329,6 +329,20 @@ function Hero() {
                 isDark={isDark}
                 mounted={mounted}
               />
+              <a
+                href="https://arthionai.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/80 px-2.5 py-1.5 h-8 rounded-full bg-white/40 dark:bg-slate-900/35 backdrop-blur-sm border border-white/40 dark:border-slate-800/60 shadow-sm hover:text-foreground transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 w-fit"
+                aria-label="Building Arthion AI - opens project website"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                </span>
+                <span className="text-[11px] text-foreground leading-none">Building:</span>
+                <span className="text-[11px] font-semibold text-foreground group-hover:underline">Arthion AI</span>
+              </a>
             </div>
           </div>
         </div>

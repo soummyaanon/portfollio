@@ -1,44 +1,81 @@
 'use client'
 
 import { memo } from 'react'
-import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import TimeLine_01, { TimeLine_01Entry } from '@/components/ui/release-time-line'
+
+const projectEntries: TimeLine_01Entry[] = [
+  {
+    logo: "/arthion-logo.ico",
+    title: "Arthion AI",
+    subtitle: "Financial Intelligence",
+    badge: "In Development",
+    description:
+      "AI-powered financial intelligence platform providing real-time stock analysis, technical indicators, market sentiment tracking, and actionable insights for smarter investment decisions.",
+    items: [
+      "Real-time stock charts with OHLC and line views",
+      "Technical indicators like RSI, MACD analysis",
+      "Top movers tracking (Gainers, Losers, Active)",
+      "News & sentiment analysis for market insights",
+      "AI-powered stock recommendations",
+    ],
+    media: "/arthion.png",
+    button: {
+      url: "https://arthionai.app/",
+      text: "View Project",
+    },
+  },
+  {
+    logo: "/aarekhit-logo.png",
+    title: "Aarekhit AI",
+    subtitle: "Data Visualization",
+    description:
+      "An intelligent graph visualization and analysis platform that transforms text and data into stunning interactive visualizations powered by AI analytics in seconds.",
+    items: [
+      "Interactive graph visualization",
+      "AI-powered data analysis",
+      "Real-time collaboration",
+      "Custom styling and theming",
+      "Data import/export capabilities",
+    ],
+    media: "/aarekhit.png",
+    button: {
+      url: "https://www.aarekhit.com/",
+      text: "View Project",
+    },
+  },
+  {
+    logo: "/notex1.png",
+    title: "Notex",
+    subtitle: "AI Note-Taking",
+    description:
+      "Experience the future of note-taking with AI-powered insights and the noteX Assistance Bot. Smart organization keeps your thoughts in order while maintaining security and privacy.",
+    items: [
+      "noteX Bot - AI assistance at your service",
+      "Smart organization for structured notes",
+      "Secure and private - your data, your control",
+      "AI-powered insights and suggestions",
+      "Cross-platform synchronization",
+    ],
+    media: "/notex.png",
+    button: {
+      url: "https://noteex.vercel.app/",
+      text: "View Project",
+    },
+  },
+]
 
 function Projects() {
   return (
-    <section 
-      id="projects" 
+    <section
+      id="projects"
       className="py-4 sm:py-8"
       aria-labelledby="projects-heading"
     >
-      <div className="max-w-4xl mx-auto">
-        <h2 
-          id="projects-heading"
-          className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6"
-        >
-          Projects
-        </h2>
-
-        <div className="flex w-full items-center justify-center py-12 sm:py-20 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="relative z-10"
-          >
-            <h3 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter">
-              <span className={cn(
-                "animate-pulse bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 bg-clip-text text-transparent",
-                "drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] dark:drop-shadow-[0_0_25px_rgba(255,255,255,0.3)]"
-              )}>
-                Coming Soon
-              </span>
-            </h3>
-            <p className="mt-4 text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
-              We are working on something amazing. Check back later to see our latest projects         </p>
-          </motion.div>
-        </div>
-      </div>
+      <TimeLine_01
+        title="Projects"
+        description="A collection of projects I've built, exploring different technologies and solving real-world problems."
+        entries={projectEntries}
+      />
     </section>
   )
 }
