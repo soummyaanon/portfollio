@@ -239,28 +239,129 @@ body {
 
 .prose {
   font-weight: 300;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
 }
 
-.prose h1,
-.prose h2,
-.prose h3,
+.prose p {
+  margin-bottom: 1.5em;
+}
+
+.prose h1 {
+  font-weight: 500;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+  margin-top: 2.5em;
+  margin-bottom: 1em;
+  line-height: 1.3;
+}
+
+.prose h2 {
+  font-weight: 500;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+  line-height: 1.4;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid var(--border);
+}
+
+.prose h3 {
+  font-weight: 500;
+  font-size: 1.25rem;
+  margin-top: 1.75em;
+  margin-bottom: 0.5em;
+  line-height: 1.5;
+}
+
 .prose h4 {
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 1.1rem;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
 }
 
 .prose a {
-  letter-spacing: 0.05em;
-  font-weight:400;
+  letter-spacing: 0.02em;
+  font-weight: 400;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
   color: #f19c0a;
   transition: all 0.2s ease;
 }
 
 .prose a:hover {
-  letter-spacing: 0.08em;
-  opacity: 0.8;
-  color: #2563eb;
+  text-decoration-thickness: 2px;
+  opacity: 0.85;
+}
+
+.prose strong {
+  font-weight: 500;
+}
+
+.prose ul,
+.prose ol {
+  margin-top: 1em;
+  margin-bottom: 1.5em;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin-bottom: 0.5em;
+  padding-left: 0.25em;
+}
+
+.prose li::marker {
+  color: var(--muted-foreground);
+}
+
+.prose blockquote {
+  border-left: 2px solid var(--border);
+  padding-left: 1.5em;
+  margin: 2em 0;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  background-color: var(--muted);
+}
+
+.prose pre {
+  margin: 2em 0;
+  padding: 1.25em 1.5em;
+  border-radius: 8px;
+  background-color: var(--muted);
+  overflow-x: auto;
+}
+
+.prose pre code {
+  padding: 0;
+  background-color: transparent;
+  font-size: 0.85em;
+  line-height: 1.7;
+}
+
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 3em 0;
+}
+
+.prose img {
+  border-radius: 8px;
+  margin: 2em auto;
+}
+
+/* Dark mode prose */
+.dark .prose {
+  color: rgba(229, 231, 235, 0.9);
 }
 
 .dark .prose a {
@@ -268,11 +369,7 @@ body {
 }
 
 .dark .prose a:hover {
-  color: #93c5fd;
-}
-
-.dark .prose {
-  color: rgb(209 213 219);
+  color: #fda366;
 }
 
 .dark .prose h1,
@@ -281,20 +378,21 @@ body {
 .dark .prose h4,
 .dark .prose h5,
 .dark .prose h6 {
-  color: rgb(243 244 246);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .dark .prose strong {
-  color: rgb(243 244 246);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .dark .prose code {
-  color: rgb(243 244 246);
-  background-color: rgb(31 41 55);
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .dark .prose pre {
-  background-color: rgb(31 41 55);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .dark .prose pre code {
@@ -302,8 +400,12 @@ body {
 }
 
 .dark .prose blockquote {
-  border-left-color: rgb(75 85 99);
-  color: rgb(156 163 175);
+  border-left-color: rgba(255, 255, 255, 0.2);
+  color: rgba(156, 163, 175, 0.9);
+}
+
+.dark .prose hr {
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 ::view-transition-old(root), ::view-transition-new(root) {

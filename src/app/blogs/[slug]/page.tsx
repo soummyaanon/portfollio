@@ -73,55 +73,37 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
 
     return (
       <main className="min-h-screen bg-background">
-        <div className="max-w-4xl mx-auto px-4 py-8 pb-16">
+        <div className="max-w-2xl mx-auto px-6 py-12 pb-20">
           {/* Back to blogs link */}
-          <div className="mb-8">
+          <div className="mb-12">
             <Link
               href="/blogs"
-              className="inline-flex items-center text-primary hover:text-primary/80 transition-colors font-medium"
+              className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors text-sm"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to all posts
+              <ArrowLeft className="w-3 h-3 mr-2" />
+              Back
             </Link>
           </div>
 
           {/* Article header */}
-          <header className="mb-10">
-            <h1 className="text-3xl font-bold text-foreground mb-6 leading-tight">
+          <header className="mb-12">
+            <time className="text-sm text-muted-foreground tracking-wide uppercase">
+              {formattedDate}
+            </time>
+            <h1 className="text-2xl sm:text-3xl font-medium text-foreground mt-3 mb-6 leading-snug tracking-tight">
               {post.title}
             </h1>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-2" />
-                {formattedDate}
-              </div>
-
-              {post.tags && post.tags.length > 0 && (
-                <div className="flex items-center flex-wrap gap-2">
-                  <Tag className="w-4 h-4 mr-1" />
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs font-medium"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed text-base">
               {post.excerpt}
             </p>
           </header>
 
+          <div className="w-full h-px bg-border mb-12" />
+
           {/* Article content */}
-          <article className="prose prose-base dark:prose-invert max-w-none mb-12">
+          <article className="prose prose-base dark:prose-invert max-w-none">
             <div
               dangerouslySetInnerHTML={{ __html: post.htmlContent }}
-              className="text-foreground leading-relaxed space-y-6"
             />
           </article>
 

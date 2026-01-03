@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Twitter, Linkedin, Link2, Check } from 'lucide-react'
+import { FaXTwitter, FaLinkedinIn } from 'react-icons/fa6'
+import { Link2, Check } from 'lucide-react'
 
 interface ShareButtonsProps {
   title: string
@@ -46,9 +47,9 @@ export function ShareButtons({ title, slug }: ShareButtonsProps) {
       <button
         onClick={shareOnTwitter}
         className="p-2 rounded-full bg-muted hover:bg-muted/80 text-foreground transition-all hover:scale-110"
-        aria-label="Share on Twitter"
+        aria-label="Share on X"
       >
-        <Twitter className="w-4 h-4" />
+        <FaXTwitter className="w-4 h-4" />
       </button>
       
       <button
@@ -56,7 +57,7 @@ export function ShareButtons({ title, slug }: ShareButtonsProps) {
         className="p-2 rounded-full bg-muted hover:bg-muted/80 text-foreground transition-all hover:scale-110"
         aria-label="Share on LinkedIn"
       >
-        <Linkedin className="w-4 h-4" />
+        <FaLinkedinIn className="w-4 h-4" />
       </button>
       
       <button
