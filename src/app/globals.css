@@ -237,11 +237,38 @@ body {
   font-feature-settings: 'rlig' 1, 'calt' 1;
 }
 
+.prose {
+  font-weight: 300;
+}
+
 .prose h1,
 .prose h2,
 .prose h3,
 .prose h4 {
   font-weight: 600;
+}
+
+.prose a {
+  letter-spacing: 0.05em;
+  font-weight:400;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: #f19c0a;
+  transition: all 0.2s ease;
+}
+
+.prose a:hover {
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+  color: #2563eb;
+}
+
+.dark .prose a {
+  color: #fc722c;
+}
+
+.dark .prose a:hover {
+  color: #93c5fd;
 }
 
 .dark .prose {

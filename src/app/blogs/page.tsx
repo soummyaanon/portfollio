@@ -28,41 +28,14 @@ export default async function Blogs() {
               })
 
               return (
-                <article key={post.slug} className="border-b border-border pb-8">
-                  <div className="mb-3">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {formattedDate}
-                    </div>
-                  </div>
-
-                  <Link href={`/blogs/${post.slug}`} className="group block">
-                    <h2 className="text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors leading-tight">
+                <article key={post.slug} className="group border-b border-border/50 py-6 last:border-0 transition-all hover:bg-muted/30 px-4 -mx-4 rounded-lg">
+                  <Link href={`/blogs/${post.slug}`} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <h2 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors leading-tight">
                       {post.title}
                     </h2>
-                  </Link>
-
-                  <p className="text-muted-foreground leading-relaxed mb-4 text-base">{post.excerpt}</p>
-
-                  {post.tags && post.tags.length > 0 && (
-                    <div className="flex items-center flex-wrap gap-2 mb-4">
-                      <Tag className="w-4 h-4 text-muted-foreground mr-1" />
-                      {post.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs font-medium"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <Link
-                    href={`/blogs/${post.slug}`}
-                    className="inline-flex items-center text-primary hover:text-primary/80 transition-colors font-medium text-sm"
-                  >
-                    Read more →
+                    <time className="text-sm text-muted-foreground whitespace-nowrap tabular-nums">
+                      {formattedDate}
+                    </time>
                   </Link>
                 </article>
               )

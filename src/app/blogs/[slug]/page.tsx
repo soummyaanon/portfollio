@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Calendar, Tag } from 'lucide-react'
 import { getBlogPostBySlug, getAllBlogSlugs } from '@/lib/blogs'
+import { ShareButtons } from '@/components/ShareButtons'
 import type { Metadata } from 'next'
 
 interface BlogPostPageProps {
@@ -126,19 +127,24 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
 
           {/* Article footer */}
           <footer className="mt-12 pt-8 pb-12 border-t border-border">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <p className="text-muted-foreground">
-                  Thanks for reading! If you enjoyed this post, consider sharing it with others.
+            <div className="flex flex-col gap-6">
+              {/* Share section */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <p className="text-muted-foreground text-sm">
+                  Enjoyed this post? Share it with others!
                 </p>
+                <ShareButtons title={post.title} slug={post.slug} />
               </div>
 
-              <Link
-                href="/blogs"
-                className="text-primary hover:text-primary/80 transition-colors font-medium"
-              >
-                ← Read more posts
-              </Link>
+              {/* Back link */}
+              <div className="pt-4 border-t border-border/50">
+                <Link
+                  href="/blogs"
+                  className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
+                >
+                  ← Read more posts
+                </Link>
+              </div>
             </div>
           </footer>
         </div>

@@ -18,8 +18,8 @@ type SectionConfig = {
 const sections: SectionConfig[] = [
   { key: 'hero', Component: Hero, delay: 0.1 },
   { key: 'experience', Component: Experience, delay: 0.3 },
-  { key: 'projects', Component: Projects, delay: 0.4 },
-  { key: 'github-contributions', Component: GitHubContributions, delay: 0.5 },
+  { key: 'github-contributions', Component: GitHubContributions, delay: 0.4 },
+  { key: 'projects', Component: Projects, delay: 0.5 },
   { key: 'skills', Component: Skills, delay: 0.6 }
 ]
 
