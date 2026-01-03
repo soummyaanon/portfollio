@@ -219,10 +219,10 @@ export default function TimeLine_01({
                 {/* Content column */}
                 <article
                   className={
-                    "flex flex-col rounded-2xl border p-3 transition-all duration-300 " +
+                    "flex flex-col rounded-2xl p-6 transition-all duration-500 ease-out " +
                     (isActive
-                      ? "border-gray-200 dark:border-gray-700 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-black shadow-lg"
-                      : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-black")
+                      ? "bg-white/40 dark:bg-zinc-900/40 backdrop-blur-xl shadow-2xl scale-100 opacity-100"
+                      : "bg-transparent scale-95 opacity-50 blur-[2px]")
                   }
                 >
                   {entry.media && (

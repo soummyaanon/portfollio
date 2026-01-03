@@ -1,7 +1,20 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { ThemeProvider } from './components/ThemeProvider'
+import { Chakra_Petch, IBM_Plex_Mono } from 'next/font/google'
 import { NavigationDock } from '@/components/ui/dock'
+
+const chakraPetch = Chakra_Petch({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-chakra-petch',
+})
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-ibm-plex-mono',
+})
 import { PostHogProvider } from '../components/PostHogProvider'
 import Script from 'next/script'
 
@@ -270,7 +283,7 @@ export default function RootLayout({
           />
         ))}
       </head>
-      <body>
+      <body className={`${chakraPetch.variable} ${ibmPlexMono.variable}`}>
         <PostHogProvider />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}

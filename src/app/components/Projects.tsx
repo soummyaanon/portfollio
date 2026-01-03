@@ -1,6 +1,7 @@
 'use client'
 
 import { memo } from 'react'
+import { BookOpen } from 'lucide-react'
 import TimeLine_01, { TimeLine_01Entry } from '@/components/ui/release-time-line'
 
 const projectEntries: TimeLine_01Entry[] = [
@@ -59,6 +60,27 @@ const projectEntries: TimeLine_01Entry[] = [
     media: "/notex.png",
     button: {
       url: "https://noteex.vercel.app/",
+      text: "View Project",
+    },
+  },
+  {
+    icon: BookOpen,
+    title: "Readany",
+    subtitle: "PDF Book Reader",
+    description:
+      "An immersive PDF book reader that transforms static documents into interactive reading experiences with realistic page flipping animations, extensive customization options, and a focus on readability.",
+    items: [
+      "Realistic page flipping animations with react-pageflip",
+      "PDF upload and rendering with react-pdf",
+      "Customizable reading themes and layouts",
+      "Responsive design for all devices",
+      "Bookmark and annotation features",
+      "Text-to-speech integration",
+      "Advanced zoom and navigation controls",
+    ],
+    media: "/readny.png",
+    button: {
+      url: "https://readany.vercel.app/",
       text: "View Project",
     },
   },
