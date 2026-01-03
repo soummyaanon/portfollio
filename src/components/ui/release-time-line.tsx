@@ -162,49 +162,49 @@ export default function TimeLine_01({
   }, []);
 
   return (
-    <section className="py-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+    <section className="py-4">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-base sm:text-lg font-bold text-foreground mb-1.5">
           {title}
         </h1>
-        <p className="text-sm text-muted-foreground mb-6">
+        <p className="text-xs text-muted-foreground mb-4">
           {description}
         </p>
 
-        <div className="space-y-10">
+        <div className="space-y-6">
           {entries.map((entry, index) => {
             const isActive = index === activeIndex;
 
             return (
               <div
                 key={index}
-                className="relative flex flex-col gap-4 md:flex-row md:gap-10"
+                className="relative flex flex-col gap-3 md:flex-row md:gap-6"
                 ref={(el) => setItemRef(el, index)}
                 aria-current={isActive ? "true" : "false"}
               >
                 {/* Sticky meta column */}
-                <div className="top-8 flex h-min w-48 shrink-0 items-center gap-4 md:sticky">
+                <div className="top-6 flex h-min w-40 shrink-0 items-center gap-3 md:sticky">
                   <div className="flex items-center gap-3">
                     {entry.logo ? (
-                      <div className={`p-1.5 rounded-lg transition-colors overflow-hidden ${
-                        isActive ? "bg-primary/10 ring-2 ring-primary/20" : "bg-muted"
+                      <div className={`p-1 rounded-md transition-colors overflow-hidden ${
+                        isActive ? "bg-primary/10 ring-1 ring-primary/20" : "bg-muted"
                       }`}>
                         <img
                           src={entry.logo}
                           alt={`${entry.title} logo`}
-                          className="h-5 w-5 object-contain"
+                          className="h-4 w-4 object-contain"
                         />
                       </div>
                     ) : entry.icon ? (
-                      <div className={`p-2 rounded-lg transition-colors ${
+                      <div className={`p-1.5 rounded-md transition-colors ${
                         isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                       }`}>
-                        <entry.icon className="h-4 w-4" />
+                        <entry.icon className="h-3 w-3" />
                       </div>
                     ) : null}
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium">{entry.title}</span>
-                      <span className="text-xs text-muted-foreground">{entry.subtitle}</span>
+                      <span className="text-xs font-medium">{entry.title}</span>
+                      <span className="text-[10px] text-muted-foreground">{entry.subtitle}</span>
                     </div>
                   </div>
                 </div>
@@ -219,17 +219,17 @@ export default function TimeLine_01({
                 {/* Content column */}
                 <article
                   className={
-                    "flex flex-col rounded-2xl p-6 transition-all duration-500 ease-out " +
+                    "flex flex-col rounded-xl p-4 transition-all duration-500 ease-out min-h-[280px] w-full " +
                     (isActive
-                      ? "bg-white/40 dark:bg-zinc-900/40 backdrop-blur-xl shadow-2xl scale-100 opacity-100"
-                      : "bg-transparent scale-95 opacity-50 blur-[2px]")
+                      ? "bg-white/30 dark:bg-zinc-900/30 backdrop-blur-lg shadow-lg scale-100 opacity-100"
+                      : "bg-transparent scale-[0.98] opacity-40 blur-[1px]")
                   }
                 >
                   {entry.media && (
                     isVideoFile(entry.media) || entry.mediaType === 'video' ? (
                       <video
                         src={entry.media}
-                        className="mb-4 w-full h-44 rounded-xl object-cover"
+                        className="mb-3 w-full h-32 rounded-lg object-cover"
                         autoPlay
                         loop
                         muted
@@ -239,33 +239,33 @@ export default function TimeLine_01({
                       <img
                         src={entry.media}
                         alt={`${entry.title} visual`}
-                        className="mb-4 w-full h-44 rounded-xl object-cover"
+                        className="mb-3 w-full h-32 rounded-lg object-cover"
                         loading="lazy"
                       />
                     )
                   )}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {/* Header */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1.5">
                         <h2 className={
-                          "text-base font-medium leading-tight tracking-tight transition-colors duration-200 " +
+                          "text-sm font-medium leading-tight tracking-tight transition-colors duration-200 " +
                           (isActive ? "text-foreground" : "text-foreground/70")
                         }>
                           {entry.title}
                         </h2>
                         {entry.badge && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                            <span className="relative flex h-1.5 w-1.5">
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-medium rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            <span className="relative flex h-1 w-1">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500" />
+                              <span className="relative inline-flex rounded-full h-1 w-1 bg-amber-500" />
                             </span>
                             {entry.badge}
                           </span>
                         )}
                       </div>
                       <p className={
-                        "text-sm leading-relaxed transition-all duration-300 " +
+                        "text-xs leading-relaxed transition-all duration-300 " +
                         (isActive ? "text-muted-foreground" : "text-muted-foreground/80 line-clamp-2")
                       }>
                         {entry.description}
@@ -281,13 +281,13 @@ export default function TimeLine_01({
                       }
                     >
                       <div className="overflow-hidden">
-                        <div className="space-y-4 pt-2">
+                        <div className="space-y-3 pt-1.5">
                           {entry.items && entry.items.length > 0 && (
-                            <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-900/50 p-3">
-                              <ul className="space-y-2">
+                            <div className="rounded-md border border-gray-200 dark:border-gray-800 bg-gray-100/40 dark:bg-gray-900/40 p-2">
+                              <ul className="space-y-1.5">
                                 {entry.items.map((item, itemIndex) => (
-                                  <li key={itemIndex} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary/60 flex-shrink-0" />
+                                  <li key={itemIndex} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                                    <div className="mt-1 h-1 w-1 rounded-full bg-primary/60 flex-shrink-0" />
                                     <span className="leading-relaxed">{item}</span>
                                   </li>
                                 ))}
