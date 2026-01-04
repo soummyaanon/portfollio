@@ -93,6 +93,11 @@ function Projects() {
       className="py-4 sm:py-8"
       aria-labelledby="projects-heading"
     >
+      <div className="max-w-4xl mx-auto mb-4 sm:mb-6 px-4">
+        <p className="text-xs sm:text-sm text-muted-foreground/75 leading-relaxed text-justify">
+          Most of my projects aren't shown here because they're currently used by clients and companies, and per their request, they remain private for now. The projects you see here include two from my learning period, and the current one I'm building is <span className="text-muted-foreground/90 font-medium">Arthion AI</span>, a finance agent. I'll document each of my works for sure!
+        </p>
+      </div>
       <TimeLine_01
         title="Projects"
         description="A collection of projects I've built, exploring different technologies and solving real-world problems."
