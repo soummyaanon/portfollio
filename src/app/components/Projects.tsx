@@ -95,7 +95,16 @@ function Projects() {
     >
       <div className="max-w-4xl mx-auto mb-4 sm:mb-6 px-4">
         <p className="text-xs sm:text-sm text-muted-foreground/75 leading-relaxed text-justify">
-          Most of my projects aren't shown here because they're currently used by clients and companies, and per their request, they remain private for now. The projects you see here include two from my learning period, and the current one I'm building is <span className="text-muted-foreground/90 font-medium">Arthion AI</span>, a finance agent. I'll document each of my works for sure!
+          <i>Most of my projects aren't shown here because they're currently used by clients and companies, and per their request, they remain private for now. The projects you see here include two from my learning period, and the current one I'm building is{' '}
+          <a 
+            href="https://arthionai.app/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary hover:text-primary/80 font-medium underline decoration-primary/50 hover:decoration-primary transition-colors duration-200"
+          >
+            Arthion AI
+          </a>
+          , a finance agent. I'll document each of my works for sure!</i>
         </p>
       </div>
       <TimeLine_01
