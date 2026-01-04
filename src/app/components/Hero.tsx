@@ -30,7 +30,7 @@ const MAX_PROGRESS = 100
 const HYPER_TEXT_CONFIG = {
   duration: 600,
   baseDelay: 200,
-  className: 'inline text-xs sm:text-sm font-medium',
+  className: 'inline text-xs sm:text-sm font-thin',
 } as const
 
 const HIGHLIGHT_WORDS = [
@@ -207,10 +207,10 @@ const LearningIndicator = memo(function LearningIndicator({
       <div className="relative w-4 h-4">
         <ProgressCircle progress={progress} loading={loading} />
       </div>
-      <span className="text-[11px] font-semibold text-foreground" aria-hidden="true">
+      <span className="text-[10px] font-semibold text-foreground" aria-hidden="true">
         {loading ? '...' : `${Math.round(progress)}%`}
       </span>
-      <span className="text-[11px] text-foreground leading-none">Currently learning:</span>
+      <span className="text-[10px] text-foreground leading-none">Currently learning:</span>
       <GolangIcon 
         className="w-4 h-4 text-muted-foreground group-hover:scale-105 transition-transform" 
         aria-hidden="true"
@@ -294,15 +294,15 @@ function Hero() {
           <div className="w-full">
             <h1 
               id="hero-heading"
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3"
+              className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground mb-2 sm:mb-3"
             >
               Hi, I&apos;m{' '}
-              <HyperText className="text-primary">Soumyaranjan</HyperText>
+              <HyperText className="text-primary font-semibold">Soumyaranjan</HyperText>
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground mb-3">
+            <p className="text-sm sm:text-base text-muted-foreground mb-3">
               A Software Engineer.
             </p>
-            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+            <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
               I build{' '}
               <HighlightedWord delay={HIGHLIGHT_WORDS[0].delay}>
                 {HIGHLIGHT_WORDS[0].text}
@@ -340,8 +340,8 @@ function Hero() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
                 </span>
-                <span className="text-[11px] text-foreground leading-none">Building:</span>
-                <span className="text-[11px] font-semibold text-foreground group-hover:underline">Arthion AI</span>
+                <span className="text-[10px] text-foreground leading-none">Building:</span>
+                <span className="text-[10px] font-semibold text-foreground group-hover:underline">Arthion AI</span>
               </a>
             </div>
           </div>

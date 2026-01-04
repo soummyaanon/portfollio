@@ -78,7 +78,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
           <div className="mb-12">
             <Link
               href="/blogs"
-              className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors text-sm"
+              className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors text-xs"
             >
               <ArrowLeft className="w-3 h-3 mr-2" />
               Back
@@ -87,13 +87,13 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
 
           {/* Article header */}
           <header className="mb-12">
-            <time className="text-sm text-muted-foreground tracking-wide uppercase">
+            <time className="text-xs text-muted-foreground tracking-wide uppercase">
               {formattedDate}
             </time>
-            <h1 className="text-2xl sm:text-3xl font-medium text-foreground mt-3 mb-6 leading-snug tracking-tight">
+            <h1 className="text-lg sm:text-xl font-semibold text-foreground mt-3 mb-6 leading-snug tracking-tight">
               {post.title}
             </h1>
-            <p className="text-muted-foreground leading-relaxed text-base">
+            <p className="text-muted-foreground leading-relaxed text-sm">
               {post.excerpt}
             </p>
           </header>
@@ -112,7 +112,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
             <div className="flex flex-col gap-6">
               {/* Share section */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-xs">
                   Enjoyed this post? Share it with others!
                 </p>
                 <ShareButtons title={post.title} slug={post.slug} />
@@ -122,7 +122,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
               <div className="pt-4 border-t border-border/50">
                 <Link
                   href="/blogs"
-                  className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
+                  className="text-primary hover:text-primary/80 transition-colors font-semibold text-xs"
                 >
                   ← Read more posts
                 </Link>

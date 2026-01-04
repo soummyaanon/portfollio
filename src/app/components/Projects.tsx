@@ -94,13 +94,13 @@ function Projects() {
       aria-labelledby="projects-heading"
     >
       <div className="max-w-4xl mx-auto mb-4 sm:mb-6 px-4">
-        <p className="text-xs sm:text-sm text-muted-foreground/75 leading-relaxed text-justify">
+        <p className="text-[11px] sm:text-xs text-muted-foreground/75 leading-relaxed text-justify">
           <i>Most of my projects aren't shown here because they're currently used by clients and companies, and per their request, they remain private for now. The projects you see here include two from my learning period, and the current one I'm building is{' '}
           <a 
             href="https://arthionai.app/" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-primary hover:text-primary/80 font-medium underline decoration-primary/50 hover:decoration-primary transition-colors duration-200"
+            className="text-primary hover:text-primary/80 font-thin underline decoration-primary/50 hover:decoration-primary transition-colors duration-200"
           >
             Arthion AI
           </a>

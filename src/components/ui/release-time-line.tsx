@@ -164,10 +164,10 @@ export default function TimeLine_01({
   return (
     <section className="py-4">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-base sm:text-lg font-bold text-foreground mb-1.5">
+        <h1 className="text-sm sm:text-base font-semibold text-foreground mb-1.5">
           {title}
         </h1>
-        <p className="text-xs text-muted-foreground mb-4">
+        <p className="text-[11px] text-muted-foreground mb-4">
           {description}
         </p>
 
@@ -203,8 +203,8 @@ export default function TimeLine_01({
                       </div>
                     ) : null}
                     <div className="flex flex-col">
-                      <span className="text-xs font-medium">{entry.title}</span>
-                      <span className="text-[10px] text-muted-foreground">{entry.subtitle}</span>
+                      <span className="text-[11px] font-semibold">{entry.title}</span>
+                      <span className="text-[9px] text-muted-foreground">{entry.subtitle}</span>
                     </div>
                   </div>
                 </div>
@@ -249,13 +249,13 @@ export default function TimeLine_01({
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-1.5">
                         <h2 className={
-                          "text-sm font-medium leading-tight tracking-tight transition-colors duration-200 " +
+                          "text-xs font-semibold leading-tight tracking-tight transition-colors duration-200 " +
                           (isActive ? "text-foreground" : "text-foreground/70")
                         }>
                           {entry.title}
                         </h2>
                         {entry.badge && (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-medium rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] font-semibold rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                             <span className="relative flex h-1 w-1">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                               <span className="relative inline-flex rounded-full h-1 w-1 bg-amber-500" />
@@ -265,7 +265,7 @@ export default function TimeLine_01({
                         )}
                       </div>
                       <p className={
-                        "text-xs leading-relaxed transition-all duration-300 " +
+                        "text-[11px] leading-relaxed transition-all duration-300 " +
                         (isActive ? "text-muted-foreground" : "text-muted-foreground/80 line-clamp-2")
                       }>
                         {entry.description}
@@ -286,7 +286,7 @@ export default function TimeLine_01({
                             <div className="rounded-md border border-gray-200 dark:border-gray-800 bg-gray-100/40 dark:bg-gray-900/40 p-2">
                               <ul className="space-y-1.5">
                                 {entry.items.map((item, itemIndex) => (
-                                  <li key={itemIndex} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                                  <li key={itemIndex} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
                                     <div className="mt-1 h-1 w-1 rounded-full bg-primary/60 flex-shrink-0" />
                                     <span className="leading-relaxed">{item}</span>
                                   </li>

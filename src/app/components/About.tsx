@@ -5,7 +5,7 @@ import { HyperText } from '@/components/ui/hyper-text'
 const HYPER_TEXT_CONFIG = {
   duration: 600,
   baseDelay: 200,
-  className: 'inline text-xs sm:text-sm font-medium',
+  className: 'inline text-xs sm:text-sm font-thin',
 } as const
 
 // Highlight words configuration for maintainability
@@ -54,12 +54,12 @@ function About() {
       <div className="max-w-4xl mx-auto">
         <h2 
           id="about-heading"
-          className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6"
+          className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6"
         >
           About
         </h2>
         <div className="prose max-w-none dark:prose-invert">
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
             I create with{' '}
             <HighlightedWord delay={HIGHLIGHT_WORDS[0].delay}>
               {HIGHLIGHT_WORDS[0].text}

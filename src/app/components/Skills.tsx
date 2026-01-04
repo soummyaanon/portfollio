@@ -61,14 +61,14 @@ interface TimeBadgeProps {
 const TimeBadge = memo(function TimeBadge({ time }: TimeBadgeProps) {
   return (
     <div
-      className="inline-flex items-center gap-1 px-2 py-1.5 h-8 bg-muted/30 rounded-full text-xs text-muted-foreground border border-border/60 shadow-sm w-fit"
+      className="inline-flex items-center gap-1 px-2 py-1.5 h-8 bg-muted/30 rounded-full text-[10px] text-muted-foreground border border-border/60 shadow-sm w-fit"
       role="status"
       aria-label={`Local time in Asia/Kolkata: ${time || 'loading'}`}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-green-500/80 animate-pulse" aria-hidden="true" />
-      <span className="font-semibold text-foreground text-[11px] leading-none">IST</span>
-      <span className="text-[11px] text-muted-foreground leading-none">Asia/Kolkata</span>
-      <span className="font-mono text-[11px] text-foreground leading-none">{time || '--:--:--'}</span>
+      <span className="font-semibold text-foreground text-[10px] leading-none">IST</span>
+      <span className="text-[10px] text-muted-foreground leading-none">Asia/Kolkata</span>
+      <span className="font-mono text-[10px] text-foreground leading-none">{time || '--:--:--'}</span>
     </div>
   )
 })
@@ -135,7 +135,7 @@ const SkillBadge = memo(function SkillBadge({ skill, isDark, mounted }: SkillBad
   return (
     <Badge
       variant="secondary"
-      className="text-xs px-2 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 mx-1"
+      className="text-[10px] px-2 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 mx-1"
     >
       {Icon && <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />}
       {skill.name}
@@ -165,7 +165,7 @@ const QuoteSection = memo(function QuoteSection({ time }: QuoteSectionProps) {
         {QUOTE_LINES.map((line, index) => (
           <p
             key={index}
-            className="text-xs text-muted-foreground font-medium"
+            className="text-[12px] sm:text-[16px] text-muted-foreground font-light"
           >
             {line}
           </p>
@@ -235,7 +235,7 @@ function Skills() {
       <div className="max-w-4xl mx-auto">
         <h2 
           id="skills-heading"
-          className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6"
+          className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6"
         >
           Skills
         </h2>

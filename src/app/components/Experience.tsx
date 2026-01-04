@@ -135,7 +135,7 @@ function Experience() {
       <div className="max-w-4xl mx-auto">
         <h2 
           id="experience-heading"
-          className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6"
+          className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6"
         >
           Experience
         </h2>
@@ -190,7 +190,7 @@ const SkillBadge = memo(function SkillBadge({ skill, index }: SkillBadgeProps) {
   return (
     <Badge
       variant="outline"
-      className="text-xs animate-in slide-in-from-left-2 fade-in duration-300 ease-in-out"
+      className="text-[10px] animate-in slide-in-from-left-2 fade-in duration-300 ease-in-out"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       {skill}
@@ -258,14 +258,14 @@ const ExperienceItem = memo(function ExperienceItem({
                   alt=""
                   className="object-cover h-full w-full"
                 />
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-[10px] sm:text-xs">
                   {getCompanyInitials(experience.company)}
                 </AvatarFallback>
               </Avatar>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
-                <h3 className="text-sm sm:text-base font-medium text-foreground">
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground">
                   {experience.company}
                 </h3>
                 <ChevronDown
@@ -274,11 +274,11 @@ const ExperienceItem = memo(function ExperienceItem({
                   aria-hidden="true"
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[11px] text-muted-foreground mt-1">
                 {experience.role} · {experience.period}
               </p>
               {experience.location && (
-                <p className="text-xs text-muted-foreground">{experience.location}</p>
+                <p className="text-[11px] text-muted-foreground">{experience.location}</p>
               )}
             </div>
           </div>
@@ -286,7 +286,7 @@ const ExperienceItem = memo(function ExperienceItem({
         <CollapsibleContent className="overflow-hidden">
           <div className="animate-in slide-in-from-top-2 fade-in duration-300 ease-in-out mt-3 sm:mt-4 space-y-2 sm:space-y-3 pl-11 sm:pl-14">
             {experience.description && (
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
                 {experience.description}
               </p>
             )}
@@ -359,7 +359,7 @@ const EducationSection = memo(function EducationSection({ isOpen, onOpenChange }
     <>
       <h3 
         id="education-heading"
-        className="text-sm sm:text-base font-semibold text-foreground mb-4 sm:mb-6 mt-8 sm:mt-12"
+        className="text-xs sm:text-sm font-semibold text-foreground mb-4 sm:mb-6 mt-8 sm:mt-12"
       >
         Education
       </h3>
@@ -377,13 +377,13 @@ const EducationSection = memo(function EducationSection({ isOpen, onOpenChange }
                     alt=""
                     className="object-contain p-1"
                   />
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold text-[10px] sm:text-xs">
                     VTU
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm sm:text-base font-medium text-foreground">
+                    <h4 className="text-xs sm:text-sm font-semibold text-foreground">
                       <a
                         href={EDUCATION_DATA.linkedInUrl}
                         target="_blank"
@@ -399,16 +399,16 @@ const EducationSection = memo(function EducationSection({ isOpen, onOpenChange }
                       aria-hidden="true"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-[11px] text-muted-foreground mt-1">
                     {EDUCATION_DATA.degree}
                   </p>
-                  <p className="text-xs text-muted-foreground">{EDUCATION_DATA.period}</p>
+                  <p className="text-[11px] text-muted-foreground">{EDUCATION_DATA.period}</p>
                 </div>
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="overflow-hidden">
               <div className="animate-in slide-in-from-top-2 fade-in duration-300 ease-in-out mt-3 sm:mt-4 space-y-2 sm:space-y-3 pl-11 sm:pl-14">
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
                   {EDUCATION_DATA.description}
                 </p>
                 <div className="flex flex-wrap gap-2" role="list" aria-label="Education skills">
@@ -468,13 +468,13 @@ const ExperienceErrorState = memo(function ExperienceErrorState({ onRetry }: Exp
       role="alert"
       aria-live="polite"
     >
-      <p className="text-sm sm:text-base text-muted-foreground">
+      <p className="text-xs sm:text-sm text-muted-foreground">
         Failed to load experience data
       </p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-3 sm:mt-4 px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 text-sm sm:text-base transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="mt-3 sm:mt-4 px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 text-xs sm:text-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         Try Again
       </button>
@@ -488,7 +488,7 @@ const ExperienceErrorState = memo(function ExperienceErrorState({ onRetry }: Exp
 const ExperienceEmptyState = memo(function ExperienceEmptyState() {
   return (
     <div 
-      className="border border-dashed border-muted rounded-lg px-4 py-6 text-center text-sm text-muted-foreground"
+      className="border border-dashed border-muted rounded-lg px-4 py-6 text-center text-xs text-muted-foreground"
       role="status"
     >
       No professional experience entries are available right now.

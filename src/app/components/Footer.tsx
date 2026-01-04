@@ -70,7 +70,7 @@ function Footer() {
     >
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-muted-foreground text-sm sm:text-base text-center sm:text-left">
+          <p className="text-muted-foreground text-xs sm:text-sm text-center sm:text-left">
             © {CURRENT_YEAR} {AUTHOR_NAME}. Building the future, one line of code at a time.
           </p>
           <nav aria-label="Social media links">

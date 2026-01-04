@@ -210,8 +210,8 @@ const ContributionsError = memo(function ContributionsError({ error }: ErrorStat
       aria-live="polite"
     >
       <div className="text-center text-muted-foreground">
-        <p>Unable to load GitHub contributions</p>
-        <p className="text-sm mt-1">{error}</p>
+        <p className="text-xs">Unable to load GitHub contributions</p>
+        <p className="text-[11px] mt-1">{error}</p>
       </div>
     </div>
   )
@@ -247,7 +247,7 @@ function GitHubContributions({
         <div className="max-w-4xl mx-auto px-4">
           <h2 
             id="contributions-heading-loading"
-            className="text-xl sm:text-2xl font-bold text-foreground mb-4 text-center"
+            className="text-base sm:text-lg font-semibold text-foreground mb-4 text-center"
           >
             {sectionTitle}
           </h2>
@@ -266,7 +266,7 @@ function GitHubContributions({
         <div className="max-w-4xl mx-auto px-4">
           <h2 
             id="contributions-heading-error"
-            className="text-xl sm:text-2xl font-bold text-foreground mb-4 text-center"
+            className="text-base sm:text-lg font-semibold text-foreground mb-4 text-center"
           >
             {sectionTitle}
           </h2>
@@ -285,14 +285,14 @@ function GitHubContributions({
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <h2
             id="contributions-heading"
-            className="text-lg sm:text-xl font-bold text-foreground"
+            className="text-base sm:text-lg font-semibold text-foreground"
           >
             {sectionTitle}
           </h2>
           <select
             value={selectedYear}
             onChange={handleYearChange}
-            className="bg-background border border-border rounded-md px-3 py-1.5 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+            className="bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
             aria-label="Select year"
           >
             {availableYears.map((year) => (
@@ -312,7 +312,7 @@ function GitHubContributions({
             className="w-full"
           />
 
-          <p className="text-center mt-3 text-sm text-muted-foreground">
+          <p className="text-center mt-3 text-xs text-muted-foreground">
             {total.toLocaleString()} contributions in {selectedYear}
           </p>
         </div>
