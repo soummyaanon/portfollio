@@ -96,8 +96,25 @@ A rich-text editor framework built with shadcn/ui:
 - Built-in components for common editing features
 - Great for content management systems
 
-### Tremor
-**Website**: [tremor.so](https://tremor.so)
+### Shadcn Studio
+**Website**: [shadcnstudio.com](https://shadcnstudio.com)
+
+A studio/tooling platform focused on shadcn components:
+- Comprehensive tooling around shadcn/ui
+- Enhanced development workflow
+- Component management and customization tools
+
+### Shadcnblocks
+**Website**: [shadcnblocks.com](https://shadcnblocks.com)
+
+Premium shadcn/ui blocks & templates with a free tier:
+- Premium blocks and templates for production use
+- Free set of marketing blocks available
+- Commercial product with separate license for paid content
+- Founded by Rob Austin (@ausrobdev)
+- **GitHub (free blocks)**: [github.com/shadcnblocks/shadcn-ui-blocks](https://github.com/shadcnblocks/shadcn-ui-blocks)
+- **Free blocks page**: [shadcnblocks.com/blocks/free](https://shadcnblocks.com/blocks/free)
+- **CLI docs**: [docs.shadcnblocks.com/blocks/shadcn-cli/](https://docs.shadcnblocks.com/blocks/shadcn-cli/)
 
 React components for building dashboards:
 - Chart and visualization components
@@ -124,26 +141,61 @@ A comprehensive collection of production-ready blocks and components:
 
 ## Specialized & Unique Kits
 
-### Cult UI
-**Website**: [cultui.com](https://cultui.com)
+### 8bitcn
+**Website**: [8bitcn.com](https://8bitcn.com)
 
-Focuses on unique, cult-like design patterns:
-- Unconventional but beautiful components
-- Strong brand identity in designs
-- Creative layouts and interactions
-- Great for brands wanting to stand out
+Unique 8-bit style themed UI blocks:
+- Retro gaming aesthetic components
+- Nostalgic design patterns
+- Perfect for creative and gaming projects
 
-### Indie UI
-**Website**: [indieui.com](https://indieui.com)
+### HextaUI
+**Website**: [hextaui.com](https://hextaui.com)
 
-Tailored for indie makers and small teams:
-- Simple, effective components
-- Focus on conversion and user experience
-- Affordable pricing
-- Great documentation
+Modern UI components and blocks collection:
+- Clean, contemporary designs
+- Extensive component library
+- Great for professional applications
 
-### Syntax UI
-**Website**: [syntaxui.com](https://syntaxui.com)
+### Tailark Pro
+**Website**: [pro.tailark.com](https://pro.tailark.com)
+
+Professional Tailwind/shadcn templates and blocks:
+- Commercial-grade components
+- Advanced templates for complex applications
+- Enterprise-ready solutions
+
+### SolaceUI
+**Website**: [solaceui.com](https://solaceui.com)
+
+Tailwind/shadcn-style UI kit:
+- Comprehensive component collection
+- Modern design language
+- Easy integration with existing projects
+
+### NexUI
+**Website**: [nexui.xyz](https://nexui.xyz)
+
+Curated components and blocks collection:
+- High-quality, production-ready components
+- Focus on developer experience
+- Regular updates and improvements
+
+### ui.kitze.io
+**Website**: [ui.kitze.io](https://ui.kitze.io)
+
+UI components and snippets by Kitze:
+- Developer-focused component library
+- Practical, real-world examples
+- Great for rapid prototyping
+
+### components.work
+**Website**: [components.work](https://components.work)
+
+Component marketplace and collection aggregator:
+- Centralized platform for UI components
+- Multiple collections in one place
+- Easy discovery and implementation
 
 Developer-focused UI components:
 - Code syntax highlighting components
