@@ -70,43 +70,50 @@ Here is a curated list of component libraries, blocks, and registries focused on
 - **GitHub**: [github.com/shadcnblocks/kibo](https://github.com/shadcnblocks/kibo)  
 
 ### 8. Origin UI (COSS)
-- **Sites**: [Origin React](https://coss.com/origin) | [Vue](https://www.originui-vue.com)  
-- **Type**: Tailwind component sets for marketing, app UIs, etc.  
-- **Open source**: Yes, described as free and open source.  
-- **Builder**: Created by designers/devs including @pacovitiello and @DavidePacilio.  
-- **GitHub**: Figma file is public; components available via COSS.  
+- **Sites**: [Origin React](https://coss.com/origin) | [Vue](https://www.originui-vue.com)
+- **Type**: Tailwind component sets for marketing, app UIs, etc.
+- **Open source**: Yes, described as free and open source.
+- **Builder**: Created by designers/devs including @pacovitiello and @DavidePacilio.
+- **GitHub**: Figma file is public; components available via COSS.
+
+### 9. 21st.dev
+- **Site**: [21st.dev](https://21st.dev)
+- **Type**: Largest marketplace of shadcn/ui-based React Tailwind components, blocks and hooks.
+- **Open source**: Yes, MIT licensed marketplace with community contributions.
+- **Builder**: [@serafimcloud](https://x.com/serafimcloud)
+- **GitHub**: [github.com/serafimcloud/21st](https://github.com/serafimcloud/21st)
 
 ---
 
 ## 📦 Blocks, Templates & Tooling
 
-### 9. Cult UI / Cult UI Pro
-- **Sites**: [Main](https://www.cult-ui.com) | [Pro Blocks](https://pro.cult-ui.com)  
-- **Type**: Shadcn components, blocks, and templates.  
-- **Open source**: Base library has free/OSS components; Pro is paid.  
-- **Builder**: Cult UI team.  
+### 10. Cult UI / Cult UI Pro
+- **Sites**: [Main](https://www.cult-ui.com) | [Pro Blocks](https://pro.cult-ui.com)
+- **Type**: Shadcn components, blocks, and templates.
+- **Open source**: Base library has free/OSS components; Pro is paid.
+- **Builder**: Cult UI team.
 
-### 10. Blocks.so
-- **Site**: [blocks.so](https://blocks.so)  
-- **Type**: Blocks/templates platform around modern UI (shadcn/Tailwind style).  
-- **Open source**: Appears commercial.  
+### 11. Blocks.so
+- **Site**: [blocks.so](https://blocks.so)
+- **Type**: Blocks/templates platform around modern UI (shadcn/Tailwind style).
+- **Open source**: Appears commercial.
 
-### 11. Shadcraft
-- **Site**: [shadcraft.com](https://shadcraft.com)  
-- **Type**: Shadcn components/blocks.  
-- **Open source**: Marketed as a product.  
+### 12. Shadcraft
+- **Site**: [shadcraft.com](https://shadcraft.com)
+- **Type**: Shadcn components/blocks.
+- **Open source**: Marketed as a product.
 
-### 12. shadcnui-blocks.com
-- **Site**: [shadcnui-blocks.com](https://shadcnui-blocks.com)  
-- **Type**: Blocks/templates for shadcn UI.  
-- **Open source**: Appears commercial.  
+### 13. shadcnui-blocks.com
+- **Site**: [shadcnui-blocks.com](https://shadcnui-blocks.com)
+- **Type**: Blocks/templates for shadcn UI.
+- **Open source**: Appears commercial.
 
-### 13. Shadcn Studio
+### 14. Shadcn Studio
 - **Site**: [shadcnstudio.com](https://shadcnstudio.com)
 - **Type**: Studio/tooling around shadcn components.
 - **Open source**: Tooling focused platform.
 
-### 14. Shadcnblocks
+### 15. Shadcnblocks
 - **Site**: [shadcnblocks.com](https://www.shadcnblocks.com/)
 - **Type**: Premium shadcn/ui blocks & templates; also provides a free set of marketing blocks.
 - **Open source**: This repo contains the **free** blocks code; Shadcnblocks as a whole is still a commercial product with a separate license agreement for paid content.
@@ -119,34 +126,34 @@ Here is a curated list of component libraries, blocks, and registries focused on
 
 ## 🧪 Specialized & Unique Kits
 
-### 15. 8bitcn
+### 16. 8bitcn
 - **Site**: [8bitcn.com](https://8bitcn.com)
 - **Type**: 8‑bit style / themed UI blocks. Very unique aesthetic!
 - **Open source**: Appears commercial.
 
-### 16. HextaUI
+### 17. HextaUI
 - **Site**: [hextaui.com](https://hextaui.com)
 - **Type**: UI components/blocks.
 - **Open source**: No clear OSS repo advertised.
 
-### 17. Tailark Pro
+### 18. Tailark Pro
 - **Site**: [pro.tailark.com](https://pro.tailark.com)
 - **Type**: Tailwind/shadcn templates and blocks.
 - **Open source**: Commercial.
 
-### 18. SolaceUI
+### 19. SolaceUI
 - **Site**: [solaceui.com](https://solaceui.com)
 - **Type**: UI kit / components (Tailwind/shadcn‑style).
 
-### 19. NexUI
+### 20. NexUI
 - **Site**: [nexui.xyz](https://nexui.xyz)
 - **Type**: Components/blocks collection.
 
-### 20. ui.kitze.io
+### 21. ui.kitze.io
 - **Site**: [ui.kitze.io](https://ui.kitze.io)
 - **Type**: UI components / snippets by Kitze.
 
-### 21. components.work
+### 22. components.work
 - **Site**: [components.work](https://components.work)
 - **Type**: Component marketplace/collection aggregator.  
 
@@ -154,7 +161,7 @@ Here is a curated list of component libraries, blocks, and registries focused on
 
 ## Conclusion
 
-The shadcn ecosystem is thriving. Whether you are looking for free MIT-licensed components like **Magic UI** and **SmoothUI**, or premium polished blocks like **Aceternity** and **Skiper**, there's something for every project. These libraries save weeks of development time by providing high-quality, pre-built components that you can still fully customize within your own codebase.
+The shadcn ecosystem is thriving. Whether you are looking for free MIT-licensed components like **Magic UI**, **SmoothUI**, and **ReactBits**, or premium polished blocks like **Aceternity** and **Skiper**, there's something for every project. Don't forget about **21st.dev** ([https://21st.dev/](https://21st.dev/)) - the largest marketplace of shadcn/ui-based React Tailwind components, blocks and hooks, built by [@serafimcloud](https://x.com/serafimcloud) ([GitHub](https://github.com/serafimcloud/21st)). These libraries save weeks of development time by providing high-quality, pre-built components that you can still fully customize within your own codebase.
 
 Follow Me here: [https://github.com/soummyaanon](https://github.com/soummyaanon)
 
