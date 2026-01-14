@@ -241,10 +241,12 @@ body {
   font-weight: 100;
   line-height: 1.8;
   letter-spacing: 0.01em;
+  text-align: justify;
 }
 
 .prose p {
   margin-bottom: 1.5em;
+  text-align: justify;
 }
 
 .prose h1 {
