@@ -95,7 +95,7 @@ function Projects() {
     >
       <div className="max-w-4xl mx-auto mb-4 sm:mb-6 px-4">
         <p className="text-[11px] sm:text-xs text-muted-foreground/75 leading-relaxed text-justify">
-          <i>Most of my projects aren't shown here because they're currently used by clients and companies, and per their request, they remain private for now. The projects you see here include two from my learning period, and the current one I'm building is{' '}
+          <i>Most of my projects aren&apos;t shown here because they&apos;re currently used by clients and companies, and per their request, they remain private for now. The projects you see here include two from my learning period, and the current one I&apos;m building is{' '}
           <a 
             href="https://arthionai.app/" 
             target="_blank" 
@@ -104,12 +104,12 @@ function Projects() {
           >
             Arthion AI
           </a>
-          , a finance agent. I'll document each of my works for sure!</i>
+          , a finance agent. I&apos;ll document each of my works for sure!</i>
         </p>
       </div>
       <TimeLine_01
         title="Projects"
-        description="A collection of projects I've built, exploring different technologies and solving real-world problems."
+        description="A collection of projects I&apos;ve built, exploring different technologies and solving real-world problems."
         entries={projectEntries}
       />
     </section>

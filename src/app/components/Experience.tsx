@@ -94,7 +94,7 @@ function useAccordion(initialOpen = new Set<string>()) {
 
   const handleToggle = useCallback(
     (itemKey: string) => (open: boolean) => {
-      setOpenItems((previous) => {
+      setOpenItems(() => {
         const next = new Set<string>()
         if (open) {
           next.add(itemKey)

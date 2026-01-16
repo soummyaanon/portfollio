@@ -262,9 +262,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="google-site-verification" content="" />
-        <meta name="msvalidate.01" content="" />
-        <meta name="yandex-verification" content="" />
         <meta name="author" content="Soumya Panda" />
         <meta name="publisher" content="Soumya Panda" />
         <meta name="language" content="en-US" />

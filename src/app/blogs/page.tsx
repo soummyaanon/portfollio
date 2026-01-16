@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Calendar, Tag } from 'lucide-react'
 import { getAllBlogPosts } from '@/lib/blogs'
 
 export default async function Blogs() {

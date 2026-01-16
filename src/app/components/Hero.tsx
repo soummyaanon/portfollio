@@ -13,8 +13,6 @@ const LEARNING_REPO = 'learning-Go'
 const GITHUB_API_BASE = 'https://api.github.com'
 const COMMITS_PER_PAGE = 100
 const MAX_PAGES = 10
-const IST_TIME_ZONE = 'Asia/Kolkata'
-const IST_LOCALE = 'en-IN'
 
 const PROFILE_IMAGE = {
   width: 80,
@@ -45,28 +43,6 @@ interface CommitFetchState {
   readonly count: number | null
   readonly loading: boolean
   readonly error: boolean
-}
-
-function useIstClock() {
-  const [time, setTime] = useState<string>('')
-
-  useEffect(() => {
-    const formatter = new Intl.DateTimeFormat(IST_LOCALE, {
-      timeZone: IST_TIME_ZONE,
-      hour12: true,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    })
-
-    const updateTime = () => setTime(formatter.format(new Date()))
-    updateTime()
-
-    const intervalId = window.setInterval(updateTime, 1000)
-    return () => window.clearInterval(intervalId)
-  }, [])
-
-  return time
 }
 
 /**
@@ -270,7 +246,6 @@ function Hero() {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const { count: commitCount, loading } = useCommitCount(GITHUB_USERNAME, LEARNING_REPO)
-  const istTime = useIstClock()
 
   useEffect(() => {
     setMounted(true)

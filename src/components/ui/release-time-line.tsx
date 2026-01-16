@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { ArrowUpRight, Package, Calendar, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -189,9 +190,11 @@ export default function TimeLine_01({
                       <div className={`p-1 rounded-md transition-colors overflow-hidden ${
                         isActive ? "bg-primary/10 ring-1 ring-primary/20" : "bg-muted"
                       }`}>
-                        <img
+                        <Image
                           src={entry.logo}
                           alt={`${entry.title} logo`}
+                          width={16}
+                          height={16}
                           className="h-4 w-4 object-contain"
                         />
                       </div>
@@ -236,9 +239,11 @@ export default function TimeLine_01({
                         playsInline
                       />
                     ) : (
-                      <img
+                      <Image
                         src={entry.media}
                         alt={`${entry.title} visual`}
+                        width={400}
+                        height={128}
                         className="mb-3 w-full h-32 rounded-lg object-cover"
                         loading="lazy"
                       />

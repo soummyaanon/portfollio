@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Tag } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { getBlogPostBySlug, getAllBlogSlugs } from '@/lib/blogs'
 import { ShareButtons } from '@/components/ShareButtons'
+import { BlogContent } from '@/components/blog-content'
 import type { Metadata } from 'next'
 
 interface BlogPostPageProps {
@@ -102,9 +103,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
 
           {/* Article content */}
           <article className="prose prose-base dark:prose-invert max-w-none">
-            <div
-              dangerouslySetInnerHTML={{ __html: post.htmlContent }}
-            />
+            <BlogContent htmlContent={post.htmlContent} />
           </article>
 
           {/* Article footer */}
