@@ -30,8 +30,28 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
 
   const allPostsData = await Promise.all(
     fileNames.map(async (fileName) => {
-      const slug = fileName.replace(/\.md$/, '')
-      return await getBlogPostBySlug(slug)
+      const fullPath = path.join(blogsDirectory, fileName)
+      const fileContents = fs.readFileSync(fullPath, 'utf8')
+      const { data, content } = matter(fileContents)
+
+      // Convert markdown to HTML
+      const processedContent = await remark()
+        .use(remarkRehype, { allowDangerousHtml: true })
+        .use(rehypeHighlight)
+        .use(rehypeStringify, { allowDangerousHtml: true })
+        .process(content)
+
+      const htmlContent = processedContent.toString()
+
+      return {
+        title: data.title,
+        date: data.date,
+        excerpt: data.excerpt,
+        slug: data.slug,
+        tags: data.tags || [],
+        content: content,
+        htmlContent,
+      } as BlogPost
     })
   )
 
