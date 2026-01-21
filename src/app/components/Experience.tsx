@@ -230,28 +230,6 @@ const ExperienceItem = memo(function ExperienceItem({
         >
           <div className="flex items-start gap-3 sm:gap-4 p-2 rounded-lg transition-all duration-200">
             <div className="relative flex-shrink-0 pt-1 z-10">
-              {isCurrentRole(experience.period) && (
-                <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 flex h-1.5 w-1.5 z-20 pointer-events-none">
-                  <span
-                    className="absolute inline-flex h-full w-full animate-ping rounded-full"
-                    style={{
-                      background: 'rgba(57,255,20,0.95)', // a hint more opaque neon
-                      boxShadow: '0 0 8px 2px #39ff14, 0 0 14px 4px #39ff1477', // larger, stronger outer glow
-                      opacity: 0.92,
-                    }}
-                    aria-hidden="true"
-                  />
-                  <span
-                    className="relative inline-flex h-1.5 w-1.5 rounded-full"
-                    style={{
-                      background: '#39ff14',
-                      boxShadow: '0 0 5px 2px #39ff14, 0 0 10px 5px #39ff1499',
-                      border: '1.5px solid #191919', // a touch thicker, a bit darker
-                    }}
-                    aria-hidden="true"
-                  />
-                </span>
-              )}
               <Avatar className="relative w-8 h-8 sm:w-10 sm:h-10 ring-2 ring-border bg-background z-10">
                 <AvatarImage
                   src={getCompanyLogoUrl(experience.company)}
