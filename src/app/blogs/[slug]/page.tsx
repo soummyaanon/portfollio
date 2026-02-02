@@ -5,6 +5,7 @@ import { getBlogPostBySlug, getAllBlogSlugs } from '@/lib/blogs'
 import { ShareButtons } from '@/components/ShareButtons'
 import { BlogContent } from '@/components/blog-content'
 import type { Metadata } from 'next'
+import Script from 'next/script'
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>
@@ -31,12 +32,16 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
   try {
     const post = await getBlogPostBySlug(slug)
+    const canonicalUrl = `https://soumyapanda.me/blogs/${slug}/`
 
     return {
       title: `${post.title} | Soumya Panda's Blog`,
       description: post.excerpt,
       keywords: post.tags?.join(', '),
       authors: [{ name: 'Soumya Panda' }],
+      alternates: {
+        canonical: canonicalUrl,
+      },
       openGraph: {
         title: post.title,
         description: post.excerpt,
@@ -44,11 +49,18 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         publishedTime: post.date,
         authors: ['Soumya Panda'],
         tags: post.tags,
+        images: [{
+          url: '/og.png',
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        }],
       },
       twitter: {
         card: 'summary_large_image',
         title: post.title,
         description: post.excerpt,
+        images: ['/og.png'],
       },
     }
   } catch {
@@ -64,6 +76,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
 
   try {
     const post = await getBlogPostBySlug(slug)
+    const canonicalUrl = `https://soumyapanda.me/blogs/${slug}/`
 
     // Format the date
     const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
@@ -72,8 +85,41 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
       day: 'numeric'
     })
 
+    // Article schema for SEO
+    const articleSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description: post.excerpt,
+      image: 'https://soumyapanda.me/og.png',
+      datePublished: post.date,
+      dateModified: post.date,
+      author: {
+        '@type': 'Person',
+        name: 'Soumya Panda',
+        url: 'https://soumyapanda.me',
+      },
+      publisher: {
+        '@type': 'Person',
+        name: 'Soumya Panda',
+        url: 'https://soumyapanda.me',
+      },
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': canonicalUrl,
+      },
+      keywords: post.tags?.join(', ') || '',
+    }
+
     return (
       <main className="min-h-screen bg-background">
+        <Script
+          id="article-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(articleSchema),
+          }}
+        />
         <div className="max-w-2xl mx-auto px-6 py-12 pb-20">
           {/* Back to blogs link */}
           <div className="mb-12">
