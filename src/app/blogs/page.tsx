@@ -1,5 +1,21 @@
 import Link from 'next/link'
 import { getAllBlogPosts } from '@/lib/blogs'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Blog | Soumya Panda - AI Developer & TypeScript Engineer',
+  description: 'Thoughts on technology, development, and building the future. Articles about AI development, TypeScript, Next.js, and modern web technologies.',
+  openGraph: {
+    title: 'Blog | Soumya Panda',
+    description: 'Thoughts on technology, development, and building the future.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Blog | Soumya Panda',
+    description: 'Thoughts on technology, development, and building the future.',
+  },
+}
 
 export default async function Blogs() {
   const blogPosts = await getAllBlogPosts()

@@ -233,7 +233,7 @@ const ExperienceItem = memo(function ExperienceItem({
               <Avatar className="relative w-8 h-8 sm:w-10 sm:h-10 ring-2 ring-border bg-background z-10">
                 <AvatarImage
                   src={getCompanyLogoUrl(experience.company)}
-                  alt=""
+                  alt={`${experience.company} logo`}
                   className="object-cover h-full w-full"
                 />
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold text-[10px] sm:text-xs">
@@ -352,7 +352,7 @@ const EducationSection = memo(function EducationSection({ isOpen, onOpenChange }
                 <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 ring-2 ring-border bg-background">
                   <AvatarImage
                     src={getCompanyLogoUrl(EDUCATION_DATA.university)}
-                    alt=""
+                    alt={`${EDUCATION_DATA.university} logo`}
                     className="object-contain p-1"
                   />
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold text-[10px] sm:text-xs">

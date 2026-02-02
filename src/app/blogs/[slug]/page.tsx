@@ -33,16 +33,16 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     const post = await getBlogPostBySlug(slug)
 
     return {
-      title: `${post.title} | Soumya Ram's Blog`,
+      title: `${post.title} | Soumya Panda's Blog`,
       description: post.excerpt,
       keywords: post.tags?.join(', '),
-      authors: [{ name: 'Soumya Ram' }],
+      authors: [{ name: 'Soumya Panda' }],
       openGraph: {
         title: post.title,
         description: post.excerpt,
         type: 'article',
         publishedTime: post.date,
-        authors: ['Soumya Ram'],
+        authors: ['Soumya Panda'],
         tags: post.tags,
       },
       twitter: {
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     }
   } catch {
     return {
-      title: 'Blog Post Not Found | Soumya Ram',
+      title: 'Blog Post Not Found | Soumya Panda',
       description: 'The requested blog post could not be found.',
     }
   }
