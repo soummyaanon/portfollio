@@ -6,6 +6,7 @@ import { HyperText } from '@/components/ui/hyper-text'
 import { GolangDark } from '@/components/ui/svgs/golangDark'
 import { Golang } from '@/components/ui/svgs/golang'
 import { useTheme } from 'next-themes'
+import { GeistPixelCircle } from 'geist/font/pixel'
 
 // Constants
 const GITHUB_USERNAME = 'soummyaanon'
@@ -269,10 +270,9 @@ function Hero() {
           <div className="w-full">
             <h1 
               id="hero-heading"
-              className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground mb-2 sm:mb-3"
+              className={`${GeistPixelCircle.className} text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-2 sm:mb-3 tracking-wider`}
             >
-              Hi, I&apos;m{' '}
-              <HyperText className="text-primary font-semibold">Soumyaranjan</HyperText>
+              Hi, I&apos;m <span className="text-primary">Soumyaranjan</span>
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mb-3">
               A Software Engineer.
