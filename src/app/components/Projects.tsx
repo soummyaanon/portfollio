@@ -6,6 +6,42 @@ import TimeLine_01, { TimeLine_01Entry } from '@/components/ui/release-time-line
 
 const projectEntries: TimeLine_01Entry[] = [
   {
+    icon: BookOpen,
+    title: "Marcko",
+    subtitle: "Open Source Markdown Editor",
+    description:
+      "Open source markdown editor with real-time preview, secure document sharing, encryption at rest, and AI integration. Free for developers and writers.",
+    items: [
+      "Real-time markdown preview",
+      "Secure enterprise document sharing",
+      "Encryption at rest for privacy",
+      "AI integration for seamless writing",
+    ],
+    media: "/marcko-og.png",
+    button: {
+      url: "https://marcko.bixai.dev",
+      text: "View Project",
+    },
+  },
+  {
+    icon: BookOpen,
+    title: "Bixai Agent SDK Starter",
+    subtitle: "Next.js AI Agent Template",
+    description:
+      "Create production-ready AI agent apps with Next.js and the OpenAI Agents SDK. Features a clean structure, modular tools, and fast setup process.",
+    items: [
+      "Production-ready Next.js integration",
+      "OpenAI Agents SDK support",
+      "Modular tool and agent structure",
+      "Fast setup and deployment capabilities",
+    ],
+    media: "/create-bixai-og.jpg",
+    button: {
+      url: "https://create.bixai.dev",
+      text: "View Project",
+    },
+  },
+  {
     logo: "/arthion-logo.ico",
     title: "Arthion AI",
     subtitle: "Financial Intelligence",
