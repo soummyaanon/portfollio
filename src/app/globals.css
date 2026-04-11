@@ -534,3 +534,27 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Machine view terminal animations */
+@keyframes terminal-scanline {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+@keyframes terminal-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.98; }
+}
+
+@keyframes terminal-glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 136, 0.15); }
+  50% { text-shadow: 0 0 20px rgba(0, 255, 136, 0.25); }
+}
+
+.machine-view-scanlines {
+  animation: terminal-scanline 8s linear infinite;
+}
+
+.machine-view-text {
+  animation: terminal-glow 4s ease-in-out infinite;
+}
