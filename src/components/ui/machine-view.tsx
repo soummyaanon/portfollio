@@ -183,14 +183,14 @@ function MachineView({ isVisible }: MachineViewProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
       className="fixed inset-0 z-40 bg-background"
     >
       {/* Copy button - fixed top right below toggle */}
       <motion.button
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.1 }}
         onClick={handleCopy}
         className={`${GeistMono.className} fixed top-16 right-4 z-50 flex items-center gap-2 px-3 py-2 border border-border bg-background/80 backdrop-blur-sm hover:bg-muted transition-colors text-[10px] uppercase tracking-widest`}
         aria-label="Copy markdown content"

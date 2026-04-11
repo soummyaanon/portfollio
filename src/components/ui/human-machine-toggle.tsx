@@ -17,9 +17,9 @@ function HumanMachineToggle({ isHuman, onToggle }: HumanMachineToggleProps) {
   return (
     <motion.div 
       className="fixed top-4 right-4 z-50"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3, delay: 0.3 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.15 }}
     >
       <button
         onClick={handleToggle}
