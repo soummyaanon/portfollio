@@ -350,6 +350,181 @@ body {
   line-height: 1.7;
 }
 
+/* Architecture diagrams (mermaid) — transparent and theme-aware, so the figure
+   sits directly on the page instead of inside a dark box. */
+.mermaid-figure {
+  position: relative;
+  margin: 2.75rem 0;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.mermaid-viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.mermaid-stage {
+  transform-origin: 0 0;
+  transition: transform 180ms cubic-bezier(0.2, 0, 0, 1);
+  will-change: transform;
+}
+
+.mermaid-stage.is-panning {
+  transition: none;
+}
+
+.mermaid-stage svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+/* Zoom / pan controls — overlaid, shadow-as-border, revealed on hover. */
+.mermaid-controls {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 11px;
+  background: color-mix(in oklch, var(--background) 78%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--foreground) 8%, transparent),
+    0 2px 10px -3px color-mix(in oklch, var(--foreground) 22%, transparent);
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.mermaid-figure:hover .mermaid-controls,
+.mermaid-figure:focus-within .mermaid-controls,
+.mermaid-figure.is-fullscreen .mermaid-controls {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .mermaid-controls {
+    opacity: 1;
+  }
+}
+
+.mermaid-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color 150ms ease-out, color 150ms ease-out, scale 150ms ease-out;
+}
+
+/* Extend the hit area to 40x40 without enlarging the visible button. */
+.mermaid-control::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+}
+
+.mermaid-control:hover {
+  background: color-mix(in oklch, var(--foreground) 9%, transparent);
+  color: var(--foreground);
+}
+
+.mermaid-control:active {
+  scale: 0.96;
+}
+
+.mermaid-control:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.mermaid-control svg {
+  pointer-events: none;
+}
+
+/* Fullscreen: fill the screen with the page background, center the figure. */
+.mermaid-figure.is-fullscreen {
+  margin: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: var(--background);
+}
+
+.mermaid-figure.is-fullscreen .mermaid-viewport {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+/* Diagram labels use the site's display font, not mermaid's default sans. */
+.mermaid-figure .nodeLabel,
+.mermaid-figure .edgeLabel,
+.mermaid-figure .cluster-label,
+.mermaid-figure foreignObject div {
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+/* Round the pillar outlines to echo the site's 12px radius. */
+.mermaid-figure .cluster rect {
+  rx: 12px;
+  ry: 12px;
+}
+
+/* Entrance: container glides up while the inner pieces fade + unblur in a
+   short stagger. Plays once (the class is stripped after), and is skipped
+   entirely for users who prefer reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .mermaid-figure--enter {
+    animation: mermaid-figure-in 600ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .mermaid-figure--enter .cluster,
+  .mermaid-figure--enter .node,
+  .mermaid-figure--enter .edgePaths,
+  .mermaid-figure--enter .edgeLabels {
+    animation: mermaid-piece-in 520ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .mermaid-figure--enter .cluster { animation-delay: 80ms; }
+  .mermaid-figure--enter .node { animation-delay: 150ms; }
+  .mermaid-figure--enter .edgePaths { animation-delay: 230ms; }
+  .mermaid-figure--enter .edgeLabels { animation-delay: 280ms; }
+}
+
+@keyframes mermaid-figure-in {
+  from { transform: translateY(10px); }
+  to { transform: translateY(0); }
+}
+
+@keyframes mermaid-piece-in {
+  from { opacity: 0; filter: blur(4px); }
+  to { opacity: 1; filter: blur(0); }
+}
+
 /* Syntax highlighting for markdown code blocks */
 .hljs {
   color: #24292e;
