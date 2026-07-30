@@ -35,21 +35,27 @@ const MONTHS = [
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-// GitHub contribution colors (official palettes)
+/**
+ * A ramp built from the site's own signal amber rather than GitHub's green.
+ *
+ * The grid is the only large block of colour on the page, so borrowing GitHub's palette put
+ * a green rectangle in the middle of a warm neutral document. Level 0 is the muted surface
+ * and the top step is the signal itself, so the calendar reads as part of the same material.
+ */
 const GITHUB_CONTRIBUTION_COLORS_LIGHT = [
-  '#ebedf0', // Level 0 — no contributions
-  '#9be9a8', // Level 1
-  '#40c463', // Level 2
-  '#30a14e', // Level 3
-  '#216e39', // Level 4 — highest
+  'oklch(0.9420 0.0110 78)', // Level 0 — no contributions (matches --accent)
+  'oklch(0.8850 0.0520 66)', // Level 1
+  'oklch(0.8100 0.0920 60)', // Level 2
+  'oklch(0.6716 0.1368 48.5130)', // Level 3 (--signal)
+  'oklch(0.5000 0.1150 50)', // Level 4 — highest
 ]
 
 const GITHUB_CONTRIBUTION_COLORS_DARK = [
-  '#161b22', // Level 0 — no contributions
-  '#0e4429', // Level 1
-  '#006d32', // Level 2
-  '#26a641', // Level 3
-  '#39d353', // Level 4 — highest
+  'oklch(0.2480 0.0080 64)', // Level 0 — no contributions (matches --muted)
+  'oklch(0.3300 0.0480 60)', // Level 1
+  'oklch(0.4600 0.0880 58)', // Level 2
+  'oklch(0.6100 0.1200 58)', // Level 3
+  'oklch(0.7620 0.1340 58)', // Level 4 — highest (--signal, dark)
 ]
 
 const CONTRIBUTION_LEVELS = [0, 1, 2, 3, 4]

@@ -6,8 +6,28 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-chakra-petch), ui-sans-serif, sans-serif, system-ui;
-  --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --color-signal: var(--signal);
+  --color-signal-ink: var(--signal-ink);
+
+  /* Fluid type scale. The old page lived entirely between 12px and 24px; display now
+     reaches ~6.5rem so the composition has an actual top end. */
+  --text-caption: clamp(0.6875rem, 0.67rem + 0.08vw, 0.75rem);
+  --text-fine: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --text-body: clamp(0.9375rem, 0.91rem + 0.15vw, 1.0625rem);
+  --text-lead: clamp(1.0625rem, 1rem + 0.32vw, 1.3125rem);
+  --text-title: clamp(1.375rem, 1.2rem + 0.85vw, 2rem);
+  --text-display: clamp(2.5rem, 1.35rem + 5.2vw, 6rem);
+
+  /* Spacing rhythm — deliberately non-uniform, tight groupings against generous breaks. */
+  --space-hairline: 0.375rem;
+  --space-tight: 0.75rem;
+  --space-group: clamp(1.25rem, 1rem + 1vw, 2rem);
+  --space-section: clamp(3rem, 2rem + 3.2vw, 5.5rem);
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -109,24 +129,33 @@
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(1.0000 0 0);
-  --foreground: oklch(0.2101 0.0318 264.6645);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.2101 0.0318 264.6645);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.2101 0.0318 264.6645);
-  --primary: oklch(0.3928 0.0394 52.5644);
-  --primary-foreground: oklch(1.0000 0 0);
-  --secondary: oklch(0.5536 0.0048 236.5598);
-  --secondary-foreground: oklch(1.0000 0 0);
-  --muted: oklch(0.9670 0.0029 264.5419);
-  --muted-foreground: oklch(0.5510 0.0234 264.3637);
-  --accent: oklch(0.9491 0 0);
-  --accent-foreground: oklch(0.2101 0.0318 264.6645);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --border: oklch(0.9276 0.0058 264.5313);
-  --input: oklch(0.9276 0.0058 264.5313);
+
+  /* Warm paper, warm ink. Nothing here is a pure or neutral grey: every neutral carries a
+     trace of the amber signal hue (~70°) so the palette reads as one material. */
+  --background: oklch(0.9910 0.0040 85);
+  --foreground: oklch(0.2280 0.0120 62);
+  --card: oklch(0.9770 0.0050 82);
+  --card-foreground: oklch(0.2280 0.0120 62);
+  --popover: oklch(0.9910 0.0040 85);
+  --popover-foreground: oklch(0.2280 0.0120 62);
+  /* Deep enough to carry white text at AA; the bright amber lives in --signal instead. */
+  --primary: oklch(0.4450 0.0980 52);
+  --primary-foreground: oklch(0.9910 0.0040 85);
+  --secondary: oklch(0.5300 0.0180 68);
+  --secondary-foreground: oklch(0.9910 0.0040 85);
+  --muted: oklch(0.9600 0.0060 80);
+  --muted-foreground: oklch(0.5150 0.0170 66);
+  --accent: oklch(0.9420 0.0110 78);
+  --accent-foreground: oklch(0.2280 0.0120 62);
+  --destructive: oklch(0.5540 0.1780 26);
+  --border: oklch(0.9010 0.0090 76);
+  --input: oklch(0.9010 0.0090 76);
   --ring: oklch(0.6716 0.1368 48.5130);
+
+  /* The one accent. Used for rules, live indicators, and the machine view's field keys —
+     never for decoration and never as a gradient. */
+  --signal: oklch(0.6716 0.1368 48.5130);
+  --signal-ink: oklch(0.4450 0.0980 52);
   --chart-1: oklch(0.5940 0.0443 196.0233);
   --chart-2: oklch(0.7214 0.1337 49.9802);
   --chart-3: oklch(0.8721 0.0864 68.5474);
@@ -141,9 +170,6 @@
   --sidebar-border: oklch(0.9276 0.0058 264.5313);
   --sidebar-ring: oklch(0.6716 0.1368 48.5130);
   --destructive-foreground: oklch(0.9851 0 0);
-  --font-sans: var(--font-chakra-petch), ui-sans-serif, sans-serif, system-ui;
-  --font-serif: Charis SIL, ui-serif, serif;
-  --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
   --shadow-color: #000000;
   --shadow-opacity: 0.05;
   --shadow-blur: 4px;
@@ -164,24 +190,29 @@
 }
 
 .dark {
-  --background: oklch(0.1797 0.0043 308.1928);
-  --foreground: oklch(0.8109 0 0);
-  --card: oklch(0.1822 0 0);
-  --card-foreground: oklch(0.8109 0 0);
-  --popover: oklch(0.1797 0.0043 308.1928);
-  --popover-foreground: oklch(0.8109 0 0);
-  --primary: oklch(0.9619 0.0011 17.1785);
-  --primary-foreground: oklch(0.1797 0.0043 308.1928);
-  --secondary: oklch(0.5152 0.0065 3.5229);
-  --secondary-foreground: oklch(0.1797 0.0043 308.1928);
-  --muted: oklch(0.2520 0 0);
-  --muted-foreground: oklch(0.6268 0 0);
-  --accent: oklch(0.3211 0 0);
-  --accent-foreground: oklch(0.8109 0 0);
-  --destructive: oklch(0.5940 0.0443 196.0233);
-  --border: oklch(0.2520 0 0);
-  --input: oklch(0.2520 0 0);
+  /* Same material at night: the neutrals keep the amber trace rather than going cold,
+     and the background stays off pure black. */
+  --background: oklch(0.1780 0.0070 62);
+  --foreground: oklch(0.8880 0.0090 78);
+  --card: oklch(0.2120 0.0080 64);
+  --card-foreground: oklch(0.8880 0.0090 78);
+  --popover: oklch(0.1780 0.0070 62);
+  --popover-foreground: oklch(0.8880 0.0090 78);
+  --primary: oklch(0.8340 0.1080 66);
+  --primary-foreground: oklch(0.1780 0.0070 62);
+  --secondary: oklch(0.5480 0.0180 70);
+  --secondary-foreground: oklch(0.9500 0.0080 80);
+  --muted: oklch(0.2480 0.0080 64);
+  --muted-foreground: oklch(0.6420 0.0140 72);
+  --accent: oklch(0.2960 0.0110 66);
+  --accent-foreground: oklch(0.8880 0.0090 78);
+  --destructive: oklch(0.6420 0.1620 28);
+  --border: oklch(0.2780 0.0090 66);
+  --input: oklch(0.2780 0.0090 66);
   --ring: oklch(0.7214 0.1337 49.9802);
+
+  --signal: oklch(0.7620 0.1340 58);
+  --signal-ink: oklch(0.8340 0.1080 66);
   --chart-1: oklch(0.5940 0.0443 196.0233);
   --chart-2: oklch(0.7214 0.1337 49.9802);
   --chart-3: oklch(0.8721 0.0864 68.5474);
@@ -197,9 +228,6 @@
   --sidebar-ring: oklch(0.7214 0.1337 49.9802);
   --destructive-foreground: oklch(0.1797 0.0043 308.1928);
   --radius: 0.75rem;
-  --font-sans: var(--font-chakra-petch), ui-sans-serif, sans-serif, system-ui;
-  --font-serif: Charis SIL, ui-serif, serif;
-  --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
   --shadow-color: #000000;
   --shadow-opacity: 0.05;
   --shadow-blur: 4px;
@@ -708,109 +736,4 @@ body {
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
-}
-
-/* Machine view terminal animations */
-@keyframes terminal-scanline {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(4px); }
-}
-
-@keyframes terminal-flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.98; }
-}
-
-@keyframes terminal-glow {
-  0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 136, 0.15); }
-  50% { text-shadow: 0 0 20px rgba(0, 255, 136, 0.25); }
-}
-
-.machine-view-scanlines {
-  animation: terminal-scanline 8s linear infinite;
-}
-
-.machine-view-text {
-  animation: terminal-glow 4s ease-in-out infinite;
-}
-
-/* Cyber Hacker Effects */
-@keyframes cyber-flicker {
-  0%, 100% { opacity: 1; }
-  92% { opacity: 1; }
-  93% { opacity: 0.8; }
-  94% { opacity: 1; }
-  95% { opacity: 0.9; }
-  96% { opacity: 1; }
-}
-
-@keyframes cyber-glow-pulse {
-  0%, 100% { 
-    filter: drop-shadow(0 0 2px #22c55e) drop-shadow(0 0 4px #22c55e);
-  }
-  50% { 
-    filter: drop-shadow(0 0 4px #22c55e) drop-shadow(0 0 8px #22c55e) drop-shadow(0 0 12px #22c55e);
-  }
-}
-
-@keyframes matrix-rain {
-  0% { transform: translateY(-100%); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateY(100vh); opacity: 0; }
-}
-
-@keyframes glitch-skew {
-  0% { transform: skew(0deg); }
-  20% { transform: skew(-2deg); }
-  40% { transform: skew(2deg); }
-  60% { transform: skew(-1deg); }
-  80% { transform: skew(1deg); }
-  100% { transform: skew(0deg); }
-}
-
-@keyframes cyber-border-glow {
-  0%, 100% { 
-    border-color: rgba(34, 197, 94, 0.3);
-    box-shadow: 0 0 5px rgba(34, 197, 94, 0.2), inset 0 0 5px rgba(34, 197, 94, 0.1);
-  }
-  50% { 
-    border-color: rgba(34, 197, 94, 0.6);
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.4), inset 0 0 10px rgba(34, 197, 94, 0.2);
-  }
-}
-
-@keyframes text-glitch {
-  0% { text-shadow: 0 0 5px rgba(34, 197, 94, 0.5); }
-  25% { text-shadow: -2px 0 #ff0000, 2px 0 #00ffff, 0 0 5px rgba(34, 197, 94, 0.5); }
-  50% { text-shadow: 2px 0 #ff0000, -2px 0 #00ffff, 0 0 5px rgba(34, 197, 94, 0.5); }
-  75% { text-shadow: -1px 0 #ff0000, 1px 0 #00ffff, 0 0 5px rgba(34, 197, 94, 0.5); }
-  100% { text-shadow: 0 0 5px rgba(34, 197, 94, 0.5); }
-}
-
-@keyframes crt-flicker {
-  0% { opacity: 0.97; }
-  5% { opacity: 1; }
-  10% { opacity: 0.98; }
-  15% { opacity: 1; }
-  50% { opacity: 1; }
-  55% { opacity: 0.99; }
-  60% { opacity: 1; }
-  100% { opacity: 1; }
-}
-
-.cyber-text {
-  animation: cyber-flicker 4s infinite, cyber-glow-pulse 3s ease-in-out infinite;
-}
-
-.cyber-glitch {
-  animation: text-glitch 0.3s ease-in-out;
-}
-
-.crt-screen {
-  animation: crt-flicker 0.15s infinite;
-}
-
-.cyber-border {
-  animation: cyber-border-glow 2s ease-in-out infinite;
 }

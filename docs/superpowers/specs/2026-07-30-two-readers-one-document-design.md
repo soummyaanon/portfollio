@@ -94,10 +94,22 @@ View state lifts to a `DocumentModeProvider` so the toggle, both views, and the 
 
 ### Static-HTML guarantee
 
-Under `output: 'export'` the shipped HTML must contain the full content of *both* views. The machine
-record renders always, visually hidden (not `display:none`, and never unmounted) when inactive.
-Experience and Projects render from a synchronous import with no `useEffect` gate. No section may
-depend on client state to appear in the initial payload.
+The morph requires mount/unmount — two simultaneously live elements sharing a `layoutId` contend
+over which one leads, so both views cannot be mounted at once. The machine view is therefore a
+*design* feature and explicitly **not** the mechanism by which machines read the site. Rendering a
+hidden duplicate for crawlers is also cloaking-adjacent and is rejected.
+
+Three separate channels serve machines instead:
+
+1. **The human view**, genuinely prerendered with real text. This is what Google and LLM crawlers
+   read, and it is what fixes defect 3.
+2. **JSON-LD**, for structured extraction.
+3. **`llms.txt` / `llms-full.txt`**, the explicit LLM channel, carrying the full specimen content.
+
+The binding requirement is therefore narrower and stricter: no section may depend on client state or
+an effect to appear in the initial payload. Experience and Projects render from a synchronous import
+with no `useEffect` gate. `src/app/page.tsx` becomes a server component that owns metadata and
+JSON-LD and renders the client document beneath it.
 
 ## Design system
 
@@ -155,6 +167,44 @@ No test infrastructure exists in the repo, so verification is build output plus 
    `llms-full.txt` non-empty and reflecting `profile.ts`.
 3. Browser: morph at 390 / 768 / 1440, light and dark, plus `prefers-reduced-motion` forced.
 4. Confirm zero network requests to `api.github.com` on load.
+
+## Changes made during implementation
+
+Recorded because each departs from the spec above.
+
+**A published credential (found mid-build, not in the original survey).**
+`.github/workflows/nextjs.yml` wrote `NEXT_PUBLIC_GITHUB_PAT` into `.env.local` at build time,
+and `GitHubContributions.tsx` read it to call the GraphQL API from the browser. Next inlines
+every `NEXT_PUBLIC_*` value into the client bundle, so the deployed site served that token to
+every visitor. **The token must be revoked.** The component no longer fetches at all: the
+calendar is resolved at build time by `scripts/generate-github.ts` from
+`github.com/users/<user>/contributions`, a public endpoint needing no auth — so there is no
+secret in CI and nothing left to leak. The trade-off is that the endpoint returns markup
+rather than a contract; a parse yielding zero cells throws and the committed data stands.
+
+**The CI workflow never ran the generators.** It called `next build` directly rather than the
+package `build` script, so `sitemap.xml` was only ever refreshed when someone built locally.
+Now `npm run build`, which also covers the new `llms.txt` generation.
+
+**More minimal, more interactive.** Requested after the first review. Work rows and the project
+index became disclosures (`Disclosure.tsx`): at rest the page is an index of names, roles, and
+dates, with prose, location, stack, and capabilities one click away. Homepage `Writing` dropped
+its excerpts, which now live only on `/blogs`. This resolves the two requests with one
+mechanism rather than trading them off. `--space-section` was also reduced from a 8rem ceiling
+to 5.5rem after the first render showed a dead band above `Work`.
+
+**Portrait restored.** The type-only masthead dropped the avatar. It is back as a squared plate
+with a hairline, placed opposite the display type (the name only fills the left half of the
+measure), not as a rounded avatar with a gradient ring. `person.avatar` also appears as a field
+in the specimen sheet and as `image` in the `Person` schema — the same fact, two encodings.
+The URL is now stable; the old one appended `?v=<today>` and so missed cache every day.
+
+**The learning progress ring was not restored.** It rendered `commits × 2%`, so 11 commits
+displayed as "22%" of an invented denominator. The masthead states the commit count instead.
+
+**Mobile:** the fixed mode toggle and the portrait both want the top-right corner, so the
+masthead and specimen sheet top padding has a 4.75rem floor, and the `press m` hint is hidden
+below `sm`.
 
 ## Out of scope
 

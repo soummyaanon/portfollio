@@ -5,7 +5,9 @@ import { getBlogPostBySlug, getAllBlogSlugs } from '@/lib/blogs'
 import { ShareButtons } from '@/components/ShareButtons'
 import { BlogContent } from '@/components/blog-content'
 import type { Metadata } from 'next'
-import Script from 'next/script'
+import { JsonLd } from '@/components/JsonLd'
+import { blogPostingSchema, breadcrumbSchema, graph } from '@/lib/seo'
+import { person } from '@/data/profile'
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>
@@ -35,10 +37,12 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     const canonicalUrl = `https://soumyapanda.me/blogs/${slug}/`
 
     return {
-      title: `${post.title} | Soumya Panda's Blog`,
+      // The root layout supplies the `%s — Soumyaranjan Panda` template, so the raw title
+      // is all that belongs here. `keywords` is gone: search engines ignore it, and it
+      // reads as stuffing to the extractors that do not.
+      title: post.title,
       description: post.excerpt,
-      keywords: post.tags?.join(', '),
-      authors: [{ name: 'Soumya Panda' }],
+      authors: [{ name: person.name }],
       alternates: {
         canonical: canonicalUrl,
       },
@@ -46,8 +50,9 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         title: post.title,
         description: post.excerpt,
         type: 'article',
+        url: canonicalUrl,
         publishedTime: post.date,
-        authors: ['Soumya Panda'],
+        authors: [person.name],
         tags: post.tags,
         images: [{
           url: '/og.png',
@@ -76,7 +81,6 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
 
   try {
     const post = await getBlogPostBySlug(slug)
-    const canonicalUrl = `https://soumyapanda.me/blogs/${slug}/`
 
     // Format the date
     const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
@@ -85,40 +89,20 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
       day: 'numeric'
     })
 
-    // Article schema for SEO
-    const articleSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'BlogPosting',
-      headline: post.title,
-      description: post.excerpt,
-      image: 'https://soumyapanda.me/og.png',
-      datePublished: post.date,
-      dateModified: post.date,
-      author: {
-        '@type': 'Person',
-        name: 'Soumya Panda',
-        url: 'https://soumyapanda.me',
-      },
-      publisher: {
-        '@type': 'Person',
-        name: 'Soumya Panda',
-        url: 'https://soumyapanda.me',
-      },
-      mainEntityOfPage: {
-        '@type': 'WebPage',
-        '@id': canonicalUrl,
-      },
-      keywords: post.tags?.join(', ') || '',
-    }
-
     return (
       <main className="min-h-screen bg-background">
-        <Script
-          id="article-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(articleSchema),
-          }}
+        {/* Built from src/lib/seo.ts so the author and publisher resolve by @id to the one
+            Person declared on the homepage, rather than restating a second, unlinked copy
+            of the same entity on every post. */}
+        <JsonLd
+          json={graph(
+            blogPostingSchema(post),
+            breadcrumbSchema([
+              { name: 'Home', path: '/' },
+              { name: 'Writing', path: '/blogs/' },
+              { name: post.title, path: `/blogs/${post.slug}/` },
+            ]),
+          )}
         />
         <div className="max-w-2xl mx-auto px-6 py-12 pb-20">
           {/* Back to blogs link */}
@@ -134,13 +118,15 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
 
           {/* Article header */}
           <header className="mb-12">
-            <time className="text-xs text-muted-foreground tracking-wide uppercase">
+            <time className="text-caption uppercase tracking-[0.16em] text-muted-foreground">
               {formattedDate}
             </time>
-            <h1 className="text-lg sm:text-xl font-semibold text-foreground mt-3 mb-6 leading-snug tracking-tight">
+            {/* Titles were pinned at text-lg while the rest of the site now has a display
+                scale; the post headline is the one place the reading view should be loud. */}
+            <h1 className="mt-3 mb-6 font-display text-[length:clamp(1.875rem,1.3rem+1.9vw,2.75rem)] leading-[1.05] tracking-[-0.015em] text-foreground">
               {post.title}
             </h1>
-            <p className="text-muted-foreground leading-relaxed text-sm">
+            <p className="text-body leading-[1.55] text-muted-foreground">
               {post.excerpt}
             </p>
           </header>

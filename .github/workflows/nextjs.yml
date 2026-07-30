@@ -53,11 +53,15 @@ jobs:
         with:
           node-version: "20"
           cache: ${{ steps.detect-package-manager.outputs.manager }}
+      # Only values that are safe to publish belong in .env.local: Next inlines every
+      # NEXT_PUBLIC_* variable into the client bundle. NEXT_PUBLIC_GITHUB_PAT was here, which
+      # published that token to every visitor — the GitHub token is now passed to the build
+      # step as a plain server-side env var instead (see "Build with Next.js" below), where it
+      # is read only by scripts/generate-github.ts and never reaches the browser.
       - name: Create .env.local
         run: |
           echo "NEXT_PUBLIC_POSTHOG_KEY=${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}" >> .env.local
           echo "NEXT_PUBLIC_POSTHOG_HOST=${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}" >> .env.local
-          echo "NEXT_PUBLIC_GITHUB_PAT=${{ secrets.NEXT_PUBLIC_GITHUB_PAT }}" >> .env.local
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Restore cache
@@ -72,8 +76,18 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+      # Runs the package `build` script rather than `next build` directly, so the build-time
+      # generators run in CI too. Previously they did not, which meant sitemap.xml was only
+      # ever refreshed when someone happened to build locally.
+      #
+      # GITHUB_TOKEN here is the token Actions injects automatically — no secret to configure.
+      # It is optional: it only raises the REST rate limit for the commit count. The
+      # contribution calendar uses a public endpoint and needs no auth at all. Critically it
+      # is not a NEXT_PUBLIC_* name, so it cannot be inlined into the client bundle.
       - name: Build with Next.js
-        run: ${{ steps.detect-package-manager.outputs.runner }} next build
+        run: ${{ steps.detect-package-manager.outputs.manager }} run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

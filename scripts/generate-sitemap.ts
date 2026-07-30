@@ -50,6 +50,11 @@ async function generateSitemap() {
         changefreq: 'weekly',
         priority: 0.8,
       },
+      {
+        loc: `${BASE_URL}/projects/`,
+        changefreq: 'monthly',
+        priority: 0.8,
+      },
     ]
 
     // Get all blog slugs

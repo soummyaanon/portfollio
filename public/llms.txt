@@ -1,0 +1,36 @@
+# Soumyaranjan Panda
+
+> Soumyaranjan Panda is a software engineer building AI-driven tools that reduce human workload, currently focused on healthcare AI. Based in India (Asia/Kolkata).
+
+This site publishes two renderings of the same document: a human-readable page and a
+machine-readable record. The complete record is at https://soumyapanda.me/llms-full.txt
+
+## Now
+- Building: [Arthion AI](https://arthionai.app/)
+- Learning: Go — [learning-Go](https://github.com/soummyaanon/learning-Go)
+- Role: Software Engineer at Wybit (since 2025-07)
+
+## Projects
+- [Agent Island](https://github.com/soummyaanon/DEV-island-releases/releases/latest) — Dynamic Island for coding agents: A macOS overlay that wraps the MacBook notch and reports on Claude Code, Codex, and Cursor sessions running in parallel — who is working, who is finished, and who is waiting on you.
+- [Arthion AI](https://arthionai.app/) — Financial intelligence, in development: Financial intelligence platform giving real-time stock analysis, technical indicators, market sentiment tracking, and insights you can act on.
+- [God of Debugger](https://www.npmjs.com/package/@bixai/god-of-debugger) — Debugging plugin for Claude Code: Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.
+- [Marcko](https://marcko.bixai.dev) — Open source markdown editor: Markdown editor with real-time preview, secure document sharing, and encryption at rest. Free for developers and writers.
+- [Bixai Agent SDK Starter](https://create.bixai.dev) — Next.js AI agent template: Template for production-ready agent apps built on Next.js and the OpenAI Agents SDK, with a modular tool structure and a fast path to deployment.
+- [Aarekhit AI](https://www.aarekhit.com/) — Data visualisation: Graph visualisation and analysis platform that turns text and data into interactive visualisations in seconds.
+- [Notex](https://noteex.vercel.app/) — AI note-taking: Note-taking with AI-generated insights and the noteX assistance bot, organised so thoughts stay in order and private.
+- [Readany](https://readany.vercel.app/) — PDF book reader: PDF reader that turns static documents into a reading experience, with realistic page flipping and heavy customisation.
+
+## Writing
+- [The Agentic Automation Playbook: Patterns That Actually Hold Up](https://soumyapanda.me/blogs/agentic-automation-playbook/): An agent that can do a task once is a magic trick. An automation you trust to do it a hundred times, unattended, is a contract. This playbook is the set of plays that get you from the trick to the contract — the loop, the scope, the tools, the verify step, the escape hatch.
+- [Your AI Agent Works in the Demo. Here's What Breaks in Production](https://soumyapanda.me/blogs/ai-agents-demo-to-production/): An agent that nails the demo can still fall apart in production, and it is rarely the model's fault. Three things decide whether it survives real users: workflows, APIs, and governance. Here is why each one matters.
+- [Chat History Management: The Hidden Hard Part of Agent Apps](https://soumyapanda.me/blogs/chat-history-is-hard/): Streaming outputs, multi-agent sessions, and title generation make chat history deceptively difficult. Here is a simple, practical guide to make it reliable.
+- [Modern React & shadcn/ui Collections: The Ultimate Curated List](https://soumyapanda.me/blogs/modern-react-shadcn-ui-collections/): Explore a curated list of the most powerful component libraries, blocks, and registries in the React and Tailwind ecosystem, focusing on shadcn/ui compatibility.
+- [The Bhagavad Gita My viewpoint as a Software Engineer](https://soumyapanda.me/blogs/gita_tech_blog/): In an era of endless notifications, AI disruptions, and digital burnout, a 5,000-year-old conversation on a battlefield holds surprisingly relevant answers for navigating our hyperconnected, technology-driven world.
+
+## Links
+- [GitHub](https://github.com/soummyaanon)
+- [X](https://x.com/SoumyapX)
+- [LinkedIn](https://www.linkedin.com/in/soumyapanda12/)
+
+## Detail
+- [Complete record](https://soumyapanda.me/llms-full.txt): full experience, education, skills, and every blog post in full.

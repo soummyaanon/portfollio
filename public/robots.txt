@@ -1,5 +1,38 @@
 User-agent: *
 Allow: /
-Disallow: /api/
+
+# AI crawlers are explicitly welcome. The site publishes a machine-readable rendering of
+# itself, so there is nothing to gain from excluding the agents it was partly designed for.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
 
 Sitemap: https://soumyapanda.me/sitemap.xml
+
+# Structured summary for language models: https://soumyapanda.me/llms.txt

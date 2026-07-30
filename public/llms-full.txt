@@ -1,0 +1,915 @@
+# Soumyaranjan Panda — complete record
+
+> Soumyaranjan Panda is a software engineer building AI-driven tools that reduce human workload, currently focused on healthcare AI. Based in India (Asia/Kolkata).
+
+## Identity
+- Name: Soumyaranjan Panda
+- Title: Software Engineer
+- Location: India
+- Timezone: Asia/Kolkata
+- Site: https://soumyapanda.me
+- Avatar: https://github.com/soummyaanon.png
+- Focus: AI-driven tools, healthcare AI
+- Interests: deep-space science, political developments
+- GitHub: https://github.com/soummyaanon
+- X: https://x.com/SoumyapX
+- LinkedIn: https://www.linkedin.com/in/soumyapanda12/
+
+## Experience
+
+### Wybit — Software Engineer
+- Period: Jul 2025 — Present
+- From: 2025-07
+- Until: present
+- Location: Orlando, Florida, United States (remote)
+- Summary: Developing agents that are going to reshape healthcare.
+- Stack: OpenAI, Artificial Intelligence, Next.js, SaaS, Software Design
+
+### Cloudoplus — AI Engineer
+- Period: Apr 2025 — Aug 2025
+- From: 2025-04
+- Until: 2025-08
+- Location: Santa Ana, California, United States (remote)
+- Summary: Built an AI-powered QA agent that automated the quality assurance process, improving testing efficiency and cutting manual effort.
+- Stack: Artificial Intelligence, Machine Learning, Python, QA Automation, Next.js, React, Node.js
+
+### Chatsguru — AI Engineer
+- Period: Sep 2024 — Apr 2025
+- From: 2024-09
+- Until: 2025-04
+- Location: Ahmedabad, Gujarat, India (remote)
+- Summary: Shipped AI products including a social platform that unified posting across channels through connection alone, and a platform where users composed their own personalised bots.
+- Stack: Next.js, React, Tailwind CSS, Artificial Intelligence, Machine Learning, API Integration, Bot Development, Social Media APIs, GitLab
+
+## Education
+
+### Visvesvaraya Technological University
+- Credential: Master of Computer Applications, Computer Science
+- Period: Dec 2022 — Oct 2024
+- Focus: Software Development, Algorithms, Data Structures
+
+## Skills
+- Languages: TypeScript, JavaScript, Python, Go
+- Frameworks: Next.js, React, Node.js, Tailwind CSS, shadcn/ui
+- AI: OpenAI API, Anthropic Claude, Agent SDKs, Prompt engineering
+- Data: PostgreSQL, MongoDB, Prisma
+- Workflow: Git
+
+## Projects
+
+### Agent Island — Dynamic Island for coding agents
+- URL: https://github.com/soummyaanon/DEV-island-releases/releases/latest
+- Status: live
+- Summary: A macOS overlay that wraps the MacBook notch and reports on Claude Code, Codex, and Cursor sessions running in parallel — who is working, who is finished, and who is waiting on you.
+- Capabilities:
+  - Live session rows with project, elapsed time, and current activity
+  - Approve Claude permission requests from the notch with ⌘Y and ⌘N
+  - Answer an agent’s multiple-choice question with ⌘1–9
+  - Click a session to raise the exact terminal tab hosting it
+  - Entirely local — no accounts, no API keys, no telemetry
+
+### Arthion AI — Financial intelligence
+- URL: https://arthionai.app/
+- Status: in-development
+- Summary: Financial intelligence platform giving real-time stock analysis, technical indicators, market sentiment tracking, and insights you can act on.
+- Capabilities:
+  - Real-time stock charts with OHLC and line views
+  - Technical indicators including RSI and MACD
+  - Top movers tracking across gainers, losers, and most active
+  - News and sentiment analysis
+  - AI-generated stock recommendations
+
+### God of Debugger — Debugging plugin for Claude Code
+- URL: https://www.npmjs.com/package/@bixai/god-of-debugger
+- Status: live
+- Summary: Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.
+- Capabilities:
+  - Bootstraps a deterministic repro before hypothesising
+  - Generates competing primary and adversarial hypotheses
+  - One falsification experiment per hypothesis, run by parallel subagents
+  - Survival table scoring each hypothesis killed, survived, or inconclusive
+  - Promotes surviving experiments into permanent regression tests
+
+### Marcko — Open source markdown editor
+- URL: https://marcko.bixai.dev
+- Status: live
+- Summary: Markdown editor with real-time preview, secure document sharing, and encryption at rest. Free for developers and writers.
+- Capabilities:
+  - Real-time markdown preview
+  - Secure enterprise document sharing
+  - Encryption at rest
+  - AI integration for writing
+
+### Bixai Agent SDK Starter — Next.js AI agent template
+- URL: https://create.bixai.dev
+- Status: live
+- Summary: Template for production-ready agent apps built on Next.js and the OpenAI Agents SDK, with a modular tool structure and a fast path to deployment.
+- Capabilities:
+  - Production-ready Next.js integration
+  - OpenAI Agents SDK support
+  - Modular tool and agent structure
+
+### Aarekhit AI — Data visualisation
+- URL: https://www.aarekhit.com/
+- Status: live
+- Summary: Graph visualisation and analysis platform that turns text and data into interactive visualisations in seconds.
+- Capabilities:
+  - Interactive graph visualisation
+  - AI-powered data analysis
+  - Real-time collaboration
+  - Custom styling and theming
+
+### Notex — AI note-taking
+- URL: https://noteex.vercel.app/
+- Status: live
+- Summary: Note-taking with AI-generated insights and the noteX assistance bot, organised so thoughts stay in order and private.
+- Capabilities:
+  - noteX assistance bot
+  - Smart organisation for structured notes
+  - Cross-platform synchronisation
+
+### Readany — PDF book reader
+- URL: https://readany.vercel.app/
+- Status: live
+- Summary: PDF reader that turns static documents into a reading experience, with realistic page flipping and heavy customisation.
+- Capabilities:
+  - Realistic page-flip animation
+  - Customisable reading themes
+  - Bookmarks and annotation
+  - Text-to-speech
+
+## Writing
+
+### The Agentic Automation Playbook: Patterns That Actually Hold Up
+- URL: https://soumyapanda.me/blogs/agentic-automation-playbook/
+- Date: 2026-06-12
+- Tags: ai, agents, automation, patterns, playbook
+
+# The Agentic Automation Playbook: Patterns That Actually Hold Up
+
+An agent that can do a task *once*, while you watch, is a magic trick. It's impressive, and it tells you almost nothing about whether you can leave it running.
+
+An *automation* is a different promise. It says: this job will get done, correctly, a hundred times in a row, on inputs I haven't seen, while I'm asleep — and when it can't, it will tell me instead of quietly making a mess.
+
+The distance between those two things isn't a smarter model. It's a handful of plays you run every time. None of them are clever. All of them are the difference between a demo and something you'd actually wire to your inbox, your database, or your customers. Here's the playbook.
+
+---
+
+## The engine: one small loop
+
+Strip away the jargon and every agentic automation is the same loop running over and over. It looks at the world, decides one thing to do, does it, and then checks whether that actually worked. Repeat until the job is done — or until it's clearly stuck and needs to tap out.
+
+```mermaid
+flowchart TB
+    Start(["📥 Trigger<br/>a job arrives"]) --> Perceive
+
+    subgraph Loop["♻️ THE AGENTIC LOOP"]
+        direction LR
+        Perceive["👀 Perceive<br/>read the current state"]
+        Plan["🧭 Plan<br/>pick the next single action"]
+        Act["✋ Act<br/>call one tool"]
+        Verify["✅ Verify<br/>did it actually work?"]
+        Perceive --> Plan --> Act --> Verify
+    end
+
+    Verify -->|"done"| Finish(["🏁 Finish<br/>report what happened"])
+    Verify -->|"not yet · budget left"| Perceive
+    Verify -->|"stuck · out of budget"| Escalate(["🚨 Escalate<br/>hand to a human"])
+```
+
+The whole playbook below is really just five ways of making this loop trustworthy. The model lives inside the **Plan** box — the smallest box in the picture. Everything else is the part *you* design.
+
+---
+
+## Play 1 — Scope it like a job description, not a wish
+
+The fastest way to get a flaky automation is to ask for too much. "Manage my email" is a wish. "Label each unread email with exactly one topic" is a job. Wishes have no edges, so the agent wanders. Jobs have edges, so the agent finishes.
+
+A good scope answers four questions up front: what *done* means, what the agent is allowed to touch, and when to give up. Write it down as a contract before you write a single prompt.
+
+```
+# A scoped job, not a wish.
+job = {
+  goal:          "Label every unread support email by topic",
+  inputs:        ["the unread email"],
+  allowed_tools: ["read_email", "set_label"],   # and nothing else
+  done_when:     "every unread email has exactly one topic label",
+  give_up_after: 3 attempts,
+}
+```
+
+Notice what this buys you: a clear finish line (so the loop knows when to stop), a short list of allowed tools (so it *can't* go off-script), and a give-up rule (so it can't run forever). You haven't constrained the intelligence — the model still decides *how* to label each email. You've constrained the blast radius.
+
+---
+
+## Play 2 — Give it few tools, small and reversible
+
+Every tool you hand an agent is a door it can walk through. The instinct is to hand over a master key — "here's database access, figure it out." Don't. Hand over the smallest, dullest keys that get the job done, and prefer the ones that don't break anything.
+
+Three rules make a tool safe:
+
+- **Typed and narrow.** The tool accepts a specific shape and rejects anything else. It does not "interpret" sloppy input — it refuses it.
+- **Least power.** A "label email" tool can label. It cannot delete, send, or forward. Capability is granted on purpose, never by accident.
+- **Reversible first.** Where you can, prefer actions you can undo — a label you can remove beats a deletion you can't. For the scary stuff, offer a *dry run* that reports what *would* happen.
+
+```
+tool "set_label":
+  input   { email_id: string, label: one_of[BUG, BILLING, QUESTION, OTHER] }
+  power:  least          # can label; cannot delete, send, or read other inboxes
+  effect: reversible     # a label can be removed if it's wrong
+  on_bad_input: reject with a clear reason — never guess
+```
+
+A bare LLM with raw access is a confident intern with the company credit card. The same model behind three small, reversible tools is a teammate who can only do the job you actually gave them. Same intelligence — wildly different risk.
+
+---
+
+## Play 3 — Never skip the Verify step
+
+This is the play people drop, and it's the one that matters most. It is tempting to assume that because the tool returned "success," the job is done. It isn't. The tool succeeded; the *goal* may not have.
+
+Real automation closes the loop: after acting, it goes back and reads reality to confirm the world actually changed the way it intended. Act-without-verify isn't automation — it's hope on a schedule.
+
+```
+result = act(tool, args)
+
+check = verify(goal, result)     # re-read the world; don't take the tool's word for it
+if check.ok:
+    accept(result)
+else:
+    remember(check.reason)       # feed the failure back into the next Plan
+    retry()                      # the loop runs again — now it knows what went wrong
+```
+
+The quiet magic here is that last bit: a failed verify isn't a dead end, it's *information*. When the reason for failure flows back into the next Plan step, the agent gets a chance to course-correct — which is exactly the thing agents are good at and plain scripts are not. Verification is what turns a guess into a self-correcting loop.
+
+---
+
+## Play 4 — Build the escape hatch
+
+An automation that can't fail safely will eventually fail catastrophically. The two ways a loop goes wrong are *running forever* and *failing silently*. You prevent both with the same move: hard limits, and a loud exit when you hit them.
+
+Give every run a budget — a maximum number of attempts and a ceiling on cost or time. When it blows the budget, the agent doesn't keep grinding and it doesn't pretend it succeeded. It escalates: it stops, packages up what it was doing, and hands the problem to a human.
+
+```
+attempts = 0
+spent    = 0
+
+while not done:
+    if attempts >= MAX_ATTEMPTS or spent >= COST_BUDGET:
+        escalate(reason="hit a wall", context=last_state)   # fail loudly, hand off
+        break
+    step      = run_loop_once()
+    attempts += 1
+    spent    += step.cost
+```
+
+"Escalate to a human" feels like an admission of defeat. It's the opposite. The automations you can trust the most are the ones that know their own limits — they let the agent handle the 95% it's good at and route the weird 5% to someone who can actually decide. A loop with no exit isn't ambitious; it's a runaway bill waiting to happen.
+
+---
+
+## Play 5 — Make every run safe to repeat
+
+Because of Play 4, your automation *will* retry, and because the world is messy, sometimes it will retry an action it already did. If a retry can double-charge a customer or send the same email twice, you don't have an automation — you have a footgun on a timer.
+
+The fix is **idempotency**: make repeating an action a no-op. Give each action a key derived from the job and the operation, and check whether you've already done that exact thing before doing it again.
+
+```
+# Same job + same action = same key. A retry must never charge twice.
+key = idempotency_key(job.id, action)
+
+if already_done(key):
+    return cached_result(key)    # we've done this; just return what happened
+result = act(...)
+record(key, result)              # remember it, so the next retry is safe
+```
+
+Pair this with plain observability — log what the agent perceived, decided, did, and verified at each step. When something does go sideways (and it will), the difference between a five-minute fix and a five-hour mystery is whether you can *see* what the loop was thinking.
+
+---
+
+## The meta-play: should this even be an agent?
+
+The best automation is sometimes not an agent at all. Agents earn their cost on tasks that need judgment over messy, unpredictable input. For everything else, a plain script is cheaper, faster, and easier to trust. Before you reach for an agent, walk the gate:
+
+```mermaid
+flowchart TD
+    Q1{"Is the task<br/>well-defined and<br/>rule-based?"}
+    Q1 -->|yes| Script["⚙️ Write a plain script<br/>cheaper · predictable · testable"]
+    Q1 -->|"no — needs judgment<br/>on messy input"| Q2{"Are mistakes<br/>cheap and reversible?"}
+
+    Q2 -->|"no — high stakes"| Human["🧑 Keep a human deciding<br/>the agent assists, doesn't decide"]
+    Q2 -->|yes| Q3{"Does it repeat<br/>often enough<br/>to be worth it?"}
+
+    Q3 -->|"no — rare one-off"| Hand["🙋 Just do it by hand"]
+    Q3 -->|yes| Agent["🤖 Automate with an agent"]
+```
+
+A surprising number of "we need an AI agent" problems are really a script with three `if` statements, or a decision that should stay with a person. Knowing when *not* to automate is the play that saves you the most pain.
+
+---
+
+## Final Verdict
+
+Effective agentic automation isn't about a bigger model. It's about a small, honest loop wrapped in five disciplines: **scope it tightly, give it few reversible tools, always verify, build an escape hatch, and make every run safe to repeat.**
+
+Run those plays and the model gets to do what it's genuinely good at — making judgment calls on messy input — while the structure around it makes sure the job finishes, stays in bounds, and leaves a trail. The demo proves the agent is clever. The playbook is what makes it dependable.
+
+---
+
+## Further reading
+
+- [Anthropic — Building effective agents](https://www.anthropic.com/research/building-effective-agents) — why simple, composable patterns beat elaborate frameworks.
+- [Google — Agents whitepaper](https://www.kaggle.com/whitepaper-agents) — the perceive-plan-act loop and tool use, from the ground up.
+- [OpenAI — A practical guide to building agents](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) — scoping, guardrails, and human handoff in practice.
+- [Martin Fowler — LLM-powered autonomous agents and the verify loop](https://martinfowler.com/articles/exploring-gen-ai.html) — engineering discipline around non-deterministic systems.
+
+Follow me here: [github.com/soummyaanon](https://github.com/soummyaanon)
+
+### Your AI Agent Works in the Demo. Here's What Breaks in Production
+- URL: https://soumyapanda.me/blogs/ai-agents-demo-to-production/
+- Date: 2026-06-08
+- Tags: ai, agents, agentic-ai, api, governance
+
+# Your AI Agent Works in the Demo. Here's What Breaks in Production.
+
+The demo always works. One prompt, one tool call, a clean answer, and the room nods. Then you put the same agent in front of real users and it starts doing things you never saw coming: repeating itself, calling the wrong tool, confidently doing the wrong thing and leaving no trace of why.
+
+Here's the uncomfortable part: the model didn't get worse. A demo and a product are just different animals. A demo has to work once, for you. A product has to work a thousand times, for strangers, while things fail around it.
+
+After building a few of these, the same three gaps show up every time. The agent has no spine, so it doesn't know how to *work*. It has no safe hands, so it can't *touch* anything without risk. And it has no conscience, so nobody can *answer* for what it did. In plainer words: **workflows, APIs, and governance.**
+
+---
+
+## What "production-ready" actually looks like
+
+```mermaid
+flowchart TB
+    User["👤 User / event<br/>a request comes in"]
+
+    subgraph Agent["🧠 THE AGENT"]
+        Reason["Reasoning loop<br/>• picks the next action<br/>• reads the result, decides again"]
+    end
+
+    subgraph Flow["🔄 WORKFLOW · the spine"]
+        direction LR
+        S1["Step<br/>retry + timeout"]
+        S2["Checkpoint<br/>resume after a crash"]
+        HIL["⏸️ Human approval<br/>when stakes are high"]
+        S1 --> S2 --> HIL
+    end
+
+    subgraph Gate["🔌 API GATEWAY · the hands"]
+        Tools["Typed tools<br/>• validate inputs<br/>• auth + least-privilege scopes<br/>• rate limits"]
+    end
+
+    subgraph Ext["🗄️ THE REAL WORLD"]
+        direction LR
+        DB[("Database")]
+        Mail["Email / Slack"]
+        Pay["Payments / 3rd-party APIs"]
+    end
+
+    subgraph Gov["🛡️ GOVERNANCE · accountability"]
+        direction LR
+        ID["Identity<br/>who is acting"]
+        Pol["Policy<br/>checked before each action"]
+        Log["Audit log<br/>what happened + why"]
+    end
+
+    User --> Agent
+    Agent --> Flow
+    Flow --> Gate
+    Gate --> Ext
+    Gov -. watches .-> Agent
+    Gov -. gates .-> Gate
+    Gov -. records .-> Ext
+```
+
+The model is the smallest box in that picture, and that's the point. Everything around it is what turns a clever demo into something you can leave running. Let's take the three pillars one at a time.
+
+---
+
+## 1. Workflows — give the agent a spine
+
+In the demo, the task is one turn: ask, answer, done. Real tasks aren't like that. "Onboard this customer" is six steps, two of which call flaky services, one of which should wait for a human, and any of which can fail halfway through.
+
+Hand that to a bare LLM loop and you get one of three bad endings: it gives up early, it loops forever, or it quietly skips the step that mattered. The model is good at *deciding* the next move. It is terrible at *guaranteeing* the whole job finishes.
+
+That guarantee is what a workflow gives you. You model the task as explicit steps with retries, timeouts, and checkpoints. The agent still chooses what to do at each step, but the workflow makes sure the step actually ran, retries it when the network blips, pauses for a human when the stakes are high, and picks up where it left off if the process crashes. The agent improvises; the workflow remembers.
+
+---
+
+## 2. APIs — clean hands, not raw access
+
+In the demo, you let the agent run SQL straight against the database, or you hand-roll a one-off function for every little thing it needs. It's fast, and you're the only user. In production, that same direct access is how an agent deletes the wrong rows at 2am over a slightly ambiguous prompt, and that pile of bespoke, untyped tools becomes impossible to secure.
+
+Every capability the agent has should sit behind an API with a contract: typed inputs you can validate, scoped permissions so a "send email" tool can't also drain a bank account, rate limits, and a clear boundary you can reason about. "Tools," in agent-speak, are really just well-governed APIs wearing a friendly name.
+
+The bonus is that an API gateway lets you enforce the boring-but-critical stuff — authentication, quotas, logging — in one place, once, instead of re-implementing it inside every agent you'll ever build. The agent gets hands it can use without you holding your breath.
+
+---
+
+## 3. Governance — someone has to answer for it
+
+In the demo, nobody asks what the agent did. In production, the day it emails the wrong customer, approves a refund it shouldn't have, or burns $400 in tokens overnight, someone *will* ask: "Why did it do that, and who let it?" If your answer is a shrug, you don't have a product. You have a liability.
+
+Governance is the unglamorous trio that answers that question:
+
+- **Identity** — the agent acts *as* a specific, scoped identity, not as a vague "the AI." You always know who was on the keyboard.
+- **Policy** — what it's allowed to do is checked *before* the action, not discovered after. The rules live outside the prompt, where a clever input can't talk its way past them.
+- **Audit** — every meaningful action leaves an immutable record of what happened and why, so you can explain it, debug it, or prove it later.
+
+It sounds like bureaucracy. It's the opposite. Governance is the seatbelt that lets you drive faster — the more you can account for, the more you can safely let the agent do.
+
+---
+
+## Tying it together in code
+
+Here's the shape of a single workflow step. Notice how all three pillars show up in a few lines: the workflow drives it, an API client does the touching, and policy plus audit keep it accountable.
+
+```ts
+// One workflow step. The agent proposes; the system stays in charge.
+// workflow (spine) · api client (hands) · policy + audit (accountability)
+async function runStep(agent: AgentContext, tool: ToolCall) {
+  // GOVERNANCE — check the policy *before* anything happens.
+  const decision = await policy.check({
+    actor: agent.identity,   // a real, scoped identity — not "the AI"
+    action: tool.name,       // e.g. "payments.refund"
+    args: tool.args,
+  });
+  if (!decision.allowed) {
+    await audit.log({ ...tool, actor: agent.identity, status: "blocked", reason: decision.reason });
+    return { ok: false, reason: decision.reason }; // tell the agent why, let it adapt
+  }
+
+  // APIs — go through a typed, scoped client, never the raw system.
+  const result = await api.invoke(tool.name, tool.args, {
+    token: agent.scopedToken, // least-privilege credentials, just for this step
+    timeoutMs: 10_000,
+  });
+
+  // GOVERNANCE — write down what happened, so someone can answer for it later.
+  await audit.log({ ...tool, actor: agent.identity, status: "ok", output: result.summary });
+  return { ok: true, result };
+}
+```
+
+And the workflow is what decides this step runs at all, and what to do when it doesn't:
+
+```ts
+// The spine: retry on failure, pause for a human, survive a crash.
+const step = await withRetry(() => runStep(agent, nextTool), { tries: 3 });
+if (step.needsApproval) await pauseForHuman(step); // resume later, even after a restart
+```
+
+None of this is exotic. It's the same discipline we already apply to any system that touches money, data, or users. We're just pointing it at an agent.
+
+---
+
+## Final Verdict
+
+The model is not your product. The system around it is. Workflows give the agent a spine so the work actually finishes, APIs give it hands it can use without breaking things, and governance gives it the paper trail that lets you sleep at night.
+
+Get those three right and most of your "AI bugs" turn out to be ordinary system bugs — the kind you already know how to fix. The demo proves the model is smart. These three pillars are what make it trustworthy.
+
+---
+
+## Further reading
+
+- [Tyk — AI and enterprise workflows](https://tyk.io/blog/ai-and-enterprise-workflows-essential-tools-and-trends-that-tip-the-balance/) — the workflow layer for real agent tasks.
+- [Kong — Scale and govern agentic infrastructure](https://konghq.com/solutions/agentic-ai-workflows) — treating agents as API traffic you can manage.
+- [Deloitte — API governance for agentic AI](https://www.deloitte.com/us/en/services/consulting/articles/api-governance-agentic-ai.html) — where APIs and governance meet.
+- [IBM — AI agent governance: big challenges, big opportunities](https://www.ibm.com/think/insights/ai-agent-governance) — why accountability is the hard part.
+- [Palo Alto Networks — Agentic AI governance guide](https://www.paloaltonetworks.in/cyberpedia/what-is-agentic-ai-governance) — identity, policy, and guardrails in practice.
+
+Follow me here: [github.com/soummyaanon](https://github.com/soummyaanon)
+
+### Chat History Management: The Hidden Hard Part of Agent Apps
+- URL: https://soumyapanda.me/blogs/chat-history-is-hard/
+- Date: 2026-01-16
+- Tags: ai, agents, chat, architecture, state-management
+
+# Chat History Management: The Hidden Hard Part of Agent Apps
+
+When you build an agent or a chat agent, the hardest part is not the model call. It is the history. The moment you add streaming, title generation, session switching, and multi-agent support, state turns into a moving target. The bugs are subtle and the UX regressions are real.
+
+This post is a simple, practical summary of what makes chat history painful and how to structure it so it stays reliable.
+
+---
+
+## Why chat history feels fragile
+
+**1) Streaming changes timing.**  
+Messages do not arrive as a single block. If you save too early, you store partial responses. If you save too late, you lose data on navigation or refresh.
+
+**2) Sessions are not just IDs.**  
+You are managing a lifecycle: create, stream, persist, title, reload, delete. Each step has different timing constraints.
+
+**3) Multi-agent is a multiplier.**  
+The moment you add multiple agents, you need separate active session tracking and clean isolation between histories.
+
+**4) UX expectations are strict.**  
+A single bad reload or lost message breaks trust. Users remember chat history glitches more than model quality.
+
+---
+
+## A simple, reliable architecture
+
+Keep it modular and boring:
+
+- **Database**: `ChatSession` + `ChatMessage`, with a cascade delete.
+- **API**: CRUD routes for sessions and a `generate-title` endpoint.
+- **Client store**: a single source of truth with `sessions`, `activeSessionId` per agent, and a small set of actions.
+- **UI**: a history modal and a chat panel that only talks to the store.
+
+The trick is not the structure, it is the timing.
+
+---
+
+## Architecture overview
+
+### System diagram
+
+```mermaid
+flowchart TB
+    subgraph UI["🖥️ USER INTERFACE"]
+        direction LR
+        ChatInput["**ChatInput**<br/>• Send message<br/>• Model selection<br/>• Web search toggle"]
+        ChatMessage["**ChatMessage**<br/>• Render messages<br/>• Tool calls<br/>• Reasoning display"]
+        ChatHistoryModal["**ChatHistoryModal**<br/>• List sessions<br/>• Select / Delete<br/>• New chat"]
+    end
+
+    subgraph State["📦 STATE MANAGEMENT"]
+        ChatHistoryStore["**ChatHistoryStore**<br/>━━━━━━━━━━━━━━━━━━━━<br/>• sessions: ChatSession[]<br/>• activeSessionId: { [agentType]: string | null }<br/>━━━━━━━━━━━━━━━━━━━━<br/>fetchSessions() • createSession()<br/>deleteSession() • updateSessionMessages()"]
+    end
+
+    subgraph API["🔌 API LAYER"]
+        direction LR
+        GET_Sessions["GET /sessions<br/>*List all*"]
+        POST_Sessions["POST /sessions<br/>*Create new*"]
+        PATCH_Session["PATCH /sessions/:id<br/>*Update messages/title*"]
+        GET_Session["GET /:id<br/>*Get with messages*"]
+        DELETE_Session["DELETE /:id<br/>*Delete session*"]
+        POST_Title["POST /generate-title<br/>*AI-powered titles*"]
+    end
+
+    subgraph DB["🗄️ DATABASE"]
+        direction LR
+        ChatSession["**ChatSession**<br/>• id, title, agentType<br/>• userId, timestamps<br/>• lastResponseId"]
+        ChatMessageDB["**ChatMessage**<br/>• id, role, content, parts<br/>• sessionId (FK)"]
+        ChatSession --- ChatMessageDB
+    end
+
+    UI --> State
+    State --> API
+    API --> DB
+```
+
+---
+
+## A tiny guard that saves you
+
+This single hash check prevents double-writes during streaming:
+
+```ts
+const messagesHash = JSON.stringify(messages.map((message) => message.id))
+if (messagesHash === lastSavedMessagesRef.current) return
+lastSavedMessagesRef.current = messagesHash
+await updateSessionMessages(currentSessionId, messages)
+```
+
+---
+
+## Timing rules that prevent most bugs
+
+1) **Create a session only after the first message finishes streaming.**  
+This avoids empty sessions and racing updates.
+
+2) **Persist messages only after streaming completes.**  
+Streaming means incomplete state; save after `status === 'ready'`.
+
+3) **Use hash-based deduping before saves.**  
+If message IDs did not change, skip the save. It prevents double writes.
+
+4) **Generate a title once per session.**  
+Track it in a ref or flag when loading history so it does not re-run.
+
+5) **Guard against session switching races.**  
+Use refs like `isCreatingSessionRef` and `justCreatedSessionRef` to skip the load effect when you know the state is still forming.
+
+---
+
+## A tiny session guard
+
+This keeps history loading from racing new session creation:
+
+```ts
+if (
+  currentSessionId &&
+  (isCreatingSessionRef.current ||
+    justCreatedSessionRef.current === currentSessionId)
+) {
+  if (justCreatedSessionRef.current === currentSessionId) {
+    justCreatedSessionRef.current = null
+  }
+  return
+}
+```
+
+---
+
+## Important details you should not skip
+
+- **Schema fields that matter**: `agentType` for multi-agent isolation, `lastResponseId` for reasoning model continuity, and `parts` for tool calls and citations.
+- **API surface**: list, create, get, update, delete sessions, plus a `generate-title` endpoint for smart titles.
+- **Store shape**: keep `sessions`, `activeSessionId` per agent, and an `isInitialized` flag to avoid double loads.
+- **Streaming flow**: save only after the stream ends and dedupe with a hash of message IDs.
+- **Title generation**: generate once, then store it and mark the session as titled on load.
+- **Ownership checks**: every read or write should verify the session belongs to the user.
+- **Deletion safety**: cascade delete messages to avoid orphans.
+
+---
+
+## The minimal checklist
+
+- Schema with `ChatSession` and `ChatMessage`
+- CRUD APIs (list, create, get, update, delete)
+- Store with session list + active session per agent
+- Load history with a clear loading state
+- Save only after streaming ends
+- Deduplicate saves with a hash of message IDs
+- Title generation runs once per session
+- Deleting a session clears it if it is active
+
+---
+
+## Final Verdict
+
+If your agent feels flaky, it is probably a history problem. Solve the lifecycle first, keep the model call simple, and most of the "AI bugs" disappear. The agent is only as good as the memory you can reliably store and restore.
+
+### Modern React & shadcn/ui Collections: The Ultimate Curated List
+- URL: https://soumyapanda.me/blogs/modern-react-shadcn-ui-collections/
+- Date: 2026-01-03
+- Tags: react, shadcn, tailwind, ui-components, web-design
+
+# Modern React / shadcn UI Collections
+
+The React ecosystem is evolving rapidly, and **shadcn/ui** has revolutionized how we think about component libraries. Instead of installing heavy dependencies, we're now "owning" our components through copy-paste registries. This shift has birthed a new wave of premium and open source collections that extend shadcn's philosophy.
+
+Here is a curated list of component libraries, blocks, and registries focused on React, Tailwind, and shadcn-compatible ecosystems.
+
+---
+
+## 🎨 Premium & Uncommon Patterns
+
+### 1. Skiper UI
+- **Site**: [skiper-ui.com](https://skiper-ui.com)  
+- **Type**: Premium shadcn-compatible components and uncommon patterns.  
+- **Open source**: Source available to copy for your projects, but the full Pro set is paid; not a pure MIT OSS kit.  
+- **Builder**: Skiper UI (indie creator, inspired by Devouring Details / Rauno).  
+- **GitHub**: Not publicly advertised; used via shadcn registry.  
+
+### 2. shadcndesign Pro Blocks
+- **Site**: [shadcndesign.com/pro-blocks](https://www.shadcndesign.com/pro-blocks)  
+- **Type**: Pro Figma + React blocks for shadcn-style UIs.  
+- **Open source**: No, commercial product.  
+- **Builder**: shadcn design team.  
+- **GitHub**: None public for Pro Blocks.  
+
+### 3. Aceternity UI / Aceternity Pro
+- **Sites**: [Free](https://ui.aceternity.com) | [Pro](https://pro.aceternity.com)  
+- **Type**: Animated React + Tailwind components and premium block collections.  
+- **Open source**: Free snippets are copy‑paste; Pro is commercial, not OSS.  
+- **Builder**: Aceternity UI team.  
+- **GitHub**: No single official OSS package advertised.  
+
+---
+
+## 🚀 Open Source & Community Driven
+
+### 4. SmoothUI
+- **Site**: [smoothui.dev](https://smoothui.dev)  
+- **Type**: Motion‑driven React component library (React + Tailwind + Motion).  
+- **Open source**: Yes, MIT‑style library.  
+- **Builder**: Eduardo López (`educlopez`) and contributors.  
+- **GitHub**: [github.com/educlopez/smoothui](https://github.com/educlopez/smoothui)  
+
+### 5. Magic UI
+- **Site**: [magicui.design](https://magicui.design)  
+- **Type**: 150+ animated React components and effects.  
+- **Open source**: Yes, free and open source (MIT).  
+- **Builder**: Magic UI team / MagicUIDesign org.  
+- **GitHub**: [github.com/magicuidesign/magicui](https://github.com/magicuidesign/magicui)  
+
+### 6. ReactBits
+- **Site**: [reactbits.dev](https://reactbits.dev)  
+- **Type**: Animated React components (sections, effects, backgrounds, etc.).  
+- **Open source**: Yes, source‑available with “MIT + Commons Clause” license.  
+- **Builder**: David Haz (`DavidHDev`).  
+- **GitHub**: [github.com/DavidHDev/react-bits](https://github.com/DavidHDev/react-bits)  
+
+### 7. Kibo UI
+- **Site**: [kibo-ui.com](https://www.kibo-ui.com)  
+- **Type**: Advanced shadcn-compatible component registry.  
+- **Open source**: Yes, “free and open source, forever.”  
+- **Builder**: Kibo UI / shadcnblocks.  
+- **GitHub**: [github.com/shadcnblocks/kibo](https://github.com/shadcnblocks/kibo)  
+
+### 8. Origin UI (COSS)
+- **Sites**: [Origin React](https://coss.com/origin) | [Vue](https://www.originui-vue.com)
+- **Type**: Tailwind component sets for marketing, app UIs, etc.
+- **Open source**: Yes, described as free and open source.
+- **Builder**: Created by designers/devs including @pacovitiello and @DavidePacilio.
+- **GitHub**: Figma file is public; components available via COSS.
+
+### 9. 21st.dev
+- **Site**: [21st.dev](https://21st.dev)
+- **Type**: Largest marketplace of shadcn/ui-based React Tailwind components, blocks and hooks.
+- **Open source**: Yes, MIT licensed marketplace with community contributions.
+- **Builder**: [@serafimcloud](https://x.com/serafimcloud)
+- **GitHub**: [github.com/serafimcloud/21st](https://github.com/serafimcloud/21st)
+
+---
+
+## 📦 Blocks, Templates & Tooling
+
+### 10. Cult UI / Cult UI Pro
+- **Sites**: [Main](https://www.cult-ui.com) | [Pro Blocks](https://pro.cult-ui.com)
+- **Type**: Shadcn components, blocks, and templates.
+- **Open source**: Base library has free/OSS components; Pro is paid.
+- **Builder**: Cult UI team.
+
+### 11. Blocks.so
+- **Site**: [blocks.so](https://blocks.so)
+- **Type**: Blocks/templates platform around modern UI (shadcn/Tailwind style).
+- **Open source**: Appears commercial.
+
+### 12. Shadcraft
+- **Site**: [shadcraft.com](https://shadcraft.com)
+- **Type**: Shadcn components/blocks.
+- **Open source**: Marketed as a product.
+
+### 13. shadcnui-blocks.com
+- **Site**: [shadcnui-blocks.com](https://shadcnui-blocks.com)
+- **Type**: Blocks/templates for shadcn UI.
+- **Open source**: Appears commercial.
+
+### 14. Shadcn Studio
+- **Site**: [shadcnstudio.com](https://shadcnstudio.com)
+- **Type**: Studio/tooling around shadcn components.
+- **Open source**: Tooling focused platform.
+
+### 15. Shadcnblocks
+- **Site**: [shadcnblocks.com](https://www.shadcnblocks.com/)
+- **Type**: Premium shadcn/ui blocks & templates; also provides a free set of marketing blocks.
+- **Open source**: This repo contains the **free** blocks code; Shadcnblocks as a whole is still a commercial product with a separate license agreement for paid content.
+- **Founder**: Rob Austin (@ausrobdev).
+- **GitHub (free blocks)**: [github.com/shadcnblocks/shadcn-ui-blocks](https://github.com/shadcnblocks/shadcn-ui-blocks)
+- **Free blocks page**: [shadcnblocks.com/blocks/free](https://shadcnblocks.com/blocks/free)
+- **CLI docs**: [docs.shadcnblocks.com/blocks/shadcn-cli/](https://docs.shadcnblocks.com/blocks/shadcn-cli/)
+
+---
+
+## 🧪 Specialized & Unique Kits
+
+### 16. 8bitcn
+- **Site**: [8bitcn.com](https://8bitcn.com)
+- **Type**: 8‑bit style / themed UI blocks. Very unique aesthetic!
+- **Open source**: Appears commercial.
+
+### 17. HextaUI
+- **Site**: [hextaui.com](https://hextaui.com)
+- **Type**: UI components/blocks.
+- **Open source**: No clear OSS repo advertised.
+
+### 18. Tailark Pro
+- **Site**: [pro.tailark.com](https://pro.tailark.com)
+- **Type**: Tailwind/shadcn templates and blocks.
+- **Open source**: Commercial.
+
+### 19. SolaceUI
+- **Site**: [solaceui.com](https://solaceui.com)
+- **Type**: UI kit / components (Tailwind/shadcn‑style).
+
+### 20. NexUI
+- **Site**: [nexui.xyz](https://nexui.xyz)
+- **Type**: Components/blocks collection.
+
+### 21. ui.kitze.io
+- **Site**: [ui.kitze.io](https://ui.kitze.io)
+- **Type**: UI components / snippets by Kitze.
+
+### 22. components.work
+- **Site**: [components.work](https://components.work)
+- **Type**: Component marketplace/collection aggregator.  
+
+---
+
+## Conclusion
+
+The shadcn ecosystem is thriving. Whether you are looking for free MIT-licensed components like **Magic UI**, **SmoothUI**, and **ReactBits**, or premium polished blocks like **Aceternity** and **Skiper**, there's something for every project. Don't forget about **21st.dev** ([https://21st.dev/](https://21st.dev/)) - the largest marketplace of shadcn/ui-based React Tailwind components, blocks and hooks, built by [@serafimcloud](https://x.com/serafimcloud) ([GitHub](https://github.com/serafimcloud/21st)). These libraries save weeks of development time by providing high-quality, pre-built components that you can still fully customize within your own codebase.
+
+Follow Me here: [https://github.com/soummyaanon](https://github.com/soummyaanon)
+
+Happy building! 🚀
+
+### The Bhagavad Gita My viewpoint as a Software Engineer
+- URL: https://soumyapanda.me/blogs/gita_tech_blog/
+- Date: 2025-10-07
+- Tags: philosophy, technology, mindfulness, productivity, digital-life
+
+# The Bhagavad Gita in the Digital Age: Ancient Wisdom for Modern Tech Life
+
+In an era of endless notifications, AI disruptions, and digital burnout, a 5,000-year-old conversation on a battlefield holds surprisingly relevant answers. The Bhagavad Gita, often seen as a spiritual text, is actually a profound manual for navigating life's complexities—including our hyperconnected, technology-driven world.
+
+## The Crisis of Choice Paralysis
+
+Arjuna stood frozen on the battlefield, overwhelmed by infinite possibilities and their consequences. Sound familiar? Today, we face our own version: analysis paralysis in career choices, decision fatigue from endless options, and the anxiety of FOMO scrolling through social media.
+
+**श्रेयान्स्वधर्मो विगुणः परधर्मात्स्वनुष्ठितात् ।  
+स्वधर्मे निधनं श्रेयः परधर्मो भयावहः ॥**
+
+*"It is better to perform one's own duties imperfectly than to master the duties of another. Even death in one's own dharma is better; another's dharma brings danger."* (3.35)
+
+In today's context: Stop comparing your career path to someone else's LinkedIn highlight reel. That influencer's lifestyle, your colleague's promotion, your friend's startup success—they're walking their path. Your authentic journey, even with its stumbles, is more valuable than a perfect imitation of someone else's life.
+
+## Karma Yoga: The Antidote to Hustle Culture Burnout
+
+We live in an age obsessed with outcomes: engagement metrics, quarterly targets, viral posts, productivity hacks. The Gita presents a radical alternative—Karma Yoga.
+
+**कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ।  
+मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि ॥**
+
+*"You have a right to perform your prescribed duties, but you are not entitled to the fruits of your actions. Never consider yourself to be the cause of the results, and never be attached to inaction."* (2.47)
+
+This isn't about not caring—it's about sustainable excellence. Code your project with full dedication, but don't let your self-worth depend on whether it gets upvoted on Reddit. Create content with sincerity, but don't spiral when the algorithm doesn't favor you. Focus on the craft, not the clout.
+
+Tech giants are learning this the hard way: companies that chase only metrics often lose their soul. Those that focus on genuine value creation (the karma) often find success (the fruit) follows naturally.
+
+## Steadiness of Mind: Digital Detox, Ancient Style
+
+**युक्ताहारविहारस्य युक्तचेष्टस्य कर्मसु ।  
+युक्तस्वप्नावबोधस्य योगो भवति दुःखहा ॥**
+
+*"Those who are moderate in eating, sleeping, working, and recreation can mitigate all sorrows by practicing yoga."* (6.17)
+
+Krishna's message: balance. Modern translation? Your smartphone shouldn't be the first thing you touch in the morning and the last at night. That 3 AM coding session might seem productive, but your brain needs rest to function optimally.
+
+The Gita advocates for "yukta"—appropriateness and moderation. Apply this to:
+- **Screen time**: Use technology purposefully, not compulsively
+- **Information consumption**: Curate your feeds; not every trending topic deserves your mental energy
+- **Work-life integration**: Your worth isn't your output; you're not a machine learning model
+
+## AI and Consciousness: The Ultimate Question
+
+As we develop artificial intelligence, we're grappling with questions about consciousness, self, and identity. The Gita addressed this millennia ago:
+
+**न जायते म्रियते वा कदाचिन्नायं भूत्वा भविता वा न भूयः ।  
+अजो नित्यः शाश्वतोऽयं पुराणो न हन्यते हन्यमाने शरीरे ॥**
+
+*"The soul is neither born, nor does it ever die; nor having once existed, does it ever cease to be. The soul is without birth, eternal, immortal, and ageless. It is not destroyed when the body is destroyed."* (2.20)
+
+While we may create intelligent systems, the Gita prompts us to ask: What is consciousness beyond computation? Can algorithms ever replicate the awareness that observes thoughts rather than just generating them?
+
+In our quest to create artificial general intelligence, we're forced to confront what makes human consciousness unique—a question Krishna answered by distinguishing the eternal observer (Atman) from the changing mind-body complex.
+
+## Detachment in the Age of Addiction
+
+Social media platforms are engineered for attachment—to likes, to validation, to constant stimulation. The Gita's concept of detachment isn't about becoming cold or indifferent; it's about freedom.
+
+**योगस्थः कुरु कर्माणि सङ्गं त्यक्त्वा धनञ्जय ।  
+सिद्ध्यसिद्ध्योः समो भूत्वा समत्वं योग उच्यते ॥**
+
+*"Perform your duty equipoised, abandoning all attachment to success or failure. Such equanimity is called Yoga."* (2.48)
+
+Ship your product. Post your creation. Launch your idea. But don't let your peace depend on the market's response. This equanimity isn't resignation—it's resilience. The most innovative tech leaders often speak of this: loving the problem more than the solution, the process more than the applause.
+
+## The Final Lesson: Be the Observer
+
+In a world where we're constantly distracted, fragmented across apps and identities, the Gita offers perhaps its most radical teaching: You are not your thoughts, your job title, your social media persona, or even your achievements.
+
+**इन्द्रियाणि पराण्याहुरिन्द्रियेभ्यः परं मनः ।  
+मनसस्तु परा बुद्धिर्यो बुद्धेः परतस्तु सः ॥**
+
+*"The senses are superior to the body, the mind is superior to the senses, the intellect is superior to the mind, and superior even to the intellect is the soul."* (3.42)
+
+Every time you doom-scroll, you're identifying with the mind's restlessness. Every time you pause and observe that urge without acting on it, you're accessing that higher awareness Krishna speaks of. That space between stimulus (notification) and response (grabbing your phone) is where freedom lives.
+
+---
+
+## Conclusion: Your Battlefield Awaits
+
+Arjuna's battlefield was Kurukshetra. Yours might be a startup garage, a corporate cubicle, a creative studio, or simply the relationship with your own mind in this overwhelming digital age. The weapons have changed from bows to browsers, but the fundamental challenges remain: How do we act without anxiety? How do we engage without attachment? How do we live purposefully in a world designed to distract us?
+
+The Bhagavad Gita doesn't promise easy answers or quick hacks. Instead, it offers something more valuable: a framework for living with clarity, purpose, and peace—no matter how much the external world changes.
+
+As Krishna told Arjuna: **"Now stand up and fight."**
+
+In today's language: Log off when you need to. But when you're in the arena—create, build, contribute—do it with full presence and zero attachment to the applause.
+
+That's the real revolution.
+
+<div style="text-align: center;">
+  <img src="https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/604fe3e0-240c-511c-afd2-bce94511f39a/cbdf3837-d087-5cfc-9990-bbdf29cecb79.jpg" alt="Ancient wisdom meets modern technology - Bhagavad Gita in the digital age" style="max-width: 100%; height: auto;" />
+</div>
