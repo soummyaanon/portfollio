@@ -64,8 +64,20 @@ export const AnimatedThemeToggler = ({ className }: Props) => {
   }, [isDark])
 
   return (
-    <button ref={buttonRef} onClick={toggleTheme} className={cn(className)}>
-      {isDark ? <Sun /> : <Moon />}
+    // The icon is the only content, so without an explicit name this button reaches the
+    // accessibility tree — and any agent reading it — as an unlabelled control. The label
+    // names the action rather than the current state, because that is what a caller needs
+    // to decide whether to press it. `aria-hidden` on the glyph stops a screen reader
+    // announcing the raw SVG alongside it.
+    <button
+      ref={buttonRef}
+      type="button"
+      onClick={toggleTheme}
+      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      className={cn(className)}
+    >
+      {isDark ? <Sun aria-hidden /> : <Moon aria-hidden />}
     </button>
   )
 }

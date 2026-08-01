@@ -330,23 +330,51 @@ const DockIcon = ({
     } as React.HTMLAttributes<HTMLElement> & Record<string, unknown>)
   })
 
-  const iconElement = (
+  /**
+   * An icon that does something is a button, not a div with an onClick. As a div it is
+   * unreachable by keyboard, has no role, and carries no name — so the whole dock was
+   * invisible to assistive tech and to any agent reading the accessibility tree.
+   *
+   * The one icon that must stay a div is the theme toggle: it has no `onClick` of its own
+   * because it wraps a real `<button>`, and a button inside a button is invalid markup that
+   * browsers silently unnest. Keying off `onClick` picks the right element every time
+   * without a second prop to keep in sync.
+   */
+  const isInteractive = typeof props.onClick === "function"
+
+  const shellStyle = { width: scaleSize, height: scaleSize, padding: paddingValue }
+  const shellClass = cn(
+    "flex aspect-square cursor-pointer items-center justify-center rounded-full",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground",
+    disableMagnification && "hover:bg-muted-foreground transition-colors",
+    className
+  )
+  const inner = (
     <motion.div
-      ref={ref}
-      {...props}
-      style={{ width: scaleSize, height: scaleSize, padding: paddingValue }}
-      className={cn(
-        "flex aspect-square cursor-pointer items-center justify-center rounded-full",
-        disableMagnification && "hover:bg-muted-foreground transition-colors",
-        className
-      )}
+      style={{ scale: iconScale }}
+      className="flex h-full w-full items-center justify-center"
     >
-      <motion.div
-        style={{ scale: iconScale }}
-        className="flex h-full w-full items-center justify-center"
-      >
-        {sizedChildren}
-      </motion.div>
+      {sizedChildren}
+    </motion.div>
+  )
+
+  // Two branches rather than a computed tag, because the props are typed against a div and
+  // a button's handlers are not the same type. Casting once here is cheaper than making the
+  // whole prop surface generic over the element.
+  const iconElement = isInteractive ? (
+    <motion.button
+      ref={ref as unknown as React.Ref<HTMLButtonElement>}
+      {...(props as unknown as React.ComponentProps<typeof motion.button>)}
+      type="button"
+      aria-label={tooltip}
+      style={shellStyle}
+      className={shellClass}
+    >
+      {inner}
+    </motion.button>
+  ) : (
+    <motion.div ref={ref} {...props} style={shellStyle} className={shellClass}>
+      {inner}
     </motion.div>
   )
 
@@ -407,6 +435,9 @@ const DockSeparator = ({
 
   return (
     <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Drag to resize dock"
       className={cn(
         "w-2 bg-border cursor-ns-resize hover:bg-primary/50 transition-all duration-200 rounded-sm flex items-center justify-center",
         isDragging && "bg-primary scale-110 shadow-lg",
