@@ -41,10 +41,17 @@ export interface Role {
   readonly from: string
   /** `YYYY-MM`, or null while current. */
   readonly until: string | null
-  readonly location: string
-  readonly remote: boolean
-  readonly summary: string
-  readonly stack: readonly string[]
+  /**
+   * Everything below is optional, because a role you started weeks ago has an org, a title
+   * and a start date long before it has a summary worth publishing. Omitting a field is a
+   * supported state: the reading view drops the row's disclosure entirely when there is
+   * nothing behind it, and the machine view simply has no line for it. The alternative —
+   * requiring every field — is what makes people write filler.
+   */
+  readonly location?: string
+  readonly remote?: boolean
+  readonly summary?: string
+  readonly stack?: readonly string[]
   readonly logo?: string
 }
 
@@ -106,11 +113,22 @@ export const person: Person = {
 
 export const roles: readonly Role[] = [
   {
+    // Location and stack are not filled in yet — see the note in the Role interface for why
+    // that is allowed rather than stubbed. `title` defaults to the person's stated title
+    // because none was given for this role specifically.
+    id: 'blacngreen',
+    org: 'BlacNgreen',
+    title: person.title,
+    from: '2026-06',
+    until: null,
+    summary: 'Building automation across internal processes to raise organisational efficiency.',
+  },
+  {
     id: 'wybit',
     org: 'Wybit',
     title: 'Software Engineer',
     from: '2025-07',
-    until: null,
+    until: '2026-06',
     location: 'Orlando, Florida, United States',
     remote: true,
     summary: 'Developing agents that are going to reshape healthcare.',

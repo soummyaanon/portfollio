@@ -108,9 +108,9 @@ function buildFull(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): string {
     out.push(`- Period: ${formatPeriod(role.from, role.until)}`)
     out.push(`- From: ${role.from}`)
     out.push(`- Until: ${role.until ?? 'present'}`)
-    out.push(`- Location: ${role.location}${role.remote ? ' (remote)' : ''}`)
-    out.push(`- Summary: ${role.summary}`)
-    out.push(`- Stack: ${role.stack.join(', ')}`)
+    if (role.location) out.push(`- Location: ${role.location}${role.remote ? ' (remote)' : ''}`)
+    if (role.summary) out.push(`- Summary: ${role.summary}`)
+    if (role.stack) out.push(`- Stack: ${role.stack.join(', ')}`)
   }
   out.push('')
 

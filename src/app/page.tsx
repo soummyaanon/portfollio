@@ -4,9 +4,18 @@ import { getAllBlogPosts } from '@/lib/blogs'
 import { PortfolioDocument } from '@/components/document/PortfolioDocument'
 import type { PostSummary } from '@/components/document/types'
 import { JsonLd } from '@/components/JsonLd'
-import { graph, personSchema, projectSchema, websiteSchema } from '@/lib/seo'
-import { projects } from '@/data/profile'
-import { github } from '@/data/github'
+import {
+  absoluteUrl,
+  graph,
+  itemListSchema,
+  organisationSchemas,
+  personSchema,
+  profilePageSchema,
+  projectSchema,
+  SITE_URL,
+  websiteSchema,
+} from '@/lib/seo'
+import { person, projects, roles } from '@/data/profile'
 import GitHubContributions from './components/GitHubContributions'
 
 const DESCRIPTION =
@@ -36,20 +45,42 @@ export default async function Home() {
     excerpt: post.excerpt,
   }))
 
+  /**
+   * Derived from the content rather than the clock. A build timestamp would change the
+   * graph on every deploy and tell crawlers the page was revised when nothing about it
+   * was; the newest fact on the page is the honest answer, and it stays stable between
+   * builds that changed nothing.
+   */
+  const dateModified = [
+    ...roles.map((role) => `${role.until ?? role.from}-01`),
+    ...posts.map((post) => post.date),
+  ].sort().at(-1) ?? new Date().toISOString().slice(0, 10)
+
   return (
     <main>
       <JsonLd
         json={graph(
-          personSchema(),
+          profilePageSchema({ description: DESCRIPTION, dateModified }),
+          personSchema(DESCRIPTION),
           websiteSchema(DESCRIPTION),
+          ...organisationSchemas(),
           ...projects.map(projectSchema),
+          itemListSchema(
+            `${SITE_URL}/#projects`,
+            `Projects by ${person.name}`,
+            projects.map((project) => ({ name: project.name, url: project.url })),
+          ),
+          itemListSchema(
+            `${SITE_URL}/#writing`,
+            'Writing',
+            summaries.map((post) => ({
+              name: post.title,
+              url: absoluteUrl(`/blogs/${post.slug}/`),
+            })),
+          ),
         )}
       />
-      <PortfolioDocument
-        posts={summaries}
-        commits={github.commits}
-        contributions={<GitHubContributions />}
-      />
+      <PortfolioDocument posts={summaries} contributions={<GitHubContributions />} />
     </main>
   )
 }

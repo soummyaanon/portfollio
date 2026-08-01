@@ -28,7 +28,7 @@ export default function GitHubContributions() {
     return (
       <section>
         <SectionHead label="Contributions" />
-        <p className="mt-[var(--space-group)] text-fine text-muted-foreground">
+        <p className="measure-prose mt-[var(--space-group)] text-center text-fine text-muted-foreground">
           Calendar data is generated at build time and is not available for this build.
         </p>
       </section>
@@ -48,7 +48,7 @@ export default function GitHubContributions() {
 
       {/* Year selection is the only interactive part, and it is text with a rule under the
           active year — not a row of filled pills. */}
-      <div className="mt-[var(--space-tight)] flex flex-wrap gap-x-4 gap-y-1">
+      <div className="mt-[var(--space-group)] flex flex-wrap justify-center gap-x-4 gap-y-1">
         {YEARS.map((option) => {
           const isActive = option === year
 
@@ -70,7 +70,9 @@ export default function GitHubContributions() {
         })}
       </div>
 
-      <div className="mt-[var(--space-group)]">
+      {/* Centred on the page axis like every other band, and capped at the reading column
+          so a 53-week grid does not become the widest thing on the page. */}
+      <div className="measure-column mt-[var(--space-group)]">
         {/* Copied because ContributionGraph's prop is a mutable array and the generated
             data is readonly. */}
         <ContributionGraph data={[...days]} year={year} showLegend showTooltips />

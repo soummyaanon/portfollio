@@ -17,10 +17,16 @@
 
 ## Experience
 
-### Wybit — Software Engineer
-- Period: Jul 2025 — Present
-- From: 2025-07
+### BlacNgreen — Software Engineer
+- Period: Jun 2026 — Present
+- From: 2026-06
 - Until: present
+- Summary: Building automation across internal processes to raise organisational efficiency.
+
+### Wybit — Software Engineer
+- Period: Jul 2025 — Jun 2026
+- From: 2025-07
+- Until: 2026-06
 - Location: Orlando, Florida, United States (remote)
 - Summary: Developing agents that are going to reshape healthcare.
 - Stack: OpenAI, Artificial Intelligence, Next.js, SaaS, Software Design

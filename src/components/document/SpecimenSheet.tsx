@@ -80,10 +80,10 @@ function serialise(posts: readonly PostSummary[]): string {
     lines.push(`title     ${role.title}`)
     lines.push(`from      ${role.from}`)
     lines.push(`until     ${role.until ?? 'null'}`)
-    lines.push(`location  ${role.location}`)
-    lines.push(`remote    ${role.remote}`)
-    lines.push(`summary   ${role.summary}`)
-    lines.push(`stack     ${arrayLiteral(role.stack)}`)
+    if (role.location) lines.push(`location  ${role.location}`)
+    if (role.remote !== undefined) lines.push(`remote    ${role.remote}`)
+    if (role.summary) lines.push(`summary   ${role.summary}`)
+    if (role.stack) lines.push(`stack     ${arrayLiteral(role.stack)}`)
   })
 
   education.forEach((entry, index) => {
@@ -262,10 +262,14 @@ export function SpecimenSheet({ posts }: { readonly posts: readonly PostSummary[
               {role.until ?? <span className="text-signal-ink">null</span>}
             </Fact>
           </FieldRow>
-          <FieldRow name="location">{role.location}</FieldRow>
-          <FieldRow name="remote">{String(role.remote)}</FieldRow>
-          <FieldRow name="summary">{role.summary}</FieldRow>
-          <FieldRow name="stack">{arrayLiteral(role.stack)}</FieldRow>
+          {/* Absent fields get no row at all rather than a row reading "undefined" — the
+              record should say nothing where it knows nothing. */}
+          {role.location && <FieldRow name="location">{role.location}</FieldRow>}
+          {role.remote !== undefined && (
+            <FieldRow name="remote">{String(role.remote)}</FieldRow>
+          )}
+          {role.summary && <FieldRow name="summary">{role.summary}</FieldRow>}
+          {role.stack && <FieldRow name="stack">{arrayLiteral(role.stack)}</FieldRow>}
         </RecordBlock>
       ))}
 

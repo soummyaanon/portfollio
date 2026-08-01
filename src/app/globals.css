@@ -6,26 +6,36 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Deliberately the same face. Space Mono is the display voice and the machine voice —
+     the difference between a title and a field key is size and case, not family. */
+  --font-display: var(--font-space-mono), ui-monospace, monospace;
+  --font-mono: var(--font-space-mono), ui-monospace, monospace;
   --color-signal: var(--signal);
   --color-signal-ink: var(--signal-ink);
 
-  /* Fluid type scale. The old page lived entirely between 12px and 24px; display now
-     reaches ~6.5rem so the composition has an actual top end. */
-  --text-caption: clamp(0.6875rem, 0.67rem + 0.08vw, 0.75rem);
-  --text-fine: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
-  --text-body: clamp(0.9375rem, 0.91rem + 0.15vw, 1.0625rem);
-  --text-lead: clamp(1.0625rem, 1rem + 0.32vw, 1.3125rem);
-  --text-title: clamp(1.375rem, 1.2rem + 0.85vw, 2rem);
-  --text-display: clamp(2.5rem, 1.35rem + 5.2vw, 6rem);
+  /* Fluid type scale. Hierarchy has to come from size alone here: one colour, one rule
+     weight, no boxes, and a display face with only two weights.
+
+     Every step is set roughly a third below where it started. A monospace occupies far
+     more width per character than the proportional faces this scale was first cut for, so
+     sizes that read as normal in a grotesque read as shouting in Space Mono — the name at
+     5.25rem was 630px of type. Restraint at the top end is also what buys the hierarchy:
+     the display step is still 5× the label, which is all the separation a page with one
+     colour and one rule weight needs. */
+  --text-eyebrow: clamp(0.5625rem, 0.55rem + 0.06vw, 0.625rem);
+  --text-caption: clamp(0.625rem, 0.61rem + 0.07vw, 0.6875rem);
+  --text-fine: clamp(0.75rem, 0.735rem + 0.07vw, 0.8125rem);
+  --text-body: clamp(0.875rem, 0.855rem + 0.1vw, 0.9375rem);
+  --text-lead: clamp(0.9375rem, 0.89rem + 0.24vw, 1.125rem);
+  --text-title: clamp(0.9375rem, 0.88rem + 0.3vw, 1.1875rem);
+  --text-display: clamp(1.5rem, 0.62rem + 3.5vw, 3.25rem);
 
   /* Spacing rhythm — deliberately non-uniform, tight groupings against generous breaks. */
   --space-hairline: 0.375rem;
   --space-tight: 0.75rem;
   --space-group: clamp(1.25rem, 1rem + 1vw, 2rem);
-  --space-section: clamp(3rem, 2rem + 3.2vw, 5.5rem);
+  --space-section: clamp(3rem, 2rem + 3.6vw, 5.75rem);
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -130,45 +140,62 @@
 :root {
   --radius: 0.75rem;
 
-  /* Warm paper, warm ink. Nothing here is a pure or neutral grey: every neutral carries a
-     trace of the amber signal hue (~70°) so the palette reads as one material. */
-  --background: oklch(0.9910 0.0040 85);
-  --foreground: oklch(0.2280 0.0120 62);
-  --card: oklch(0.9770 0.0050 82);
-  --card-foreground: oklch(0.2280 0.0120 62);
-  --popover: oklch(0.9910 0.0040 85);
-  --popover-foreground: oklch(0.2280 0.0120 62);
-  /* Deep enough to carry white text at AA; the bright amber lives in --signal instead. */
-  --primary: oklch(0.4450 0.0980 52);
-  --primary-foreground: oklch(0.9910 0.0040 85);
-  --secondary: oklch(0.5300 0.0180 68);
-  --secondary-foreground: oklch(0.9910 0.0040 85);
-  --muted: oklch(0.9600 0.0060 80);
-  --muted-foreground: oklch(0.5150 0.0170 66);
-  --accent: oklch(0.9420 0.0110 78);
-  --accent-foreground: oklch(0.2280 0.0120 62);
-  --destructive: oklch(0.5540 0.1780 26);
-  --border: oklch(0.9010 0.0090 76);
-  --input: oklch(0.9010 0.0090 76);
-  --ring: oklch(0.6716 0.1368 48.5130);
+  /* Three nested measures, all centred on one axis. The page is as wide as the widest
+     thing on it; lists sit inside a column narrow enough to read across; running prose is
+     narrower still. Sharing an axis is what makes a centred layout hold together — the
+     alternative is three unrelated things that merely happen to be in the middle.
 
-  /* The one accent. Used for rules, live indicators, and the machine view's field keys —
-     never for decoration and never as a gradient. */
-  --signal: oklch(0.6716 0.1368 48.5130);
-  --signal-ink: oklch(0.4450 0.0980 52);
-  --chart-1: oklch(0.5940 0.0443 196.0233);
-  --chart-2: oklch(0.7214 0.1337 49.9802);
-  --chart-3: oklch(0.8721 0.0864 68.5474);
-  --chart-4: oklch(0.6268 0 0);
-  --chart-5: oklch(0.6830 0 0);
-  --sidebar: oklch(0.9670 0.0029 264.5419);
-  --sidebar-foreground: oklch(0.2101 0.0318 264.6645);
-  --sidebar-primary: oklch(0.6716 0.1368 48.5130);
-  --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(1.0000 0 0);
-  --sidebar-accent-foreground: oklch(0.2101 0.0318 264.6645);
-  --sidebar-border: oklch(0.9276 0.0058 264.5313);
-  --sidebar-ring: oklch(0.6716 0.1368 48.5130);
+     Each is a step narrower than it was. Pulling the column in is the whole of "more
+     centred": nothing moved, but with less width to spread across, every row now resolves
+     near the axis instead of stretching away from it. Centring the rows themselves would
+     do the opposite — a list only scans because its rows share a left edge. */
+  --measure-page: 66rem;
+  --measure-column: 46rem;
+  --measure-prose: 36rem;
+
+  /* Greyscale, but not dead greyscale: every neutral carries a chroma of 0.002–0.006 at
+     260° so the whole page sits a fraction to the cool side of neutral. It is below the
+     threshold where anyone would call it blue, and it is what keeps the greys from looking
+     like an unconfigured default. Nothing is #000 or #fff.
+     There is no hue accent anywhere on this site — contrast is the accent. */
+  --background: oklch(0.9850 0.0018 260);
+  --foreground: oklch(0.1900 0.0060 260);
+  --card: oklch(0.9620 0.0025 260);
+  --card-foreground: oklch(0.1900 0.0060 260);
+  --popover: oklch(0.9850 0.0018 260);
+  --popover-foreground: oklch(0.1900 0.0060 260);
+  --primary: oklch(0.2200 0.0060 260);
+  --primary-foreground: oklch(0.9850 0.0018 260);
+  --secondary: oklch(0.5200 0.0060 260);
+  --secondary-foreground: oklch(0.9850 0.0018 260);
+  --muted: oklch(0.9500 0.0022 260);
+  --muted-foreground: oklch(0.5250 0.0065 260);
+  --accent: oklch(0.9250 0.0030 260);
+  --accent-foreground: oklch(0.1900 0.0060 260);
+  --destructive: oklch(0.5000 0.0080 260);
+  --border: oklch(0.8820 0.0035 260);
+  --input: oklch(0.8820 0.0035 260);
+  --ring: oklch(0.3000 0.0070 260);
+
+  /* The "accent" is simply the darkest ink available. Used for rules, live indicators, and
+     the machine view's field keys — it reads as emphasis purely by being the one thing on
+     the page at full contrast. */
+  --signal: oklch(0.2600 0.0070 260);
+  --signal-ink: oklch(0.1900 0.0060 260);
+  /* Contribution levels: a straight lightness ramp, no hue anywhere. */
+  --chart-1: oklch(0.9250 0.0030 260);
+  --chart-2: oklch(0.7900 0.0040 260);
+  --chart-3: oklch(0.6200 0.0055 260);
+  --chart-4: oklch(0.4200 0.0065 260);
+  --chart-5: oklch(0.2300 0.0070 260);
+  --sidebar: oklch(0.9620 0.0025 260);
+  --sidebar-foreground: oklch(0.1900 0.0060 260);
+  --sidebar-primary: oklch(0.2200 0.0060 260);
+  --sidebar-primary-foreground: oklch(0.9850 0.0018 260);
+  --sidebar-accent: oklch(0.9250 0.0030 260);
+  --sidebar-accent-foreground: oklch(0.1900 0.0060 260);
+  --sidebar-border: oklch(0.8820 0.0035 260);
+  --sidebar-ring: oklch(0.3000 0.0070 260);
   --destructive-foreground: oklch(0.9851 0 0);
   --shadow-color: #000000;
   --shadow-opacity: 0.05;
@@ -190,43 +217,44 @@
 }
 
 .dark {
-  /* Same material at night: the neutrals keep the amber trace rather than going cold,
-     and the background stays off pure black. */
-  --background: oklch(0.1780 0.0070 62);
-  --foreground: oklch(0.8880 0.0090 78);
-  --card: oklch(0.2120 0.0080 64);
-  --card-foreground: oklch(0.8880 0.0090 78);
-  --popover: oklch(0.1780 0.0070 62);
-  --popover-foreground: oklch(0.8880 0.0090 78);
-  --primary: oklch(0.8340 0.1080 66);
-  --primary-foreground: oklch(0.1780 0.0070 62);
-  --secondary: oklch(0.5480 0.0180 70);
-  --secondary-foreground: oklch(0.9500 0.0080 80);
-  --muted: oklch(0.2480 0.0080 64);
-  --muted-foreground: oklch(0.6420 0.0140 72);
-  --accent: oklch(0.2960 0.0110 66);
-  --accent-foreground: oklch(0.8880 0.0090 78);
-  --destructive: oklch(0.6420 0.1620 28);
-  --border: oklch(0.2780 0.0090 66);
-  --input: oklch(0.2780 0.0090 66);
-  --ring: oklch(0.7214 0.1337 49.9802);
+  /* The same material inverted. The lightness ramp is not a mirror of the light theme —
+     dark surfaces need the steps between them opened up or the hairlines disappear — but
+     the 260° cool cast and the zero-hue rule carry over unchanged. */
+  --background: oklch(0.1620 0.0045 260);
+  --foreground: oklch(0.9250 0.0035 260);
+  --card: oklch(0.2050 0.0050 260);
+  --card-foreground: oklch(0.9250 0.0035 260);
+  --popover: oklch(0.1620 0.0045 260);
+  --popover-foreground: oklch(0.9250 0.0035 260);
+  --primary: oklch(0.9250 0.0035 260);
+  --primary-foreground: oklch(0.1620 0.0045 260);
+  --secondary: oklch(0.5600 0.0060 260);
+  --secondary-foreground: oklch(0.9250 0.0035 260);
+  --muted: oklch(0.2400 0.0050 260);
+  --muted-foreground: oklch(0.6350 0.0060 260);
+  --accent: oklch(0.2850 0.0055 260);
+  --accent-foreground: oklch(0.9250 0.0035 260);
+  --destructive: oklch(0.6800 0.0080 260);
+  --border: oklch(0.2950 0.0060 260);
+  --input: oklch(0.2950 0.0060 260);
+  --ring: oklch(0.8000 0.0045 260);
 
-  --signal: oklch(0.7620 0.1340 58);
-  --signal-ink: oklch(0.8340 0.1080 66);
-  --chart-1: oklch(0.5940 0.0443 196.0233);
-  --chart-2: oklch(0.7214 0.1337 49.9802);
-  --chart-3: oklch(0.8721 0.0864 68.5474);
-  --chart-4: oklch(0.6268 0 0);
-  --chart-5: oklch(0.6830 0 0);
-  --sidebar: oklch(0.1822 0 0);
-  --sidebar-foreground: oklch(0.8109 0 0);
-  --sidebar-primary: oklch(0.7214 0.1337 49.9802);
-  --sidebar-primary-foreground: oklch(0.1797 0.0043 308.1928);
-  --sidebar-accent: oklch(0.3211 0 0);
-  --sidebar-accent-foreground: oklch(0.8109 0 0);
-  --sidebar-border: oklch(0.2520 0 0);
-  --sidebar-ring: oklch(0.7214 0.1337 49.9802);
-  --destructive-foreground: oklch(0.1797 0.0043 308.1928);
+  --signal: oklch(0.9250 0.0035 260);
+  --signal-ink: oklch(0.8300 0.0045 260);
+  --chart-1: oklch(0.2400 0.0050 260);
+  --chart-2: oklch(0.3600 0.0055 260);
+  --chart-3: oklch(0.5200 0.0060 260);
+  --chart-4: oklch(0.7100 0.0050 260);
+  --chart-5: oklch(0.9250 0.0035 260);
+  --sidebar: oklch(0.2050 0.0050 260);
+  --sidebar-foreground: oklch(0.9250 0.0035 260);
+  --sidebar-primary: oklch(0.9250 0.0035 260);
+  --sidebar-primary-foreground: oklch(0.1620 0.0045 260);
+  --sidebar-accent: oklch(0.2850 0.0055 260);
+  --sidebar-accent-foreground: oklch(0.9250 0.0035 260);
+  --sidebar-border: oklch(0.2950 0.0060 260);
+  --sidebar-ring: oklch(0.8000 0.0045 260);
+  --destructive-foreground: oklch(0.1620 0.0045 260);
   --radius: 0.75rem;
   --shadow-color: #000000;
   --shadow-opacity: 0.05;
@@ -255,6 +283,34 @@
     font-family: var(--font-sans);
     letter-spacing: var(--tracking-normal);
   }
+
+  /* Titles: bold, and pulled tight. A monospace sets every glyph on a 0.6em slug, so at
+     title sizes the gaps between letters read as gaps between words unless the tracking
+     is negative. */
+  .font-display {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  /* Declared after `.font-display` on purpose — same specificity, so source order decides
+     which cut an element carrying both classes gets. The name is tracked in harder still,
+     because the fixed advance width only gets more obvious as the size goes up. */
+  .text-display {
+    font-weight: 700;
+    letter-spacing: -0.045em;
+  }
+
+  /* Labels, field keys, counts, and dates. This is where the page reads technical — not
+     from neon on black, but from the fact that every piece of metadata is monospaced and
+     every number lines up in its column. Tracking is well below the usual 0.18em for
+     uppercase: the face is already wide, and letter-spacing on top of that sprawls. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 html {
@@ -265,16 +321,72 @@ body {
   font-feature-settings: 'rlig' 1, 'calt' 1;
 }
 
+/* The centred axis, as one class. Every band on the homepage is one of these three. */
+.measure-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--measure-page);
+}
+
+.measure-column {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--measure-column);
+}
+
+.measure-prose {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--measure-prose);
+}
+
+/**
+ * Elevation, mixed from the ink rather than from black.
+ *
+ * Three stacked shadows at widening radius: a tight one for the contact edge, a mid one
+ * for the body of the shadow, and a wide faint one for the ambient. A single blurred box
+ * is the shape everyone recognises as a template; a graded stack is the shape everyone
+ * recognises as an object.
+ */
+.elevate {
+  box-shadow:
+    0 1px 1px color-mix(in oklch, var(--foreground) 7%, transparent),
+    0 5px 14px -6px color-mix(in oklch, var(--foreground) 20%, transparent),
+    0 14px 38px -16px color-mix(in oklch, var(--foreground) 26%, transparent);
+}
+
+/* On a dark ground a dark shadow is invisible, so elevation there is carried by a lit rim
+   on top and a deeper, tighter cast below — which is how a dark room actually behaves. */
+.dark .elevate {
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) 16%, transparent),
+    0 0 0 1px color-mix(in oklch, var(--foreground) 9%, transparent),
+    0 10px 28px -12px oklch(0 0 0 / 0.85);
+}
+
+/* A hairline that arrives out of nothing. Used either side of a centred section label, so
+   the rule reads as a horizon the label is sitting on rather than as a box being drawn. */
+.rule-fade-r {
+  background-image: linear-gradient(to right, transparent, var(--border));
+}
+
+.rule-fade-l {
+  background-image: linear-gradient(to left, transparent, var(--border));
+}
+
+/* Instrument Sans starts at 400, so the old `font-weight: 100` silently clamped up while
+   still asking for a face that does not exist. Justification is gone with it: without
+   hyphenation the browser can only solve a short measure by tearing word spaces open. */
 .prose {
-  font-weight: 100;
-  line-height: 1.8;
-  letter-spacing: 0.01em;
-  text-align: justify;
+  font-weight: 400;
+  line-height: 1.75;
+  letter-spacing: 0.005em;
+  text-align: left;
+  text-wrap: pretty;
 }
 
 .prose p {
   margin-bottom: 1.5em;
-  text-align: justify;
 }
 
 .prose h1 {
@@ -314,17 +426,17 @@ body {
 
 .prose a {
   letter-spacing: 0.02em;
-  font-weight: 100;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
-  color: #f19c0a;
-  transition: all 0.2s ease;
+  color: var(--foreground);
+  text-decoration-color: var(--border);
+  transition: text-decoration-color 0.2s ease, text-decoration-thickness 0.2s ease;
 }
 
 .prose a:hover {
   text-decoration-thickness: 2px;
-  opacity: 0.85;
+  text-decoration-color: var(--foreground);
 }
 
 .prose strong {
@@ -507,13 +619,14 @@ body {
   border-radius: 0;
 }
 
-/* Diagram labels use the site's display font, not mermaid's default sans. */
+/* Diagram labels in the machine face — same face mermaid is told to measure with, so the
+   painted text and the box it was laid out in agree. */
 .mermaid-figure .nodeLabel,
 .mermaid-figure .edgeLabel,
 .mermaid-figure .cluster-label,
 .mermaid-figure foreignObject div {
-  font-family: var(--font-sans);
-  letter-spacing: -0.01em;
+  font-family: var(--font-mono);
+  letter-spacing: 0;
 }
 
 /* Round the pillar outlines to echo the site's 12px radius. */
@@ -616,14 +729,6 @@ body {
   color: rgba(229, 231, 235, 0.9);
 }
 
-.dark .prose a {
-  color: #fc722c;
-}
-
-.dark .prose a:hover {
-  color: #fda366;
-}
-
 .dark .prose h1,
 .dark .prose h2,
 .dark .prose h3,
@@ -703,29 +808,16 @@ body {
     mix-blend-mode: normal;
 }
 
-/* Custom text selection colors - 2F4F4F Gradient */
+/* Selection is a straight ink/paper inversion. The old rule painted a teal gradient behind
+   selected text, which was the only saturated colour left on the site. */
 *::selection {
-  background-image: linear-gradient(135deg, #4a6a6a 0%, #2f4f4f 50%, #1f3535 100%) !important;
-  background-color: #2f4f4f !important;
-  color: #ffffff !important;
+  background-color: var(--foreground);
+  color: var(--background);
 }
 
 *::-moz-selection {
-  background-image: linear-gradient(135deg, #4a6a6a 0%, #2f4f4f 50%, #1f3535 100%) !important;
-  background-color: #2f4f4f !important;
-  color: #ffffff !important;
-}
-
-.dark *::selection {
-  background-image: linear-gradient(135deg, #5a7a7a 0%, #2f4f4f 50%, #1a2a2a 100%) !important;
-  background-color: #2f4f4f !important;
-  color: #ffffff !important;
-}
-
-.dark *::-moz-selection {
-  background-image: linear-gradient(135deg, #5a7a7a 0%, #2f4f4f 50%, #1a2a2a 100%) !important;
-  background-color: #2f4f4f !important;
-  color: #ffffff !important;
+  background-color: var(--foreground);
+  color: var(--background);
 }
 
 /* Hide scrollbars while keeping scroll behavior */

@@ -3,7 +3,14 @@ import type { Metadata } from 'next'
 
 import { getAllBlogPosts } from '@/lib/blogs'
 import { JsonLd } from '@/components/JsonLd'
-import { breadcrumbSchema, graph } from '@/lib/seo'
+import {
+  absoluteUrl,
+  breadcrumbSchema,
+  collectionPageSchema,
+  graph,
+  itemListSchema,
+  SITE_URL,
+} from '@/lib/seo'
 
 const DESCRIPTION =
   'Notes on building AI systems that survive contact with production — agents, workflows, and the parts that are harder than the demo suggests.'
@@ -24,6 +31,20 @@ export default async function Blogs() {
     <main className="mx-auto w-full max-w-[70rem] px-[clamp(1.25rem,4vw,4rem)] pb-[var(--space-section)] pt-[clamp(2.5rem,6vw,5rem)]">
       <JsonLd
         json={graph(
+          collectionPageSchema({
+            path: '/blogs/',
+            name: 'Writing',
+            description: DESCRIPTION,
+            listId: `${SITE_URL}/#writing`,
+          }),
+          itemListSchema(
+            `${SITE_URL}/#writing`,
+            'Writing',
+            blogPosts.map((post) => ({
+              name: post.title,
+              url: absoluteUrl(`/blogs/${post.slug}/`),
+            })),
+          ),
           breadcrumbSchema([
             { name: 'Home', path: '/' },
             { name: 'Writing', path: '/blogs/' },

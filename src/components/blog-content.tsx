@@ -81,13 +81,15 @@ export function BlogContent({ htmlContent }: BlogContentProps) {
       if (figures.length === 0) return
 
       const t = resolveTokens()
-      const accent = '#f19c0a' // brand amber — matches .prose link color
 
       mermaid.initialize({
         startOnLoad: false,
         securityLevel: 'loose',
         theme: 'base',
-        fontFamily: "'Chakra Petch', ui-sans-serif, system-ui, sans-serif",
+        // Must match what globals.css paints diagram labels in, or mermaid lays the text
+        // out in one face and the browser renders it in another — boxes sized for the
+        // wrong string. Chakra Petch was named here long after it stopped being loaded.
+        fontFamily: "'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
         themeVariables: {
           background: 'transparent',
           mainBkg: t.muted,
@@ -101,7 +103,7 @@ export function BlogContent({ htmlContent }: BlogContentProps) {
           textColor: t.foreground,
           lineColor: t.mutedForeground,
           clusterBkg: 'transparent',
-          clusterBorder: accent,
+          clusterBorder: t.border,
           titleColor: t.mutedForeground,
           edgeLabelBackground: t.background,
           fontSize: '14px',

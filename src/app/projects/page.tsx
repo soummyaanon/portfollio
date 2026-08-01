@@ -4,7 +4,14 @@ import { ArrowLeft } from 'lucide-react'
 
 import { ProjectIndex } from '@/components/ProjectIndex'
 import { JsonLd } from '@/components/JsonLd'
-import { breadcrumbSchema, graph, projectSchema } from '@/lib/seo'
+import {
+  breadcrumbSchema,
+  collectionPageSchema,
+  graph,
+  itemListSchema,
+  projectSchema,
+  SITE_URL,
+} from '@/lib/seo'
 import { projects } from '@/data/profile'
 
 const DESCRIPTION =
@@ -24,7 +31,18 @@ export default function ProjectsPage() {
     <main className="mx-auto w-full max-w-[76rem] px-[clamp(1.25rem,4vw,4rem)] pb-[var(--space-section)] pt-[clamp(2.5rem,6vw,5rem)]">
       <JsonLd
         json={graph(
+          collectionPageSchema({
+            path: '/projects/',
+            name: 'Projects',
+            description: DESCRIPTION,
+            listId: `${SITE_URL}/#projects`,
+          }),
           ...projects.map(projectSchema),
+          itemListSchema(
+            `${SITE_URL}/#projects`,
+            'Projects',
+            projects.map((project) => ({ name: project.name, url: project.url })),
+          ),
           breadcrumbSchema([
             { name: 'Home', path: '/' },
             { name: 'Projects', path: '/projects/' },

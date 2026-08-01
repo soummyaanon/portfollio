@@ -36,26 +36,28 @@ const MONTHS = [
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 /**
- * A ramp built from the site's own signal amber rather than GitHub's green.
+ * A ramp built from the site's own greyscale rather than GitHub's green.
  *
- * The grid is the only large block of colour on the page, so borrowing GitHub's palette put
- * a green rectangle in the middle of a warm neutral document. Level 0 is the muted surface
- * and the top step is the signal itself, so the calendar reads as part of the same material.
+ * The grid is the only large block of tone on the page, so borrowing GitHub's palette put a
+ * green rectangle in the middle of a greyscale document. These are the five steps of the
+ * page's own lightness ramp — level 0 is the muted surface, level 4 is full ink — so the
+ * calendar reads as part of the same material. Perceptually even, because OKLCH lightness
+ * is: four contributions look like twice two.
  */
 const GITHUB_CONTRIBUTION_COLORS_LIGHT = [
-  'oklch(0.9420 0.0110 78)', // Level 0 — no contributions (matches --accent)
-  'oklch(0.8850 0.0520 66)', // Level 1
-  'oklch(0.8100 0.0920 60)', // Level 2
-  'oklch(0.6716 0.1368 48.5130)', // Level 3 (--signal)
-  'oklch(0.5000 0.1150 50)', // Level 4 — highest
+  'oklch(0.9250 0.0030 260)', // Level 0 — no contributions
+  'oklch(0.7900 0.0040 260)', // Level 1
+  'oklch(0.6200 0.0055 260)', // Level 2
+  'oklch(0.4200 0.0065 260)', // Level 3
+  'oklch(0.2300 0.0070 260)', // Level 4 — highest
 ]
 
 const GITHUB_CONTRIBUTION_COLORS_DARK = [
-  'oklch(0.2480 0.0080 64)', // Level 0 — no contributions (matches --muted)
-  'oklch(0.3300 0.0480 60)', // Level 1
-  'oklch(0.4600 0.0880 58)', // Level 2
-  'oklch(0.6100 0.1200 58)', // Level 3
-  'oklch(0.7620 0.1340 58)', // Level 4 — highest (--signal, dark)
+  'oklch(0.2400 0.0050 260)', // Level 0 — no contributions
+  'oklch(0.3600 0.0055 260)', // Level 1
+  'oklch(0.5200 0.0060 260)', // Level 2
+  'oklch(0.7100 0.0050 260)', // Level 3
+  'oklch(0.9250 0.0035 260)', // Level 4 — highest
 ]
 
 const CONTRIBUTION_LEVELS = [0, 1, 2, 3, 4]
@@ -63,8 +65,11 @@ const CONTRIBUTION_LEVELS = [0, 1, 2, 3, 4]
 // Responsive sizing to keep the grid inside its container without horizontal scroll
 const CELL_SIZE = 'clamp(0.25rem, 0.7vw, 0.55rem)'
 const CELL_GAP = 'clamp(0.08rem, 0.25vw, 0.25rem)'
-// Ensure day labels never shrink too small (prevents overlap with the grid)
-const DAY_LABEL_WIDTH = 'clamp(1.4rem, calc(var(--cell-size) * 2.8), 2.25rem)'
+// Ensure day labels never shrink too small (prevents overlap with the grid). The floor is
+// set by the widest label in the machine face — "Sun" at 3 monospace slugs plus its inset —
+// which is wider than the proportional face this column was originally measured for, and
+// below which the label overflows the page padding and gets clipped.
+const DAY_LABEL_WIDTH = 'clamp(1.9rem, calc(var(--cell-size) * 2.8), 2.25rem)'
 
 export function ContributionGraph({
   data = [],
@@ -256,7 +261,7 @@ export function ContributionGraph({
     <div className={`contribution-graph ${className}`} style={graphStyle}>
       <div className="no-scrollbar overflow-x-auto overflow-y-hidden">
         <table
-          className="w-full border-separate text-[10px] sm:text-xs"
+          className="w-full border-separate font-mono text-[10px] tabular-nums sm:text-xs"
           style={tableStyle}
         >
           <caption className="sr-only">Contribution Graph for {year}</caption>
@@ -365,7 +370,7 @@ export function ContributionGraph({
 
       {/* Legend */}
       {showLegend && (
-        <div className="text-foreground/70 mt-4 flex items-center justify-between text-xs">
+        <div className="label mt-4 flex items-center justify-between text-muted-foreground">
           <span>Less</span>
           <div className="flex items-center gap-1">
             {CONTRIBUTION_LEVELS.map((level) => (

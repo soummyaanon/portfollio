@@ -1,33 +1,40 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
-import { Instrument_Serif, IBM_Plex_Mono } from 'next/font/google'
-import { GeistSans } from 'geist/font/sans'
+import { Instrument_Sans, Space_Mono } from 'next/font/google'
 
 import { ThemeProvider } from './components/ThemeProvider'
 import { NavigationDock } from '@/components/ui/dock'
 import { PostHogProvider } from '../components/PostHogProvider'
 import { SITE_URL } from '@/lib/seo'
-import { person } from '@/data/profile'
+import { person, roles, skills } from '@/data/profile'
 
-/** Display face. Carries every large heading; never used below ~1.5rem. */
-const instrumentSerif = Instrument_Serif({
+/**
+ * The signature face, doing two jobs at once: it is both `--font-display` and
+ * `--font-mono`. The name, every section title, every label, every date and count, and the
+ * whole machine view are set in it. One face carrying that much of the page is what gives
+ * the site a voice you would recognise without the name on it.
+ *
+ * Only 400 and 700 exist — there is no variable axis to lean on — so hierarchy has to come
+ * from size, case, and tracking instead, which the type scale in globals.css is cut for.
+ *
+ * Named for the face, not the role: Tailwind's theme keys are `--font-display` and
+ * `--font-mono`, and a font-loader variable of the same name would resolve to itself.
+ */
+const spaceMono = Space_Mono({
   subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
-  // Named for the face, not the role: Tailwind's theme key is `--font-display`, and a
-  // font-loader variable of the same name would resolve to itself.
-  variable: '--font-instrument',
+  weight: ['400', '700'],
+  variable: '--font-space-mono',
   display: 'swap',
 })
 
 /**
- * Machine face. Confined to specimen-sheet field values, where the content is genuinely
- * tabular — not sprinkled around as shorthand for "technical".
+ * Text face, and only that. Running prose is the one thing a monospace genuinely cannot
+ * do well — a paragraph of it is wide, loose, and tiring — so every multi-line block on
+ * the site stays in a proportional grotesque with narrow, squared-off counters.
  */
-const ibmPlexMono = IBM_Plex_Mono({
+const instrumentSans = Instrument_Sans({
   subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-plex-mono',
+  variable: '--font-instrument-sans',
   display: 'swap',
 })
 
@@ -53,6 +60,15 @@ export const metadata: Metadata = {
   authors: [{ name: person.name, url: SITE_URL }],
   creator: person.name,
   robots: 'index, follow, max-image-preview:large, max-snippet:-1',
+  // Not a ranking signal — a topical fingerprint for retrieval systems that embed the head
+  // alongside the body. Derived from the profile so it cannot drift from what the page says.
+  keywords: [
+    person.name,
+    person.title,
+    ...person.focus,
+    ...skills.flatMap((group) => group.items),
+    ...roles.map((role) => role.org),
+  ],
   icons: {
     icon: '/favicon-2025.png?v=1',
     shortcut: '/favicon-2025.png?v=1',
@@ -88,9 +104,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${GeistSans.variable} ${instrumentSerif.variable} ${ibmPlexMono.variable}`}
-      >
+      <body className={`${instrumentSans.variable} ${spaceMono.variable}`}>
+        {/* Hoisted into <head> by React. Declared here rather than in `metadata.alternates`
+            because a child route setting `alternates.canonical` replaces the whole
+            `alternates` object, which would silently drop this on every page but one.
+            It is how an agent that has not been told about /llms.txt discovers it. */}
+        <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+        <link
+          rel="alternate"
+          type="text/plain"
+          href="/llms-full.txt"
+          title="llms-full.txt"
+        />
         <PostHogProvider />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}

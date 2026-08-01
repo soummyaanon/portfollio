@@ -11,11 +11,10 @@ import type { PostSummary } from './types'
 
 interface DocumentProps {
   readonly posts: readonly PostSummary[]
-  readonly commits: number
   readonly contributions?: React.ReactNode
 }
 
-function Surface({ posts, commits, contributions }: DocumentProps) {
+function Surface({ posts, contributions }: DocumentProps) {
   const { mode, toggle } = useDocumentMode()
 
   // `m` flips the rendering. Guarded so it cannot fire while a field or a contenteditable
@@ -49,7 +48,7 @@ function Surface({ posts, commits, contributions }: DocumentProps) {
     <LayoutGroup>
       <ModeToggle />
       {mode === 'human' ? (
-        <HumanView posts={posts} commits={commits} contributions={contributions} />
+        <HumanView posts={posts} contributions={contributions} />
       ) : (
         <SpecimenSheet posts={posts} />
       )}
