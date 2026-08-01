@@ -36,6 +36,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://soumyapanda.me/blogs/inside-yc-qm/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://soumyapanda.me/blogs/modern-react-shadcn-ui-collections/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

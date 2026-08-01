@@ -6,8 +6,6 @@ slug: "chat-history-is-hard"
 tags: ["ai", "agents", "chat", "architecture", "state-management"]
 ---
 
-# Chat History Management: The Hidden Hard Part of Agent Apps
-
 When you build an agent or a chat agent, the hardest part is not the model call. It is the history. The moment you add streaming, title generation, session switching, and multi-agent support, state turns into a moving target. The bugs are subtle and the UX regressions are real.
 
 This post is a simple, practical summary of what makes chat history painful and how to structure it so it stays reliable.

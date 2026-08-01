@@ -6,8 +6,6 @@ slug: "modern-react-shadcn-ui-collections"
 tags: ["react", "shadcn", "tailwind", "ui-components", "web-design"]
 ---
 
-# Modern React / shadcn UI Collections
-
 The React ecosystem is evolving rapidly, and **shadcn/ui** has revolutionized how we think about component libraries. Instead of installing heavy dependencies, we're now "owning" our components through copy-paste registries. This shift has birthed a new wave of premium and open source collections that extend shadcn's philosophy.
 
 Here is a curated list of component libraries, blocks, and registries focused on React, Tailwind, and shadcn-compatible ecosystems.

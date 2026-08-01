@@ -24,7 +24,7 @@ export function SectionHead({
     <div className="measure-column flex items-center gap-[clamp(0.875rem,2.5vw,2rem)]">
       <span aria-hidden className="rule-fade-r h-px flex-1" />
 
-      <h2 className="label flex items-baseline gap-2.5 whitespace-nowrap tracking-[0.26em] text-muted-foreground">
+      <h2 className="field-label flex items-baseline gap-2.5 whitespace-nowrap tracking-[0.26em] text-muted-foreground">
         {label}
         {note && (
           <>

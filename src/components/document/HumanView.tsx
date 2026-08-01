@@ -75,7 +75,7 @@ function Masthead() {
 
       {/* Tracking is dialled back on narrow screens: at 0.28em the three facts run 40 characters
           wide and wrap, which strands a separator dot at the end of the first line. */}
-      <p className="label mt-[clamp(1.25rem,2.5vw,2rem)] flex flex-wrap items-center justify-center gap-x-3 gap-y-1 tracking-[0.16em] text-muted-foreground sm:tracking-[0.26em]">
+      <p className="field-label mt-[clamp(1.25rem,2.5vw,2rem)] flex flex-wrap items-center justify-center gap-x-3 gap-y-1 tracking-[0.16em] text-muted-foreground sm:tracking-[0.26em]">
         <Fact id="person.title">{person.title}</Fact>
         <Connective>
           <span aria-hidden className="block h-2.5 w-px bg-border" />
@@ -144,7 +144,7 @@ function RoleHeading({ role, open }: { readonly role: Role; readonly open?: bool
         </span>
       </div>
 
-      <p className="label text-right tracking-[0.08em] text-muted-foreground">
+      <p className="field-label text-right tracking-[0.08em] text-muted-foreground">
         <Fact id={`role.${role.id}.from`}>{formatMonth(role.from)}</Fact>
         <Connective>{' — '}</Connective>
         <Fact id={`role.${role.id}.until`}>
@@ -228,7 +228,7 @@ function Education() {
             <Fact id={`education.${entry.id}.credential`}>{entry.credential}</Fact>
             <Connective>{`, ${entry.field}`}</Connective>
           </p>
-          <p className="label mt-[var(--space-tight)] tracking-[0.1em] text-muted-foreground/70">
+          <p className="field-label mt-[var(--space-tight)] tracking-[0.1em] text-muted-foreground/70">
             {formatPeriod(entry.from, entry.until)}
             {' · '}
             {entry.focus.join(' · ')}
@@ -247,7 +247,7 @@ function Education() {
 function ProjectStatus({ status }: { readonly status: 'live' | 'in-development' }) {
   if (status === 'live') return null
   return (
-    <span className="label shrink-0 border border-border px-1.5 py-[0.15rem] leading-none text-muted-foreground">
+    <span className="field-label shrink-0 border border-border px-1.5 py-[0.15rem] leading-none text-muted-foreground">
       In development
     </span>
   )
@@ -263,14 +263,14 @@ function FeaturedProject({ project }: { readonly project: (typeof projects)[numb
   return (
     <article className="measure-column mt-[var(--space-group)]">
       <div className="text-center">
-        <p className="label flex items-center justify-center gap-3 text-foreground">
+        <p className="field-label flex items-center justify-center gap-3 text-foreground">
           01
           <ProjectStatus status={project.status} />
         </p>
         <h3 className="mt-3 font-display text-[length:clamp(1.5rem,0.9rem+2.2vw,2.5rem)] leading-[1] tracking-[-0.04em] text-foreground">
           <Fact id={`project.${project.id}.name`}>{project.name}</Fact>
         </h3>
-        <p className="label mt-3 text-muted-foreground">
+        <p className="field-label mt-3 text-muted-foreground">
           <Fact id={`project.${project.id}.tagline`}>{project.tagline}</Fact>
         </p>
       </div>
@@ -343,7 +343,7 @@ function Projects() {
               className="py-[var(--space-group)]"
               summary={(open) => (
                 <div className="grid grid-cols-[2rem_auto_minmax(0,1fr)] items-start gap-x-3">
-                  <span className="label mt-[0.5em] text-muted-foreground/70 transition-colors group-hover:text-foreground">
+                  <span className="field-label mt-[0.5em] text-muted-foreground/70 transition-colors group-hover:text-foreground">
                     {pad(index + 2)}
                   </span>
                   <DisclosureMark open={open} />
@@ -427,7 +427,7 @@ function Skills() {
             className="[--duration:52s] [--gap:2.25rem] py-1.5"
           >
             {groups.flatMap((group) => [
-              <span key={group.id} className="label shrink-0 text-muted-foreground/55">
+              <span key={group.id} className="field-label shrink-0 text-muted-foreground/55">
                 {group.label}
               </span>,
               ...group.items.map((item) => (
@@ -461,7 +461,7 @@ function Writing({ posts }: { readonly posts: readonly PostSummary[] }) {
               <span className="min-w-0 font-display text-title leading-[1.15] text-foreground decoration-signal/50 decoration-1 underline-offset-[6px] group-hover:underline">
                 {post.title}
               </span>
-              <span className="label text-muted-foreground sm:text-right">
+              <span className="field-label text-muted-foreground sm:text-right">
                 {post.date}
               </span>
             </Link>

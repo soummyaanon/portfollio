@@ -6,8 +6,6 @@ slug: "agentic-automation-playbook"
 tags: ["ai", "agents", "automation", "patterns", "playbook"]
 ---
 
-# The Agentic Automation Playbook: Patterns That Actually Hold Up
-
 An agent that can do a task *once*, while you watch, is a magic trick. It's impressive, and it tells you almost nothing about whether you can leave it running.
 
 An *automation* is a different promise. It says: this job will get done, correctly, a hundred times in a row, on inputs I haven't seen, while I'm asleep — and when it can't, it will tell me instead of quietly making a mess.

@@ -303,8 +303,12 @@
   /* Labels, field keys, counts, and dates. This is where the page reads technical — not
      from neon on black, but from the fact that every piece of metadata is monospaced and
      every number lines up in its column. Tracking is well below the usual 0.18em for
-     uppercase: the face is already wide, and letter-spacing on top of that sprawls. */
-  .label {
+     uppercase: the face is already wide, and letter-spacing on top of that sprawls.
+
+     Named `field-label`, not `label`, because `.label` is generic enough that other things
+     on the page already use it — mermaid emits its own `.label` elements, and every diagram
+     node on the site was quietly inheriting uppercase and eyebrow sizing from this rule. */
+  .field-label {
     font-family: var(--font-mono);
     font-size: var(--text-eyebrow);
     text-transform: uppercase;

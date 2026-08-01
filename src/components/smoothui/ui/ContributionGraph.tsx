@@ -370,7 +370,7 @@ export function ContributionGraph({
 
       {/* Legend */}
       {showLegend && (
-        <div className="label mt-4 flex items-center justify-between text-muted-foreground">
+        <div className="field-label mt-4 flex items-center justify-between text-muted-foreground">
           <span>Less</span>
           <div className="flex items-center gap-1">
             {CONTRIBUTION_LEVELS.map((level) => (

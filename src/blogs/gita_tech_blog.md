@@ -6,8 +6,6 @@ slug: "gita_tech_blog"
 tags: ["philosophy", "technology", "mindfulness", "productivity", "digital-life"]
 ---
 
-# The Bhagavad Gita in the Digital Age: Ancient Wisdom for Modern Tech Life
-
 In an era of endless notifications, AI disruptions, and digital burnout, a 5,000-year-old conversation on a battlefield holds surprisingly relevant answers. The Bhagavad Gita, often seen as a spiritual text, is actually a profound manual for navigating life's complexities—including our hyperconnected, technology-driven world.
 
 ## The Crisis of Choice Paralysis
