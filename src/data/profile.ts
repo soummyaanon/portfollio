@@ -116,8 +116,8 @@ export const roles: readonly Role[] = [
     // Location and stack are not filled in yet — see the note in the Role interface for why
     // that is allowed rather than stubbed. `title` defaults to the person's stated title
     // because none was given for this role specifically.
-    id: 'blacngreen',
-    org: 'BlacNgreen',
+    id: 'blackngreen',
+    org: 'BlackNgreen',
     title: person.title,
     from: '2026-06',
     until: null,
