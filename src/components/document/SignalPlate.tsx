@@ -57,6 +57,8 @@ precision highp float;
 
 uniform vec2  uSize;     // drawing buffer size, px
 uniform float uTime;     // seconds
+uniform vec2  uPointer;  // plate space (y up, 1 unit = half the plate height)
+uniform float uHover;    // 0 at rest, 1 while the pointer is over the plate
 uniform vec3  uInk;      // resolved page ink, 0..1
 uniform vec3  uPulse;    // xy = where the plate was last struck, z = seconds since
 uniform float uOpacity;
@@ -111,6 +113,33 @@ float segment(vec2 p, vec2 a, vec2 b) {
   vec2 pa = p - a;
   vec2 ba = b - a;
   return length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+}
+
+/**
+ * The arrow. The classic pointer silhouette — tip at the origin, tail down-right — traced
+ * as seven vertices, because the absorbed cursor must be recognisably *the* cursor, not a
+ * chart mark standing in for it. The user has to see the thing they own being taken.
+ */
+const vec2 CURSOR[7] = vec2[7](
+  vec2(0.000,  0.000), vec2(0.000, -0.850), vec2(0.180, -0.670), vec2(0.310, -0.980),
+  vec2(0.490, -0.900), vec2(0.320, -0.590), vec2(0.620, -0.590)
+);
+
+/** Signed distance to the arrow polygon — the standard edge-walk with crossing parity. */
+float sdCursor(vec2 p) {
+  float d = dot(p - CURSOR[0], p - CURSOR[0]);
+  float s = 1.0;
+  int j = 6;
+  for (int i = 0; i < 7; i++) {
+    vec2 e = CURSOR[j] - CURSOR[i];
+    vec2 w = p - CURSOR[i];
+    vec2 b = w - e * clamp(dot(w, e) / dot(e, e), 0.0, 1.0);
+    d = min(d, dot(b, b));
+    bvec3 c = bvec3(p.y >= CURSOR[i].y, p.y < CURSOR[j].y, e.x * w.y > e.y * w.x);
+    if (all(c) || all(not(c))) s *= -1.0;
+    j = i;
+  }
+  return s * sqrt(d);
 }
 
 /**
@@ -323,8 +352,9 @@ void main() {
   float tSky = uTime - shapiro;
 
   // The sky is sampled through everything that bends it, in the order light would meet them.
-  // The cursor is no longer one of those things: a chart's promise is that the positions on
-  // it are true, so only mass bends it, and only a strike gets an answer.
+  // The cursor is not one of those things: a chart's promise is that the positions on it are
+  // true, so only mass bends the chart. The traffic runs the other way — at the end of main,
+  // the mass bends the cursor.
   vec2 sky = p;
 
   // Frame dragging. The hole is given a little spin, and spin drags the space around it
@@ -528,12 +558,52 @@ void main() {
   mask *= smoothstep(0.0, 0.30, uv.y) * smoothstep(1.0, 0.70, uv.y);
   ink *= mask;
 
+  // The cursor, absorbed. The native cursor is hidden over the canvas and the arrow drawn
+  // here stands in for it — same silhouette, tip on the same hotspot — drawn where the
+  // hole's gravity says it is, not where the hand says. At arm's length the two agree and
+  // nobody notices the swap. Then the pull comes on over most of the plate: the arrow is
+  // dragged off the hand toward the mass, harder the closer it gets, stretched along the
+  // infall line and squeezed across it — the tide.
+  //
+  // It never vanishes and it never crosses. The infall is clamped just outside the ring,
+  // where the arrow freezes, dims by the Schwarzschild factor, and waits — which is exactly
+  // how a distant observer watches a thing fall in, and also what keeps a quarter of the
+  // plate from becoming a dead zone with no cursor in it at all. Pull the hand back and
+  // the arrow climbs back out to the fingertip.
+  float reach = length(uPointer - holeAt);
+  float grab = smoothstep(1.10, 0.10, reach);
+  vec2 handDir = (uPointer - holeAt) / max(reach, 1e-3);
+  float rawDist = reach * (1.0 - pow(max(grab, 1e-4), 1.35) * 0.98);
+  float markDist = max(rawDist, holeR * 1.06);
+  vec2 markAt = holeAt + handDir * markDist;
+  vec2 inDir = -handDir;
+  vec2 md = p - markAt;
+  float tide = 1.0 + 5.0 * grab * grab;
+  float along = dot(md, inDir);
+  vec2 perpD = vec2(-inDir.y, inDir.x);
+  vec2 msd = inDir * (along / tide) + perpD * (dot(md, perpD) * sqrt(tide));
+  float alive = sqrt(clamp(1.0 - holeR / markDist, 0.0, 1.0));
+
+  // Black body, white rim, small — the macOS arrow, in its own two inks on top of the
+  // plate's one. The cursor is the visitor's property, not the chart's subject, so it is
+  // the single thing on the plate allowed to keep its native colours in both themes.
+  float cs = 0.095;
+  float dC = sdCursor(msd / cs) * cs;
+  float bodyM = smoothstep(px * 1.2, -px * 1.2, dC);
+  float rimM = smoothstep(px * 1.2, -px * 1.2, dC - px * 1.7) * (1.0 - bodyM);
+  float curA = (bodyM + rimM) * uHover * alive;
+  vec3 curRGB = mix(vec3(1.0), vec3(0.0), bodyM);
+
   // Grain multiplies rather than adds. Added, it survived the mask and laid a faint dither
   // across every pixel of the buffer — which is exactly the rectangle that was showing up
   // against the page. Multiplied, zero stays zero and the plate has no visible extent.
   ink *= 1.0 + (hash(gl_FragCoord.xy) - 0.5) * 0.13;
 
-  fragColor = vec4(uInk, clamp(ink, 0.0, 1.0) * uOpacity);
+  // The plate in its one ink and the cursor in its two, composited source-over. Divided
+  // back out of premultiplied form, because the context was asked for straight alpha.
+  float baseA = clamp(ink, 0.0, 1.0) * uOpacity;
+  float outA = curA + baseA * (1.0 - curA);
+  fragColor = vec4((curRGB * curA + uInk * baseA * (1.0 - curA)) / max(outA, 1e-4), outA);
 }
 `
 
@@ -599,8 +669,9 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
    * scrolling never re-renders React.
    *
    * This is the one ambient motion left on the component: the pointer tilt and the hover
-   * slide are gone on purpose. The plate answers exactly one gesture — the strike — and
-   * ignores the cursor entirely, which is the difference between an instrument and a toy.
+   * slide are gone on purpose. The plate answers the strike, and it does one thing more —
+   * near the mass it takes the cursor itself. The chart never performs for the cursor;
+   * the hole simply treats it as one more thing that got too close.
    */
   const prefersReducedMotion = useReducedMotion()
   const { scrollY } = useScroll()
@@ -653,6 +724,8 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
 
     const uSize = gl.getUniformLocation(program, 'uSize')
     const uTime = gl.getUniformLocation(program, 'uTime')
+    const uPointer = gl.getUniformLocation(program, 'uPointer')
+    const uHover = gl.getUniformLocation(program, 'uHover')
     const uInk = gl.getUniformLocation(program, 'uInk')
     const uPulse = gl.getUniformLocation(program, 'uPulse')
     const uOpacity = gl.getUniformLocation(program, 'uOpacity')
@@ -671,6 +744,12 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     // strike term is already dead on the first frame — an unclicked plate has never been
     // clicked, rather than having been clicked at the origin at time zero.
     const pulse = { x: 0, y: 0, at: -1000 }
+
+    // The cursor's position in plate space, for the absorption mark. The rendered values
+    // chase the targets rather than jumping, so a fast hand drags the mark instead of
+    // teleporting it — which near the mass reads as the hand losing the tug of war. Parked
+    // far off-plate so the mark's first appearance is a fade-in, not a jump from origin.
+    const pointer = { x: 0, y: -3, targetX: 0, targetY: -3, hover: 0, targetHover: 0 }
 
     // The canvas's geometry, cached. Everything that needs the plate's position or size reads
     // it from here rather than from the element, because both `clientWidth` and
@@ -702,6 +781,8 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       resize()
       gl.uniform2f(uSize, width, height)
       gl.uniform1f(uTime, time)
+      gl.uniform2f(uPointer, pointer.x, pointer.y)
+      gl.uniform1f(uHover, pointer.hover)
       // Every probe is read every frame rather than cached, which is what lets a theme
       // flip take effect without any wiring between the toggle and this canvas.
       const ink = readColour(probe!)
@@ -720,6 +801,11 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
 
     function loop(now: number) {
       elapsed = (now - start) / 1000
+      // The chase is fast enough that the mark feels like the cursor and slow enough that
+      // the hole visibly wins near the shadow.
+      pointer.x += (pointer.targetX - pointer.x) * 0.3
+      pointer.y += (pointer.targetY - pointer.y) * 0.3
+      pointer.hover += (pointer.targetHover - pointer.hover) * 0.12
       draw(elapsed)
       frame = requestAnimationFrame(loop)
     }
@@ -742,6 +828,20 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       const x = (event.clientX - box.left) / box.width
       const y = 1 - (event.clientY - box.top) / box.height
       return { x, y, px: (x - 0.5) * (box.width / box.height) * 2, py: (y - 0.5) * 2 }
+    }
+
+    /**
+     * Track the hand, for the absorption mark alone: the native cursor is hidden over the
+     * canvas, so the shader must always know where to draw its stand-in. Hover gates the
+     * mark to the plate's own rectangle so it does not haunt the rest of the page.
+     */
+    function onPointerMove(event: PointerEvent) {
+      if (!visible || reduceMotion.matches) return
+      const at = toPlateSpace(event)
+      if (!at) return
+      pointer.targetX = at.px
+      pointer.targetY = at.py
+      pointer.targetHover = at.x >= 0 && at.x <= 1 && at.y >= 0 && at.y <= 1 ? 1 : 0
     }
 
     /**
@@ -805,6 +905,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     // reports. One passive read per scroll event keeps the cached box honest for the strike.
     window.addEventListener('scroll', measure, { passive: true })
     window.addEventListener('resize', measure, { passive: true })
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
     canvas.addEventListener('pointerdown', onPointerDown, { passive: true })
     reduceMotion.addEventListener('change', onMotionPreferenceChange)
 
@@ -820,6 +921,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       themeObserver.disconnect()
       window.removeEventListener('scroll', measure)
       window.removeEventListener('resize', measure)
+      window.removeEventListener('pointermove', onPointerMove)
       canvas.removeEventListener('pointerdown', onPointerDown)
       reduceMotion.removeEventListener('change', onMotionPreferenceChange)
       gl.deleteProgram(program)
@@ -852,11 +954,17 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       <div className="absolute inset-0 grid place-items-center [transform-style:preserve-3d]">
         {/* Scroll parallax rides on the canvas itself rather than a wrapper: an `opacity`
             on an ancestor creates a stacking context, which flattens the 3D subtree and
-            collapses the subject's translateZ back onto the plate. */}
+            collapses the subject's translateZ back onto the plate.
+
+            The native cursor is hidden over the canvas because the shader draws its own —
+            the absorption mark — and two cursors is one too many. Not under reduced motion,
+            where the shader is a still frame and could not keep a stand-in under the hand. */}
         <motion.canvas
           ref={canvasRef}
           aria-hidden
-          className={`absolute inset-0 h-full w-full ${supported ? '' : 'hidden'}`}
+          className={`absolute inset-0 h-full w-full ${supported ? '' : 'hidden'} ${
+            supported && !prefersReducedMotion ? 'cursor-none' : ''
+          }`}
           style={prefersReducedMotion ? undefined : { y: parallax, opacity: fade }}
         />
 
