@@ -5,6 +5,7 @@ import { Check, Copy } from 'lucide-react'
 
 import { education, person, projects, roles, skills, now } from '@/data/profile'
 import { Connective, Fact } from './Fact'
+import { orgWordmarkClass } from './wordmark'
 import type { PostSummary } from './types'
 
 /**
@@ -249,7 +250,9 @@ export function SpecimenSheet({ posts }: { readonly posts: readonly PostSummary[
           id={role.id}
         >
           <FieldRow name="org">
-            <Fact id={`role.${role.id}.org`}>{role.org}</Fact>
+            <Fact id={`role.${role.id}.org`} className={orgWordmarkClass(role)}>
+              {role.org}
+            </Fact>
           </FieldRow>
           <FieldRow name="title">
             <Fact id={`role.${role.id}.title`}>{role.title}</Fact>

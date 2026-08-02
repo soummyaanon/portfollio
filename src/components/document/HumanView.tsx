@@ -19,6 +19,7 @@ import { SectionHead } from './SectionHead'
 import { SignalPlate } from './SignalPlate'
 import { Disclosure, DisclosureMark } from './Disclosure'
 import { ToolMark } from './ToolMark'
+import { orgWordmarkClass } from './wordmark'
 import { Marquee } from '@/components/ui/marquee'
 import type { PostSummary } from './types'
 
@@ -136,7 +137,9 @@ function RoleHeading({ role, open }: { readonly role: Role; readonly open?: bool
         )}
         <span className="min-w-0">
           <h3 className="font-display text-title leading-[1.1] text-foreground">
-            <Fact id={`role.${role.id}.org`}>{role.org}</Fact>
+            <Fact id={`role.${role.id}.org`} className={orgWordmarkClass(role)}>
+              {role.org}
+            </Fact>
           </h3>
           <p className="mt-1 text-fine text-muted-foreground">
             <Fact id={`role.${role.id}.title`}>{role.title}</Fact>

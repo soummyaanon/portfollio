@@ -824,6 +824,94 @@ body {
   color: var(--background);
 }
 
+/**
+ * The one word on this site that carries hue.
+ *
+ * "BlackNgreen" names two colours. Painting the letters would break the greyscale rule the
+ * whole page is built on, and would leave one org name reading louder than every other org
+ * name for reasons that have nothing to do with the work. So the colours go *behind* the
+ * word instead: two blooms, black under the first half, green under the second, each blurred
+ * far past its own edges. The type stays the same ink at the same weight — the name is being
+ * quoted, not accented.
+ *
+ * `isolation: isolate` is what makes `z-index: -1` land behind the glyphs rather than behind
+ * the page background. Sizes are in `em` so the effect follows the word from the reading
+ * view's title size down to the specimen sheet's field size without a second rule.
+ */
+.wordmark-bloom {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+
+.wordmark-bloom::before,
+.wordmark-bloom::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  height: 1.15em;
+  /* The name splits 5 + 1 + 5 characters in a monospace, so halves land the colours under
+     the syllables that name them. They overlap slightly and the blur closes the seam. */
+  width: 50%;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  /* An actual blur, not a soft-edged gradient. The shape has to be lost completely or it
+     reads as a highlighter swipe behind the text. */
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+.wordmark-bloom::before {
+  left: -3%;
+  background: oklch(0.2200 0.0200 260);
+  opacity: 0.32;
+}
+
+.wordmark-bloom::after {
+  right: -3%;
+  background: oklch(0.7400 0.1900 150);
+  opacity: 0.42;
+}
+
+/* On paper the black half is ink diluted. On a dark ground there is nothing left to darken
+   with at that lightness, so it drops to true black — which against a 0.162 background still
+   reads as a well — and the green lifts in lightness and thins in opacity, the way a lit
+   colour actually behaves in a dark room. Both directions leave the text's contrast against
+   its ground better than it was, never worse. */
+.dark .wordmark-bloom::before {
+  background: oklch(0 0 0);
+  opacity: 0.85;
+}
+
+.dark .wordmark-bloom::after {
+  background: oklch(0.8200 0.2000 150);
+  opacity: 0.30;
+}
+
+/* A slow drift, half a cycle out of phase, so the two blooms breathe against each other
+   rather than pulsing as one lamp. Transform only — opacity is set per theme above and
+   animating it here would override that. */
+@media (prefers-reduced-motion: no-preference) {
+  .wordmark-bloom::before {
+    animation: wordmark-breathe 9s ease-in-out infinite;
+  }
+
+  .wordmark-bloom::after {
+    animation: wordmark-breathe 9s ease-in-out -4.5s infinite;
+  }
+}
+
+@keyframes wordmark-breathe {
+  0%,
+  100% {
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.14);
+  }
+}
+
 /* Hide scrollbars while keeping scroll behavior */
 .no-scrollbar {
   -ms-overflow-style: none;
