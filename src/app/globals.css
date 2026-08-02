@@ -825,27 +825,34 @@ body {
 }
 
 /**
- * The one word on this site that carries hue.
+ * The one word on this site that is not meant to be read.
  *
- * "BlackNgreen" names two colours. Painting the letters would break the greyscale rule the
- * whole page is built on, and would leave one org name reading louder than every other org
- * name for reasons that have nothing to do with the work. So the colours go *behind* the
- * word instead: two blooms, black under the first half, green under the second, each blurred
- * far past its own edges. The type stays the same ink at the same weight — the name is being
- * quoted, not accented.
+ * "BlackNgreen" stays in the record — in the markup, in the structured data, on the
+ * clipboard — but the glyphs are veiled past legibility, so the row reads as a name withheld
+ * rather than a name missing. The two colours the word names are still behind it: black
+ * under the first half, green under the second, each blurred far past its own edges. What is
+ * left is a coloured smudge the length of the word.
  *
- * `isolation: isolate` is what makes `z-index: -1` land behind the glyphs rather than behind
- * the page background. Sizes are in `em` so the effect follows the word from the reading
- * view's title size down to the specimen sheet's field size without a second rule.
+ * The blur sits on the element, so it takes the pseudo-elements with it — they are already
+ * formless, a little more costs nothing — and it is also what makes `z-index: -1` land behind
+ * the glyphs rather than behind the page background, the job `isolation: isolate` used to do
+ * here. Sizes are in `em` so the veil follows the word from the reading view's title size
+ * down to the specimen sheet's field size without a second rule.
  */
-.wordmark-bloom {
+.wordmark-veil {
   position: relative;
   display: inline-block;
-  isolation: isolate;
+  /* Just under half the x-height at any size: letterforms dissolve past guessing, word
+     length does not. Much further and the row stops looking deliberate and starts looking
+     broken. */
+  filter: blur(0.24em);
+  /* Dragging a cursor across a veiled word should not undo the veil. */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.wordmark-bloom::before,
-.wordmark-bloom::after {
+.wordmark-veil::before,
+.wordmark-veil::after {
   content: "";
   position: absolute;
   z-index: -1;
@@ -862,13 +869,13 @@ body {
   pointer-events: none;
 }
 
-.wordmark-bloom::before {
+.wordmark-veil::before {
   left: -3%;
   background: oklch(0.2200 0.0200 260);
   opacity: 0.32;
 }
 
-.wordmark-bloom::after {
+.wordmark-veil::after {
   right: -3%;
   background: oklch(0.7400 0.1900 150);
   opacity: 0.42;
@@ -879,12 +886,12 @@ body {
    reads as a well — and the green lifts in lightness and thins in opacity, the way a lit
    colour actually behaves in a dark room. Both directions leave the text's contrast against
    its ground better than it was, never worse. */
-.dark .wordmark-bloom::before {
+.dark .wordmark-veil::before {
   background: oklch(0 0 0);
   opacity: 0.85;
 }
 
-.dark .wordmark-bloom::after {
+.dark .wordmark-veil::after {
   background: oklch(0.8200 0.2000 150);
   opacity: 0.30;
 }
@@ -893,11 +900,11 @@ body {
    rather than pulsing as one lamp. Transform only — opacity is set per theme above and
    animating it here would override that. */
 @media (prefers-reduced-motion: no-preference) {
-  .wordmark-bloom::before {
+  .wordmark-veil::before {
     animation: wordmark-breathe 9s ease-in-out infinite;
   }
 
-  .wordmark-bloom::after {
+  .wordmark-veil::after {
     animation: wordmark-breathe 9s ease-in-out -4.5s infinite;
   }
 }
