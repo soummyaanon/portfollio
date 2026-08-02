@@ -153,54 +153,57 @@
   --measure-column: 46rem;
   --measure-prose: 36rem;
 
-  /* Greyscale, but not dead greyscale: every neutral carries a chroma of 0.002–0.006 at
-     260° so the whole page sits a fraction to the cool side of neutral. It is below the
-     threshold where anyone would call it blue, and it is what keeps the greys from looking
-     like an unconfigured default. Nothing is #000 or #fff.
-     There is no hue accent anywhere on this site — contrast is the accent. */
-  --background: oklch(0.9850 0.0018 260);
-  --foreground: oklch(0.1900 0.0060 260);
-  --card: oklch(0.9620 0.0025 260);
-  --card-foreground: oklch(0.1900 0.0060 260);
-  --popover: oklch(0.9850 0.0018 260);
-  --popover-foreground: oklch(0.1900 0.0060 260);
-  --primary: oklch(0.2200 0.0060 260);
-  --primary-foreground: oklch(0.9850 0.0018 260);
-  --secondary: oklch(0.5200 0.0060 260);
-  --secondary-foreground: oklch(0.9850 0.0018 260);
-  --muted: oklch(0.9500 0.0022 260);
-  --muted-foreground: oklch(0.5250 0.0065 260);
-  --accent: oklch(0.9250 0.0030 260);
-  --accent-foreground: oklch(0.1900 0.0060 260);
-  --destructive: oklch(0.5000 0.0080 260);
-  --border: oklch(0.8820 0.0035 260);
-  --input: oklch(0.8820 0.0035 260);
-  --ring: oklch(0.3000 0.0070 260);
+  /* Pitch black and pitch white, and nothing between them carries a hue. The page used to
+     sit a fraction to the cool side of neutral — every grey held a chroma of 0.002–0.006 at
+     260°, and neither end ever reached the stops. It is now literally black on white: 0 and
+     1 in oklch, chroma zero everywhere, so the extremes are the actual extremes and every
+     grey on the page is a pure lightness step with no tint in it at all.
 
-  /* The "accent" is simply the darkest ink available. Used for rules, live indicators, and
-     the machine view's field keys — it reads as emphasis purely by being the one thing on
-     the page at full contrast. */
-  --signal: oklch(0.2600 0.0070 260);
-  --signal-ink: oklch(0.1900 0.0060 260);
+     One consequence worth knowing: at full black on full white the contrast is as high as a
+     screen can go, and hairlines and disabled states have nowhere left to hide. The mid-ramp
+     below is what carries all of the hierarchy now. */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(0.9700 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.5000 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.9600 0 0);
+  --muted-foreground: oklch(0.5000 0 0);
+  --accent: oklch(0.9200 0 0);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.4500 0 0);
+  --border: oklch(0.8700 0 0);
+  --input: oklch(0.8700 0 0);
+  --ring: oklch(0 0 0);
 
-  /* The one hue on the site, and it appears in exactly one place: blooming behind the
-     employer that is being withheld. Everything else, the signal plate included, is grey. */
+  /* The "accent" is simply the darkest ink available, which is now as dark as ink gets. Used
+     for rules, live indicators, and the machine view's field keys. */
+  --signal: oklch(0 0 0);
+  --signal-ink: oklch(0 0 0);
+
+  /* The one hue left on the site, and it appears in exactly one place: blooming behind the
+     employer that is being withheld. Everything else is black, white, or a grey between. */
   --withheld-green: oklch(0.7400 0.1900 150);
-  /* Contribution levels: a straight lightness ramp, no hue anywhere. */
-  --chart-1: oklch(0.9250 0.0030 260);
-  --chart-2: oklch(0.7900 0.0040 260);
-  --chart-3: oklch(0.6200 0.0055 260);
-  --chart-4: oklch(0.4200 0.0065 260);
-  --chart-5: oklch(0.2300 0.0070 260);
-  --sidebar: oklch(0.9620 0.0025 260);
-  --sidebar-foreground: oklch(0.1900 0.0060 260);
-  --sidebar-primary: oklch(0.2200 0.0060 260);
-  --sidebar-primary-foreground: oklch(0.9850 0.0018 260);
-  --sidebar-accent: oklch(0.9250 0.0030 260);
-  --sidebar-accent-foreground: oklch(0.1900 0.0060 260);
-  --sidebar-border: oklch(0.8820 0.0035 260);
-  --sidebar-ring: oklch(0.3000 0.0070 260);
-  --destructive-foreground: oklch(0.9851 0 0);
+  /* Contribution levels: a straight lightness ramp, running to the stops at both ends. */
+  --chart-1: oklch(0.9300 0 0);
+  --chart-2: oklch(0.7800 0 0);
+  --chart-3: oklch(0.6000 0 0);
+  --chart-4: oklch(0.3800 0 0);
+  --chart-5: oklch(0 0 0);
+  --sidebar: oklch(0.9700 0 0);
+  --sidebar-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(0 0 0);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9200 0 0);
+  --sidebar-accent-foreground: oklch(0 0 0);
+  --sidebar-border: oklch(0.8700 0 0);
+  --sidebar-ring: oklch(0 0 0);
+  --destructive-foreground: oklch(1 0 0);
   --shadow-color: #000000;
   --shadow-opacity: 0.05;
   --shadow-blur: 4px;
@@ -221,46 +224,48 @@
 }
 
 .dark {
-  /* The same material inverted. The lightness ramp is not a mirror of the light theme —
-     dark surfaces need the steps between them opened up or the hairlines disappear — but
-     the 260° cool cast and the zero-hue rule carry over unchanged. */
-  --background: oklch(0.1620 0.0045 260);
-  --foreground: oklch(0.9250 0.0035 260);
-  --card: oklch(0.2050 0.0050 260);
-  --card-foreground: oklch(0.9250 0.0035 260);
-  --popover: oklch(0.1620 0.0045 260);
-  --popover-foreground: oklch(0.9250 0.0035 260);
-  --primary: oklch(0.9250 0.0035 260);
-  --primary-foreground: oklch(0.1620 0.0045 260);
-  --secondary: oklch(0.5600 0.0060 260);
-  --secondary-foreground: oklch(0.9250 0.0035 260);
-  --muted: oklch(0.2400 0.0050 260);
-  --muted-foreground: oklch(0.6350 0.0060 260);
-  --accent: oklch(0.2850 0.0055 260);
-  --accent-foreground: oklch(0.9250 0.0035 260);
-  --destructive: oklch(0.6800 0.0080 260);
-  --border: oklch(0.2950 0.0060 260);
-  --input: oklch(0.2950 0.0060 260);
-  --ring: oklch(0.8000 0.0045 260);
+  /* The same material inverted, and inverted to the stop: the ground is #000 and the ink is
+     #fff. The lightness ramp is still not a mirror of the light theme — dark surfaces need
+     the steps between them opened up or the hairlines vanish — and every surface below sits
+     lower than it used to, because they are now being read against pitch black rather than
+     against a near-black that was already a fifth of the way up the scale. */
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.1450 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.5800 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.1700 0 0);
+  --muted-foreground: oklch(0.6500 0 0);
+  --accent: oklch(0.2400 0 0);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.7000 0 0);
+  --border: oklch(0.2800 0 0);
+  --input: oklch(0.2800 0 0);
+  --ring: oklch(1 0 0);
 
-  --signal: oklch(0.9250 0.0035 260);
-  --signal-ink: oklch(0.8300 0.0045 260);
+  --signal: oklch(1 0 0);
+  --signal-ink: oklch(0.8600 0 0);
   /* Lifted and thinned for a dark ground, the way a lit colour behaves in a dark room. */
   --withheld-green: oklch(0.8200 0.2000 150);
-  --chart-1: oklch(0.2400 0.0050 260);
-  --chart-2: oklch(0.3600 0.0055 260);
-  --chart-3: oklch(0.5200 0.0060 260);
-  --chart-4: oklch(0.7100 0.0050 260);
-  --chart-5: oklch(0.9250 0.0035 260);
-  --sidebar: oklch(0.2050 0.0050 260);
-  --sidebar-foreground: oklch(0.9250 0.0035 260);
-  --sidebar-primary: oklch(0.9250 0.0035 260);
-  --sidebar-primary-foreground: oklch(0.1620 0.0045 260);
-  --sidebar-accent: oklch(0.2850 0.0055 260);
-  --sidebar-accent-foreground: oklch(0.9250 0.0035 260);
-  --sidebar-border: oklch(0.2950 0.0060 260);
-  --sidebar-ring: oklch(0.8000 0.0045 260);
-  --destructive-foreground: oklch(0.1620 0.0045 260);
+  --chart-1: oklch(0.2000 0 0);
+  --chart-2: oklch(0.3400 0 0);
+  --chart-3: oklch(0.5200 0 0);
+  --chart-4: oklch(0.7400 0 0);
+  --chart-5: oklch(1 0 0);
+  --sidebar: oklch(0.1450 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --sidebar-accent: oklch(0.2400 0 0);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.2800 0 0);
+  --sidebar-ring: oklch(1 0 0);
+  --destructive-foreground: oklch(0 0 0);
   --radius: 0.75rem;
   --shadow-color: #000000;
   --shadow-opacity: 0.05;
@@ -676,20 +681,31 @@ body {
   to { opacity: 1; filter: blur(0); }
 }
 
-/* Syntax highlighting for markdown code blocks */
+/**
+ * Syntax highlighting, monochrome.
+ *
+ * This was a GitHub theme — red keywords, blue strings, purple built-ins — and it was the
+ * largest surviving patch of colour on the site. A code block does not actually need hue to
+ * be read: the distinctions it has to draw are few, and lightness, weight and italic can
+ * carry all of them. So keywords are the darkest thing in the block and bold, identifiers
+ * sit at full ink, literals and types step back one, comments step back furthest and lean.
+ * Everything resolves from the palette, so the whole theme inverts with the page.
+ */
 .hljs {
-  color: #24292e;
+  color: var(--foreground);
 }
 
 .hljs-comment,
 .hljs-quote {
-  color: #6a737d;
+  color: var(--muted-foreground);
+  font-style: italic;
 }
 
 .hljs-keyword,
 .hljs-selector-tag,
 .hljs-subst {
-  color: #d73a49;
+  color: var(--foreground);
+  font-weight: 700;
 }
 
 .hljs-string,
@@ -697,7 +713,7 @@ body {
 .hljs-title,
 .hljs-section,
 .hljs-selector-id {
-  color: #032f62;
+  color: var(--foreground);
 }
 
 .hljs-number,
@@ -705,14 +721,15 @@ body {
 .hljs-variable,
 .hljs-template-variable,
 .hljs-type {
-  color: #005cc5;
+  color: var(--secondary);
 }
 
 .hljs-built_in,
 .hljs-symbol,
 .hljs-bullet,
 .hljs-link {
-  color: #6f42c1;
+  color: var(--secondary);
+  font-weight: 600;
 }
 
 .hljs-emphasis {
@@ -736,7 +753,7 @@ body {
 
 /* Dark mode prose */
 .dark .prose {
-  color: rgba(229, 231, 235, 0.9);
+  color: rgba(255, 255, 255, 0.90);
 }
 
 .dark .prose h1,
@@ -766,47 +783,9 @@ body {
   background-color: transparent;
 }
 
-.dark .hljs {
-  color: #c9d1d9;
-}
-
-.dark .hljs-comment,
-.dark .hljs-quote {
-  color: #8b949e;
-}
-
-.dark .hljs-keyword,
-.dark .hljs-selector-tag,
-.dark .hljs-subst {
-  color: #ff7b72;
-}
-
-.dark .hljs-string,
-.dark .hljs-doctag,
-.dark .hljs-title,
-.dark .hljs-section,
-.dark .hljs-selector-id {
-  color: #a5d6ff;
-}
-
-.dark .hljs-number,
-.dark .hljs-literal,
-.dark .hljs-variable,
-.dark .hljs-template-variable,
-.dark .hljs-type {
-  color: #79c0ff;
-}
-
-.dark .hljs-built_in,
-.dark .hljs-symbol,
-.dark .hljs-bullet,
-.dark .hljs-link {
-  color: #d2a8ff;
-}
-
 .dark .prose blockquote {
   border-left-color: rgba(255, 255, 255, 0.2);
-  color: rgba(156, 163, 175, 0.9);
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .dark .prose hr {
@@ -877,7 +856,7 @@ body {
 
 .wordmark-veil::before {
   left: -3%;
-  background: oklch(0.2200 0.0200 260);
+  background: oklch(0.2200 0 0);
   opacity: 0.32;
 }
 
