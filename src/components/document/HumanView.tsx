@@ -49,33 +49,36 @@ function Masthead() {
     // sky is the one thing on this page that is worth more of the fold than the margin above
     // it was. The toggle still clears — the plate's mask has no ink within a rem of its edge.
     <header className="pt-[clamp(3rem,4.5vw,4.25rem)] text-center">
-      {/* The portrait sits at the centre of the plate rather than off to one side: it is the
-          catalogued object the chart is drawn around, so the decoration has a subject instead
-          of being a texture the page happens to sit on. */}
-      <SignalPlate>
-        <div className="elevate size-[clamp(3.5rem,6vw,5rem)] overflow-hidden rounded-full bg-card ring-1 ring-border">
+      {/* The catalogued object at the centre of the plate is now the black hole itself, not a
+          portrait: the chart is drawn around the one thing on it that bends everything else,
+          and the name below is what the plate is evidence for. */}
+      <SignalPlate />
+
+      {/* Two lines, tight leading, optical tracking pulled in — at this size the default
+          spacing reads loose. The only element on the site allowed to reach display size.
+          The portrait rides beside the name now rather than at the centre of the plate:
+          the sky above belongs to the hole, and the face belongs with the byline. */}
+      <div className="flex items-center justify-center gap-[clamp(1rem,2.5vw,1.75rem)]">
+        <h1 className="font-display text-display leading-[0.82] tracking-[-0.035em] text-foreground">
+          <span className="block">
+            <Fact id="person.given">{person.givenName}</Fact>
+          </span>
+          <span className="block">
+            <Fact id="person.family">{person.familyName}</Fact>
+          </span>
+        </h1>
+        <div className="elevate size-[clamp(3.25rem,5.5vw,4.5rem)] shrink-0 overflow-hidden rounded-full bg-card ring-1 ring-border">
           <Image
             src={person.avatar}
             alt={person.name}
             width={256}
             height={256}
             className="h-full w-full object-cover"
-            sizes="(max-width: 640px) 24vw, 6vw"
+            sizes="(max-width: 640px) 18vw, 5vw"
             priority
           />
         </div>
-      </SignalPlate>
-
-      {/* Two lines, tight leading, optical tracking pulled in — at this size the default
-          spacing reads loose. The only element on the site allowed to reach display size. */}
-      <h1 className="font-display text-display leading-[0.82] tracking-[-0.035em] text-foreground">
-        <span className="block">
-          <Fact id="person.given">{person.givenName}</Fact>
-        </span>
-        <span className="block">
-          <Fact id="person.family">{person.familyName}</Fact>
-        </span>
-      </h1>
+      </div>
 
       {/* Tracking is dialled back on narrow screens: at 0.28em the three facts run 40 characters
           wide and wrap, which strands a separator dot at the end of the first line. */}

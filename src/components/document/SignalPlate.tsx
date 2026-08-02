@@ -1,33 +1,33 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import {
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-} from 'framer-motion'
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 
 import { AudioToggle } from './AudioToggle'
 
 /**
  * The one moving thing on the page.
  *
- * A star chart with two masses crossing it. A faint graticule, three magnitude classes of
- * stars parallaxed against each other, an asterism, a dust lane, and a broken circle ringing
- * the portrait the way an atlas rings the object its plate is about. Click it and a ranging
- * circle opens from the point of contact, lifting the magnitude of every star it crosses.
+ * A star chart with a mass pinned at its centre and another crossing behind. A faint
+ * graticule, three magnitude classes of stars parallaxed against each other, an asterism and
+ * a dust lane. Click it and a ranging circle opens from the point of contact, lifting the
+ * magnitude of every star it crosses.
  *
  * The black hole is built from its physics rather than drawn: the sky behind it is sampled
  * through the point-mass lens equation, so stars and graticule lines arc around it and a
- * second inverted image appears inside the Einstein radius without being asked for. The dark
- * disc is the photon capture radius at 2.598 rs, not the horizon, which is why it is larger
- * than the horizon would be. Time bends too — the Schwarzschild factor slows the scintillation
- * of stars seen near the mass, and the Shapiro delay leaves the sky beside it running a fixed
- * interval behind the sky around it. The wormhole beside it inverts its interior radially,
- * which is the standard mapping for the far side of a throat.
+ * second inverted image appears inside the Einstein radius without being asked for. Around it
+ * an accretion disk lives in the source plane and is seen only through that lens, which is
+ * what folds its far side into the arc riding over the shadow; its light carries the Doppler
+ * beaming of matter orbiting at four tenths of c, the gravitational redshift of the inner
+ * annulus, and the winding shear of a Keplerian flow. Point sources brighten by the lens's
+ * true magnification as they cross behind — extended ones do not, because lensing conserves
+ * surface brightness — so a star drifting into alignment flares into an Einstein ring on its
+ * own schedule. The dark disc is the photon capture radius at 2.598 rs, not the horizon, and
+ * the ring on it converges through two sub-rings the way the real one does. A little spin
+ * twists the nearby sky (frame dragging), time runs slow beside the mass (the Schwarzschild
+ * factor, in the scintillation) and arrives late (the Shapiro delay), the incursions are the
+ * stretch-and-squeeze strain of passing gravitational waves, and the wormhole inverts its
+ * interior radially, which is the standard mapping for the far side of a throat.
  *
  * It is drawn on a raw WebGL2 canvas rather than through a scene graph: this is a single
  * full-quad fragment shader, so Three.js would have bought a camera, a renderer, and
@@ -57,8 +57,6 @@ precision highp float;
 
 uniform vec2  uSize;     // drawing buffer size, px
 uniform float uTime;     // seconds
-uniform vec2  uPointer;  // plate space (y up, 1 unit = half the plate height)
-uniform float uHover;    // 0 at rest, 1 while the pointer is over the plate
 uniform vec3  uInk;      // resolved page ink, 0..1
 uniform vec3  uPulse;    // xy = where the plate was last struck, z = seconds since
 uniform float uOpacity;
@@ -68,7 +66,7 @@ out vec4 fragColor;
 
 /**
  * The asterism. Seven catalogued positions in plate space, in two figures that flank the
- * portrait — hand-placed rather than generated, because a random graph of lines looks like
+ * hole — hand-placed rather than generated, because a random graph of lines looks like
  * a network diagram and a chosen one looks like a constellation.
  */
 const vec2 NODES[7] = vec2[7](
@@ -159,19 +157,26 @@ vec2 throat(vec2 s, vec2 c, float radius, float spin) {
 }
 
 /**
- * An incursion: a region where another sky is pressing through this one.
+ * An incursion: a gravitational wave passing through the plate.
  *
- * Two gaussians on long, mutually prime drift periods, each breathing right down through zero
- * so the anomaly arrives, holds and is gone. It shears the coordinate rather than tinting the
- * picture — the graticule buckles and the stars behind it swim, which is a far stranger effect
- * than anything a colour could have done, and it costs the plate no second ink.
+ * What used to be a directionless gaussian buckle is now the strain a quadrupole wave actually
+ * applies: space stretched along one axis and squeezed along the perpendicular one, the axes
+ * set by a slowly drifting polarisation angle, the whole pattern rippling outward from its
+ * centre at a fixed phase speed. Two of these ride long, mutually prime drift periods, each
+ * breathing right down through zero so the event arrives, holds and is gone. The displacement
+ * comes back with its envelope, because the envelope is also the blur — stars seen through
+ * strained space swim out of focus.
  */
-float incursion(vec2 p, float t) {
-  vec2 c1 = vec2(sin(t * 0.061) * 1.30, cos(t * 0.043) * 0.50);
-  vec2 c2 = vec2(cos(t * 0.037) * 1.05, sin(t * 0.029) * 0.58);
-  float g1 = exp(-dot(p - c1, p - c1) * 4.60) * smoothstep(0.30, 0.95, sin(t * 0.047) * 0.5 + 0.5);
-  float g2 = exp(-dot(p - c2, p - c2) * 6.20) * smoothstep(0.38, 0.98, cos(t * 0.031) * 0.5 + 0.5);
-  return clamp(g1 + g2 * 0.7, 0.0, 1.0);
+vec3 gwave(vec2 p, vec2 c, float t, float w, float k, float breathe, float psi) {
+  vec2 d = p - c;
+  float env = exp(-dot(d, d) * 4.8) * breathe;
+  float h = env * 0.80 * sin(t * w - length(d) * k);
+  float c2 = cos(2.0 * psi);
+  float s2 = sin(2.0 * psi);
+  // The quadrupole: the + polarisation rotated to psi. Along the axis space stretches, across
+  // it space squeezes — which is why a grid inside it goes oval rather than merely sideways.
+  vec2 disp = 0.5 * h * vec2(c2 * d.x + s2 * d.y, s2 * d.x - c2 * d.y);
+  return vec3(disp, env);
 }
 
 /**
@@ -250,7 +255,7 @@ float catalogue(vec2 p, float scale, float cut, float t, float bright, float px,
 
 void main() {
   vec2 uv = gl_FragCoord.xy / uSize;
-  // Origin at the portrait, isotropic: one unit is half the plate height on both axes.
+  // Origin at the centre of the plate, where the hole sits, isotropic: one unit is half the plate height on both axes.
   vec2 p = (uv - 0.5) * vec2(uSize.x / uSize.y, 1.0) * 2.0;
 
   // One device pixel, in plate units — used only as a floor on how thin a line may get. Sizes
@@ -260,30 +265,29 @@ void main() {
   float px = 2.0 / uSize.y;
   float hair = max(0.0060, px);
 
-  // The pointer slides the sky rather than deforming it. The plate this replaced pinched
-  // space toward the cursor, which on a chart is an error: a chart's promise is that the
-  // positions on it are true, and the only thing allowed to bend them here is mass.
-  vec2 slide = uPointer * uHover * 0.09;
-
-  // The two masses travel. They do not orbit a point and they do not merely wander — they pan
-  // across the plate with the sky they are embedded in and wrap, so in the ten seconds anyone
-  // actually spends looking at this, the hole has visibly moved. The span is one plate width
-  // plus a margin, so the wrap always happens off the edge and neither object is ever gone.
+  // The hole no longer travels: it holds the centre, because it is the catalogued object this
+  // plate is about, and the sky streams through its lens instead — which keeps stars arcing,
+  // doubling and flaring in view for as long as anyone watches. Pinned dead still: it briefly
+  // had a breathing drift, and even that read as the hole waving — the fixed point of the
+  // whole page has no business waving. The wormhole still pans and wraps on a lane well
+  // below the disk, the wandering counterpart that proves the centre one is pinned.
   float span = (uSize.x / uSize.y) * 2.0 + 1.4;
-  float holeX = mod(uTime * 0.075 + span * 0.5, span) - span * 0.5;
+  vec2 holeAt = vec2(0.0, 0.03);
   float boreX = mod(uTime * 0.075 + span * 0.94, span) - span * 0.5;
-  vec2 holeAt = vec2(holeX, 0.30 + 0.11 * sin(uTime * 0.13));
-  vec2 boreAt = vec2(boreX, -0.30 + 0.09 * cos(uTime * 0.11));
+  vec2 boreAt = vec2(boreX, -0.56 + 0.07 * cos(uTime * 0.11));
 
   // One free parameter, the Schwarzschild radius; everything else about the hole follows from
   // it the way it does in the real object. The dark disc is not the horizon — it is the photon
   // capture cross-section at √27/2 · rs ≈ 2.598 rs, which is what an observer actually sees and
   // is why a black hole always looks larger than its own horizon. The Einstein radius is the
-  // one genuinely free choice here, since it depends on distances this scene does not have.
-  float rs = 0.058;
+  // one genuinely free choice here, since it depends on distances this scene does not have —
+  // it is set just outside the capture radius, so the strong-lensing region hugs the shadow
+  // the way it does when the source sky sits far behind the lens, and the far side of the
+  // disk folds up against the ring instead of floating above it.
+  float rs = 0.075;
   float holeR = 2.598 * rs;
-  float einstein = 0.29;
-  float boreR = 0.26;
+  float einstein = 0.22;
+  float boreR = 0.24;
 
   // Time, bent. Two separate relativistic effects, and they show up in different ways:
   //
@@ -303,13 +307,44 @@ void main() {
   float tSky = uTime - shapiro;
 
   // The sky is sampled through everything that bends it, in the order light would meet them.
-  float anomaly = incursion(p, uTime);
-  vec2 sky = p + slide;
+  // The cursor is no longer one of those things: a chart's promise is that the positions on
+  // it are true, so only mass bends it, and only a strike gets an answer.
+  vec2 sky = p;
+
+  // Frame dragging. The hole is given a little spin, and spin drags the space around it
+  // azimuthally — Lense–Thirring, falling off fast with distance. Like the Shapiro term this
+  // is a fixed twist rather than a rate: a rate would wind the sky around the hole without
+  // bound, and the imprint of a steadily rotating mass on a steady sky is itself steady.
+  vec2 dh = sky - holeAt;
+  float drag = 0.60 * pow(holeR / max(length(dh), holeR), 2.0);
+  sky = holeAt + mat2(cos(drag), -sin(drag), sin(drag), cos(drag)) * dh;
+
   sky = lens(sky, holeAt, einstein);
+
+  // Magnification. The lens above moves images; this brightens them. The point-lens total
+  // magnification, (u² + 2) / (u √(u² + 4)) with u the source offset in Einstein radii — and
+  // it is applied only to point sources further down, because lensing conserves surface
+  // brightness: an extended thing like the graticule bends but never brightens, while an
+  // unresolved star collects all of its magnified flux in the same dot. So a star drifting
+  // behind the hole flares, stretches, and at alignment becomes a ring — the plate's
+  // recurring event, free with the streaming sky. Clamped where the divergence at u = 0
+  // would outshine everything; six is as loud as this chart speaks.
+  float uSrc = length(sky - holeAt) / einstein;
+  float magn = min((uSrc * uSrc + 2.0) / max(uSrc * sqrt(uSrc * uSrc + 4.0), 1e-3), 6.0);
+
   sky = throat(sky, boreAt, boreR, uTime * 0.09);
-  // The incursion shears rather than displaces: the buckle has no single direction, so the
-  // grid inside it folds instead of sliding sideways as one piece.
-  sky += anomaly * 0.085 * vec2(sin(sky.y * 5.3 + uTime * 0.31), cos(sky.x * 4.1 - uTime * 0.27));
+
+  // The incursions, as strain: displacement applied to the sky, envelopes kept for the blur.
+  float breathe1 = smoothstep(0.30, 0.95, sin(uTime * 0.047) * 0.5 + 0.5);
+  float breathe2 = smoothstep(0.38, 0.98, cos(uTime * 0.031) * 0.5 + 0.5) * 0.7;
+  vec3 wave1 = gwave(sky, vec2(sin(uTime * 0.061) * 1.30, cos(uTime * 0.043) * 0.50), uTime, 1.05, 3.1, breathe1, uTime * 0.021);
+  vec3 wave2 = gwave(sky, vec2(cos(uTime * 0.037) * 1.05, sin(uTime * 0.029) * 0.58), uTime, 0.83, 2.6, breathe2, 1.7 - uTime * 0.017);
+  // The strain is held out of the lens's neighbourhood. Near the mass, spacetime is the
+  // hole's, and a passing ripple is a rounding error on it — and on the plate, a wobbling
+  // shadow reads as a broken shadow. The waves own the field; the hole owns its ground.
+  float calm = smoothstep(0.30, 0.85, length(p - holeAt));
+  sky += (wave1.xy + wave2.xy) * calm;
+  float anomaly = clamp(wave1.z + wave2.z, 0.0, 1.0) * calm;
 
   // The graticule: meridians and parallels, each bowed a little by the other's coordinate, so
   // the grid carries the suggestion of a projected sphere before anything bends it. It is the
@@ -371,11 +406,56 @@ void main() {
   links = min(links, segment(pf, NODES[5], NODES[6]));
   float asterism = smoothstep(hair + px, hair - px, links) * 0.15;
 
+  // The accretion disk — the proper view of the hole, in the same single ink.
+  //
+  // The disk is a thin annulus living in the source plane, from the innermost stable orbit
+  // at 3 rs out to where its emission has died, seen at ~78° of inclination. Because it is
+  // sampled through the lens above, the famous silhouette assembles itself: the far side of
+  // the disk is folded up over the shadow and arrives as the arc riding the ring, with its
+  // inverted twin hugging the underside — nothing here draws either arc.
+  //
+  // Its light is shaped by three real factors. Keplerian speed √(rs/2r), four tenths of c at
+  // the inner edge; the Doppler factor cubed, which is why the approaching limb is laid in
+  // dense ink and the receding one in almost none — beaming, rendered as line weight; and
+  // the gravitational redshift √(1 − rs/r), quietly dimming the innermost annulus that the
+  // beaming would otherwise overstate. The lanes are noise carried on annular bands, each
+  // band turning at its own Keplerian rate — banded on purpose, because a continuous shear
+  // winds any pattern below pixel scale within minutes, and adjacent lanes visibly slipping
+  // past each other is precisely what differential rotation looks like on a plate.
+  float sinI = 0.978;
+  float cosI = 0.208;
+  vec2 dsrc = sky - holeAt;
+  vec2 dplane = vec2(dsrc.x, dsrc.y / cosI);
+  float rd = max(length(dplane), 1e-4);
+  float diskIn = 3.0 * rs;
+  float diskOut = 7.0 * rs;
+  // Every per-orbit factor is clamped at the ISCO: inside it nothing orbits and nothing
+  // emits — and the raw radius runs through zero near the Einstein ring, where an unclamped
+  // β would pass 1 and the Doppler term would divide by nothing.
+  float rdc = max(rd, diskIn);
+  float phi = atan(dplane.y, dplane.x);
+  // The rotation is the point of the disk, so it is allowed to be seen: the inner lanes lap
+  // the hole in a few seconds and the outer ones in tens, on the same r^(-3/2) law, and the
+  // contrast between lanes is kept high enough that the motion reads from across the room.
+  float bandR = max((floor(rd * 26.0) + 0.5) / 26.0, diskIn);
+  float whirl = 0.16 / pow(bandR, 1.5);
+  float lanes = 0.35 + 0.90 * noise(vec2(rd * 46.0, (phi - whirl * uTime) * 3.0));
+  float beta = sqrt(rs / (2.0 * rdc));
+  float dopp = pow(1.0 / (1.0 - beta * sinI * (dplane.x / rdc)), 3.0);
+  float gfac = sqrt(max(1.0 - rs / rdc, 0.0));
+  float disk = pow(rs / rdc, 2.0) * 26.0
+    * smoothstep(diskIn * 0.92, diskIn * 1.22, rd)
+    * smoothstep(diskOut * 1.55, diskOut * 0.72, rd)
+    * lanes * min(dopp, 6.0) * gfac * gfac
+    * mix(0.34, 0.30, uShadow);
+
   // The sky, in the order a plate is printed: paper, dust, the lines drawn on it, the objects.
   // The sweep lifts the magnitude of every star it crosses, which is the whole point of it —
-  // it is not a ring travelling over the chart, it is the chart being read.
+  // it is not a ring travelling over the chart, it is the chart being read. The point sources
+  // alone carry the lens magnification, for the surface-brightness reason given above.
   float field = max(graticule, max(dust, asterism));
-  field = max(field, max(stars, nodes) * (1.0 + sweep * 1.8 + anomaly * 0.35));
+  field = max(field, disk);
+  field = max(field, max(stars, nodes) * magn * (1.0 + sweep * 1.8 + anomaly * 0.35));
   field = max(field, sweep * 0.30);
 
   // Inside the capture radius there is nothing to draw — not dark ink, *no* ink, so the disc
@@ -386,32 +466,35 @@ void main() {
   float holeD = holeDist;
   field *= smoothstep(holeR * 0.90, holeR * 1.02, holeD);
 
-  // The photon ring, sitting on the capture radius itself. The brightest mark on the plate and
-  // the only one allowed to be: it is where light has gone all the way around the mass, more
-  // than once, and come back out to the eye.
-  float ring = smoothstep(hair * 1.5 + px, hair * 1.5 - px, abs(holeD - holeR * 1.03)) * 0.52;
-  // A breath of light outside the ring, where the lensed sky piles up. Nearly switched off
+  // The photon ring, and its sub-rings. Light that has gone one more half-orbit around the
+  // mass arrives exponentially closer to the critical curve and exponentially fainter — the
+  // true ratio is e^(−π) ≈ 1/23 per half-orbit, which would put the first sub-ring below a
+  // single 8-bit step. They are drawn at a third and a ninth instead: exaggeration, in the
+  // service of the structure existing at all. The brightest mark on the plate and the only
+  // one allowed to be — it is light that has orbited the mass and come back out to the eye.
+  float ring = smoothstep(hair * 1.5 + px, hair * 1.5 - px, abs(holeD - holeR * 1.10)) * 0.52;
+  ring += smoothstep(hair + px, hair - px, abs(holeD - holeR * 1.040)) * 0.17;
+  ring += smoothstep(hair * 0.75 + px, hair * 0.75 - px, abs(holeD - holeR * 1.012)) * 0.06;
+  // A breath of light outside the rings, where the lensed sky piles up. Nearly switched off
   // on paper: the identical mark that reads as light on a dark ground reads as a thumbprint
   // on a white one.
   ring += smoothstep(holeR * 1.10, holeR * 2.4, holeD) * smoothstep(holeR * 3.2, holeR * 1.3, holeD) * mix(0.05, 0.018, uShadow);
 
   // The throat's rim: two hairlines, the outer one fainter, so the mouth reads as an aperture
-  // with a thickness rather than as a circle drawn on the sky.
+  // with a thickness rather than as a circle drawn on the sky — and a third, faintest, inside
+  // it: the antipodal ring, where a throat images the single point directly behind its far
+  // mouth into a circle, the one landmark the far sky is guaranteed to produce.
   float boreD = length(p - boreAt);
   float rim = smoothstep(hair * 1.3 + px, hair * 1.3 - px, abs(boreD - boreR)) * 0.28;
   rim = max(rim, smoothstep(hair + px, hair - px, abs(boreD - boreR * 1.16)) * 0.12);
+  rim = max(rim, smoothstep(hair + px, hair - px, abs(boreD - boreR * 0.58)) * 0.08);
 
   float ink = max(field, max(ring, rim));
 
-  // Clear halo, so the portrait sits on unruled paper rather than in a thicket of stars.
-  ink *= smoothstep(mix(0.46, 0.40, uShadow), 0.78, length(p));
-
-  // The subject marker: a broken circle around the portrait, the way an atlas rings the one
-  // object on the plate that the plate is actually about. Drawn after the halo, because it
-  // belongs to the clear space rather than to the field the halo is clearing.
-  float dash = step(0.42, fract(atan(p.y, p.x) * 1.9 + uTime * 0.012));
-  float reticle = smoothstep(hair + px, hair - px, abs(length(p) - 0.54)) * dash * 0.13;
-  ink = max(ink, reticle);
+  // No marker rings the subject any more — the dashed reticle went with the portrait, and
+  // the halo that cleared space for it went too. A hole that bends the whole sky around
+  // itself does not need an arrow pointing at it; the sky runs all the way in to the shadow,
+  // because the crowding at the lens is the picture.
 
   // One mask, applied last, covering lines and objects alike — so nothing reaches the edge of
   // the drawing buffer and the plate has no boundary of its own.
@@ -486,34 +569,18 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
   const [supported, setSupported] = useState(true)
 
   /**
-   * Scroll parallax, applied to the field but not the portrait: the sheets fall behind the
-   * page and dissolve while the portrait travels with it. Same depth argument as the
-   * pointer parallax inside the shader, at a scale you feel rather than see. Driven by a
-   * motion value, so scrolling never re-renders React.
+   * Scroll parallax, applied to the field but not the hole: the sheets fall behind the
+   * page and dissolve while the hole travels with it. Driven by a motion value, so
+   * scrolling never re-renders React.
+   *
+   * This is the one ambient motion left on the component: the pointer tilt and the hover
+   * slide are gone on purpose. The plate answers exactly one gesture — the strike — and
+   * ignores the cursor entirely, which is the difference between an instrument and a toy.
    */
   const prefersReducedMotion = useReducedMotion()
   const { scrollY } = useScroll()
   const parallax = useTransform(scrollY, [0, 420], [0, 64])
   const fade = useTransform(scrollY, [0, 380], [1, 0])
-
-  /**
-   * Pointer tilt. The whole plate rotates a few degrees toward the cursor on a real
-   * perspective, with the portrait pushed forward on the Z axis — so the separation between
-   * the portrait and the field is geometric rather than simulated, and the thing reads as a
-   * physical surface you are leaning rather than a picture of one.
-   *
-   * Spring-damped rather than linearly eased: a spring overshoots very slightly and settles,
-   * which is what makes a tilt feel like it has mass instead of like a slider being dragged.
-   *
-   * Softer than it was, on both counts. The travel is down to a little over half (see the
-   * clamps in the pointer handler) and the spring is heavier and more damped, so the plate
-   * leans rather than snaps. A surface with mass does not keep up with a cursor.
-   */
-  const tiltTargetX = useMotionValue(0)
-  const tiltTargetY = useMotionValue(0)
-  const springConfig = { stiffness: 96, damping: 24, mass: 0.55 }
-  const rotateX = useSpring(tiltTargetX, springConfig)
-  const rotateY = useSpring(tiltTargetY, springConfig)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -561,8 +628,6 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
 
     const uSize = gl.getUniformLocation(program, 'uSize')
     const uTime = gl.getUniformLocation(program, 'uTime')
-    const uPointer = gl.getUniformLocation(program, 'uPointer')
-    const uHover = gl.getUniformLocation(program, 'uHover')
     const uInk = gl.getUniformLocation(program, 'uInk')
     const uPulse = gl.getUniformLocation(program, 'uPulse')
     const uOpacity = gl.getUniformLocation(program, 'uOpacity')
@@ -577,10 +642,6 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     let start = performance.now()
     let elapsed = 0
 
-    // Targets are set by input; the rendered values chase them, so a fast pointer drags the
-    // field rather than teleporting it.
-    const pointer = { x: 0, y: -3, targetX: 0, targetY: -3, hover: 0, targetHover: 0 }
-
     // Where the plate was last struck, and when. `at` starts far enough in the past that the
     // strike term is already dead on the first frame — an unclicked plate has never been
     // clicked, rather than having been clicked at the origin at time zero.
@@ -588,9 +649,8 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
 
     // The canvas's geometry, cached. Everything that needs the plate's position or size reads
     // it from here rather than from the element, because both `clientWidth` and
-    // `getBoundingClientRect()` force the browser to flush pending layout — and the two places
-    // that wanted them are the hottest paths in the component: one runs every animation frame,
-    // the other on every pointermove across the whole window. The ResizeObserver and a scroll
+    // `getBoundingClientRect()` force the browser to flush pending layout — and one of the
+    // places that wants them runs every animation frame. The ResizeObserver and a scroll
     // listener keep this current, which is the same information for none of the cost.
     let box = { left: 0, top: 0, width: 0, height: 0 }
 
@@ -617,8 +677,6 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       resize()
       gl.uniform2f(uSize, width, height)
       gl.uniform1f(uTime, time)
-      gl.uniform2f(uPointer, pointer.x, pointer.y)
-      gl.uniform1f(uHover, pointer.hover)
       // Every probe is read every frame rather than cached, which is what lets a theme
       // flip take effect without any wiring between the toggle and this canvas.
       const ink = readColour(probe!)
@@ -637,11 +695,6 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
 
     function loop(now: number) {
       elapsed = (now - start) / 1000
-      // Chase the pointer fast enough to feel connected to it. At 0.06 the hover ramp took
-      // most of a second to reach full strength, which reads as no response at all.
-      pointer.x += (pointer.targetX - pointer.x) * 0.15
-      pointer.y += (pointer.targetY - pointer.y) * 0.15
-      pointer.hover += (pointer.targetHover - pointer.hover) * 0.11
       draw(elapsed)
       frame = requestAnimationFrame(loop)
     }
@@ -658,32 +711,12 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       frame = 0
     }
 
-    /** Viewport pixels to plate space — the shader's coordinates, y up, origin at the portrait. */
+    /** Viewport pixels to plate space — the shader's coordinates, y up, origin at the hole. */
     function toPlateSpace(event: PointerEvent) {
       if (box.height === 0) return null
       const x = (event.clientX - box.left) / box.width
       const y = 1 - (event.clientY - box.top) / box.height
       return { x, y, px: (x - 0.5) * (box.width / box.height) * 2, py: (y - 0.5) * 2 }
-    }
-
-    function onPointerMove(event: PointerEvent) {
-      if (!visible || reduceMotion.matches) return
-      const at = toPlateSpace(event)
-      if (!at) return
-      pointer.targetX = at.px
-      pointer.targetY = at.py
-      // Influence is gated on being roughly over the plate, so scrolling far below it does
-      // not leave a phantom dent in the engraving.
-      const near = at.x > -0.35 && at.x < 1.35 && at.y > -1.1 && at.y < 2.1
-      pointer.targetHover = near ? 1 : 0
-
-      // Tilt is clamped rather than scaled, so the plate reaches its limit while the cursor
-      // is still over it and does not keep rolling as you travel across the page. Both limits
-      // are down by about half: at 5.5° and 7° the plate was swinging far enough that the
-      // portrait's translateZ read as the thing being animated.
-      const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value))
-      tiltTargetX.set(near ? clamp((at.y - 0.5) * 2 * 3.0, 3.0) : 0)
-      tiltTargetY.set(near ? clamp((at.x - 0.5) * 2 * 3.8, 3.8) : 0)
     }
 
     /**
@@ -705,12 +738,6 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       // A strike while the canvas is paused off-screen would otherwise sit unrendered and
       // then appear mid-life when the plate scrolls back in.
       if (!frame) draw(elapsed)
-    }
-
-    function onPointerLeave() {
-      pointer.targetHover = 0
-      tiltTargetX.set(0)
-      tiltTargetY.set(0)
     }
 
     const observer = new IntersectionObserver(
@@ -743,7 +770,6 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     function onMotionPreferenceChange() {
       if (reduceMotion.matches) {
         pause()
-        pointer.hover = 0
         draw(0)
       } else if (visible) {
         play()
@@ -751,13 +777,10 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     }
 
     // Scrolling changes where the plate is without changing its size, which no ResizeObserver
-    // reports. One passive read per scroll event is still enormously cheaper than one per
-    // pointermove, and it is the only other thing that can invalidate the cached box.
+    // reports. One passive read per scroll event keeps the cached box honest for the strike.
     window.addEventListener('scroll', measure, { passive: true })
     window.addEventListener('resize', measure, { passive: true })
-    window.addEventListener('pointermove', onPointerMove, { passive: true })
     canvas.addEventListener('pointerdown', onPointerDown, { passive: true })
-    document.addEventListener('pointerleave', onPointerLeave)
     reduceMotion.addEventListener('change', onMotionPreferenceChange)
 
     measure()
@@ -772,22 +795,19 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       themeObserver.disconnect()
       window.removeEventListener('scroll', measure)
       window.removeEventListener('resize', measure)
-      window.removeEventListener('pointermove', onPointerMove)
       canvas.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('pointerleave', onPointerLeave)
       reduceMotion.removeEventListener('change', onMotionPreferenceChange)
       gl.deleteProgram(program)
       gl.deleteShader(vertex)
       gl.deleteShader(fragment)
       gl.deleteBuffer(buffer)
     }
-  }, [tiltTargetX, tiltTargetY])
+  }, [])
 
   return (
-    // The perspective lives on the outer box and the 3D children on the tilting one, which
-    // is the only arrangement where translateZ on the portrait actually reads as depth
-    // rather than as a scale.
-    <div className="relative isolate mx-auto grid h-[clamp(15rem,27vw,21rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]">
+    // The tilt is gone with the rest of the cursor theatre, but the perspective stays on the
+    // outer box: it is what lets a translateZ on anything seated on the plate read as depth.
+    <div className="relative isolate mx-auto grid h-[clamp(16rem,30vw,24rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]">
       {/* Colour probe. The shader reads its ink off this element's resolved `color`,
           which costs nothing and keeps the palette in one place instead of duplicated in
           GLSL — including across a light/dark flip, where this simply resolves differently. */}
@@ -804,13 +824,10 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
         className="pointer-events-none absolute text-background opacity-0"
       />
 
-      <motion.div
-        className="absolute inset-0 grid place-items-center [transform-style:preserve-3d]"
-        style={prefersReducedMotion ? undefined : { rotateX, rotateY }}
-      >
+      <div className="absolute inset-0 grid place-items-center [transform-style:preserve-3d]">
         {/* Scroll parallax rides on the canvas itself rather than a wrapper: an `opacity`
             on an ancestor creates a stacking context, which flattens the 3D subtree and
-            collapses the portrait's translateZ back onto the plate. */}
+            collapses the subject's translateZ back onto the plate. */}
         <motion.canvas
           ref={canvasRef}
           aria-hidden
@@ -818,8 +835,9 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
           style={prefersReducedMotion ? undefined : { y: parallax, opacity: fade }}
         />
 
-        {/* Where WebGL2 is unavailable the portrait still sits on a field of points — a
-            printed plate rather than a photographed sky, which is the honest downgrade. */}
+        {/* Where WebGL2 is unavailable the plate still prints: a field of points with a
+            blank disc at the centre. The shadow is the one part of the drawing that survives
+            losing the GPU, because it was never made of ink to begin with. */}
         {!supported && (
           <div
             aria-hidden
@@ -831,14 +849,14 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
           />
         )}
 
-        {/* Pushed toward the viewer, so the tilt moves it across the field by more than it
-            moves the field itself. That difference is the parallax — actual geometry, not
-            two layers being animated at different rates and hoping it reads. */}
-        <div className="relative [transform:translateZ(52px)]">{children}</div>
-      </motion.div>
+        {/* Anything handed to the plate rides pushed toward the viewer. Nothing is handed
+            over since the portrait moved down beside the name, but the seat stays for
+            whoever sits in it next. */}
+        {children ? <div className="relative [transform:translateZ(52px)]">{children}</div> : null}
+      </div>
 
-      {/* Outside the tilting box on purpose: a control that leans away when you reach for it
-          is a worse control, and this one must also not inherit the canvas's scroll fade. */}
+      {/* Outside the plate's own box on purpose: this control must not inherit the canvas's
+          scroll fade. */}
       <AudioToggle />
     </div>
   )
