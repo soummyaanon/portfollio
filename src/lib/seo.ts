@@ -97,7 +97,9 @@ export function personSchema(description: string): JsonLd {
     description,
     url: absoluteUrl('/'),
     mainEntityOfPage: { '@id': PROFILE_PAGE_ID },
-    image: person.avatar,
+    // Not absoluteUrl(): that appends the trailing slash every *page* URL here needs, and a
+    // file is not a page — it would emit /avatar.jpg/ and resolve to nothing.
+    image: `${SITE_URL}${person.avatar}`,
     sameAs: person.links.map((link) => link.url),
     address: {
       '@type': 'PostalAddress',

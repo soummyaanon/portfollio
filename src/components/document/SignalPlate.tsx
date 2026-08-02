@@ -586,11 +586,24 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     // clicked, rather than having been clicked at the origin at time zero.
     const pulse = { x: 0, y: 0, at: -1000 }
 
+    // The canvas's geometry, cached. Everything that needs the plate's position or size reads
+    // it from here rather than from the element, because both `clientWidth` and
+    // `getBoundingClientRect()` force the browser to flush pending layout — and the two places
+    // that wanted them are the hottest paths in the component: one runs every animation frame,
+    // the other on every pointermove across the whole window. The ResizeObserver and a scroll
+    // listener keep this current, which is the same information for none of the cost.
+    let box = { left: 0, top: 0, width: 0, height: 0 }
+
+    function measure() {
+      const rect = canvas!.getBoundingClientRect()
+      box = { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+    }
+
     function resize() {
       if (!gl) return
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      const next = Math.max(1, Math.round(canvas!.clientWidth * dpr))
-      const nextHeight = Math.max(1, Math.round(canvas!.clientHeight * dpr))
+      const next = Math.max(1, Math.round(box.width * dpr))
+      const nextHeight = Math.max(1, Math.round(box.height * dpr))
       if (next === width && nextHeight === height) return
       width = next
       height = nextHeight
@@ -647,11 +660,10 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
 
     /** Viewport pixels to plate space — the shader's coordinates, y up, origin at the portrait. */
     function toPlateSpace(event: PointerEvent) {
-      const rect = canvas!.getBoundingClientRect()
-      if (rect.height === 0) return null
-      const x = (event.clientX - rect.left) / rect.width
-      const y = 1 - (event.clientY - rect.top) / rect.height
-      return { x, y, px: (x - 0.5) * (rect.width / rect.height) * 2, py: (y - 0.5) * 2 }
+      if (box.height === 0) return null
+      const x = (event.clientX - box.left) / box.width
+      const y = 1 - (event.clientY - box.top) / box.height
+      return { x, y, px: (x - 0.5) * (box.width / box.height) * 2, py: (y - 0.5) * 2 }
     }
 
     function onPointerMove(event: PointerEvent) {
@@ -712,6 +724,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     observer.observe(canvas)
 
     const resizeObserver = new ResizeObserver(() => {
+      measure()
       resize()
       if (!frame) draw(elapsed)
     })
@@ -737,11 +750,17 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       }
     }
 
+    // Scrolling changes where the plate is without changing its size, which no ResizeObserver
+    // reports. One passive read per scroll event is still enormously cheaper than one per
+    // pointermove, and it is the only other thing that can invalidate the cached box.
+    window.addEventListener('scroll', measure, { passive: true })
+    window.addEventListener('resize', measure, { passive: true })
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     canvas.addEventListener('pointerdown', onPointerDown, { passive: true })
     document.addEventListener('pointerleave', onPointerLeave)
     reduceMotion.addEventListener('change', onMotionPreferenceChange)
 
+    measure()
     resize()
     draw(0)
     if (!reduceMotion.matches) play()
@@ -751,6 +770,8 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       observer.disconnect()
       resizeObserver.disconnect()
       themeObserver.disconnect()
+      window.removeEventListener('scroll', measure)
+      window.removeEventListener('resize', measure)
       window.removeEventListener('pointermove', onPointerMove)
       canvas.removeEventListener('pointerdown', onPointerDown)
       document.removeEventListener('pointerleave', onPointerLeave)
@@ -766,7 +787,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     // The perspective lives on the outer box and the 3D children on the tilting one, which
     // is the only arrangement where translateZ on the portrait actually reads as depth
     // rather than as a scale.
-    <div className="relative isolate mx-auto grid h-[clamp(11rem,19vw,15rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]">
+    <div className="relative isolate mx-auto grid h-[clamp(15rem,27vw,21rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]">
       {/* Colour probe. The shader reads its ink off this element's resolved `color`,
           which costs nothing and keeps the palette in one place instead of duplicated in
           GLSL — including across a light/dark flip, where this simply resolves differently. */}

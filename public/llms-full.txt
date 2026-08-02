@@ -8,7 +8,7 @@
 - Location: India
 - Timezone: Asia/Kolkata
 - Site: https://soumyapanda.me
-- Avatar: https://github.com/soummyaanon.png
+- Avatar: /avatar.jpg
 - Focus: AI-driven tools, healthcare AI
 - Interests: deep-space science, political developments
 - GitHub: https://github.com/soummyaanon

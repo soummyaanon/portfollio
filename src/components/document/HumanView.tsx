@@ -44,18 +44,21 @@ function pad(value: number) {
 
 function Masthead() {
   return (
-    // Top padding clears the fixed mode toggle, which owns the top-right corner.
-    <header className="pt-[clamp(4.5rem,7vw,6.5rem)] text-center">
-      {/* The portrait sits at the centre of the engraved plate rather than off to one side:
-          it is the source the contour field radiates from, so the decoration has a subject
-          instead of being a texture the page happens to sit on. */}
+    // Top padding clears the fixed mode toggle, which owns the top-right corner. It is pulled
+    // in tighter than the plate below it is tall: the plate grew, and it grew upward, because
+    // sky is the one thing on this page that is worth more of the fold than the margin above
+    // it was. The toggle still clears — the plate's mask has no ink within a rem of its edge.
+    <header className="pt-[clamp(3rem,4.5vw,4.25rem)] text-center">
+      {/* The portrait sits at the centre of the plate rather than off to one side: it is the
+          catalogued object the chart is drawn around, so the decoration has a subject instead
+          of being a texture the page happens to sit on. */}
       <SignalPlate>
         <div className="elevate size-[clamp(3.5rem,6vw,5rem)] overflow-hidden rounded-full bg-card ring-1 ring-border">
           <Image
             src={person.avatar}
             alt={person.name}
-            width={420}
-            height={420}
+            width={256}
+            height={256}
             className="h-full w-full object-cover"
             sizes="(max-width: 640px) 24vw, 6vw"
             priority

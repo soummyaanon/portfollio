@@ -110,9 +110,14 @@ export const person: Person = {
   location: 'India',
   timezone: 'Asia/Kolkata',
   site: 'https://soumyapanda.me',
-  // Stable URL on purpose. The old Hero appended `?v=<today>`, which minted a new URL every
-  // day and so guaranteed a cache miss for every visitor.
-  avatar: 'https://github.com/soummyaanon.png',
+  // Served from this origin, and a path rather than a URL so it is one string to change.
+  //
+  // It used to point at github.com/<user>.png, which is a 302 to avatars.githubusercontent.com
+  // — so the portrait, which is the LCP element on this page, cost a redirect, a second DNS
+  // lookup and TLS handshake to another origin, 95 KB of PNG at 460px for a slot that is never
+  // wider than 80, and a five-minute cache lifetime GitHub sets and nobody here can change.
+  // The same face is now 15 KB of JPEG at 256px sitting next to the HTML.
+  avatar: '/avatar.jpg',
   focus: ['AI-driven tools', 'healthcare AI'],
   interests: ['deep-space science', 'political developments'],
   links: [

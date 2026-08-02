@@ -201,12 +201,12 @@ export function SpecimenSheet({ posts }: { readonly posts: readonly PostSummary[
         {/* The reading view shows the portrait; here the same fact is its URL. */}
         <FieldRow name="avatar">
           <a
-            href={person.avatar}
+            href={`${person.site}${person.avatar}`}
             target="_blank"
             rel="noopener noreferrer"
             className="underline decoration-border decoration-1 underline-offset-4 transition-colors hover:decoration-signal"
           >
-            {person.avatar}
+            {`${person.site}${person.avatar}`}
           </a>
         </FieldRow>
         <FieldRow name="focus">
