@@ -8,10 +8,10 @@ import { AudioToggle } from './AudioToggle'
 /**
  * The one moving thing on the page.
  *
- * A star chart with a mass pinned at its centre and another crossing behind. A faint
- * graticule, three magnitude classes of stars parallaxed against each other, an asterism and
- * a dust lane. Click it and a ranging circle opens from the point of contact, lifting the
- * magnitude of every star it crosses.
+ * A star chart with a mass pinned at its centre. A faint graticule, four depths of stars
+ * parallaxed against each other down to a dust-fine veil, an asterism, a dust lane, small
+ * nebulas drifting through, and now and then a meteor. Click it and a ranging circle opens
+ * from the point of contact, lifting the magnitude of every star it crosses.
  *
  * The black hole is built from its physics rather than drawn: the sky behind it is sampled
  * through the point-mass lens equation, so stars and graticule lines arc around it and a
@@ -25,9 +25,9 @@ import { AudioToggle } from './AudioToggle'
  * own schedule. The dark disc is the photon capture radius at 2.598 rs, not the horizon, and
  * the ring on it converges through two sub-rings the way the real one does. A little spin
  * twists the nearby sky (frame dragging), time runs slow beside the mass (the Schwarzschild
- * factor, in the scintillation) and arrives late (the Shapiro delay), the incursions are the
- * stretch-and-squeeze strain of passing gravitational waves, and the wormhole inverts its
- * interior radially, which is the standard mapping for the far side of a throat.
+ * factor, in the scintillation) and arrives late (the Shapiro delay), and the incursions are
+ * the stretch-and-squeeze strain of passing gravitational waves, kept off the hole's own
+ * ground where its gravity, not theirs, owns the geometry.
  *
  * It is drawn on a raw WebGL2 canvas rather than through a scene graph: this is a single
  * full-quad fragment shader, so Three.js would have bought a camera, a renderer, and
@@ -137,23 +137,42 @@ vec2 lens(vec2 s, vec2 c, float einstein) {
 }
 
 /**
- * A wormhole throat, as the same kind of transform.
- *
- * Inside the rim the radial coordinate is inverted — r becomes R²/r — which is the standard
- * mapping for "the other side": the centre of the disc samples the far sky, and the further
- * in you look the further out you are seeing. The interior is also spun, slowly and in the
- * opposite sense to the drift, so the patch inside the rim is visibly not the patch around
- * it. Clamped, because an unclamped inversion samples coordinates large enough to break the
- * hash and fill the throat with aliasing.
+ * A small nebula: a gaussian envelope over two octaves of the same value noise the dust lane
+ * uses, thresholded so it arrives as wisps rather than as a blob. The centre seeds the noise,
+ * which is what makes three calls with three centres three different clouds.
  */
-vec2 throat(vec2 s, vec2 c, float radius, float spin) {
-  vec2 d = s - c;
-  float r = length(d);
-  if (r >= radius) return s;
-  float inv = min(radius * radius / max(r, 0.004), 9.0);
-  float a = spin;
-  mat2 rot = mat2(cos(a), -sin(a), sin(a), cos(a));
-  return c + rot * (d / max(r, 1e-4)) * inv;
+float wisp(vec2 p, vec2 c, float size) {
+  vec2 d = p - c;
+  float env = exp(-dot(d, d) / (size * size));
+  float tex = noise(d * 7.0 + c * 3.1) * 0.62 + noise(d * 14.0 - c * 1.7) * 0.38;
+  return env * smoothstep(0.28, 0.88, tex);
+}
+
+/**
+ * A meteor. Each slot fires on its own hashed period: a hashed cycle picks a starting point
+ * along the top of the plate and a diagonal, the head runs the chord for under a second with
+ * a tail dying quadratically behind it, and the rest of the period is silence. Two slots on
+ * mutually indifferent periods make the schedule feel like weather rather than a loop.
+ */
+float meteor(vec2 p, float t, float seed, float px) {
+  float period = 9.0 + 7.0 * hash(vec2(seed, 4.7));
+  float cycle = floor(t / period + seed);
+  float ft = fract(t / period + seed) * period;
+  float life = 0.9;
+  if (ft > life) return 0.0;
+  vec2 h = hash2(vec2(seed * 13.7, cycle));
+  vec2 a = vec2(mix(-1.7, 1.7, h.x), mix(0.35, 1.05, h.y));
+  vec2 dir = normalize(vec2(mix(-0.9, 0.9, hash(vec2(cycle, seed + 2.2))), -1.0));
+  vec2 head = a + dir * 2.4 * ft;
+  vec2 d = p - head;
+  float along = dot(d, dir);
+  vec2 perp = d - dir * along;
+  float width = max(0.0065, px);
+  float core = exp(-dot(perp, perp) / (width * width));
+  float t01 = clamp(-along / 0.34, 0.0, 1.0);
+  float tail = (1.0 - t01) * (1.0 - t01) * smoothstep(0.03, 0.0, along);
+  float headGlow = exp(-dot(d, d) / (0.02 * 0.02));
+  return (core * tail + headGlow) * smoothstep(0.0, 0.10, ft) * smoothstep(life, life * 0.5, ft);
 }
 
 /**
@@ -269,12 +288,10 @@ void main() {
   // plate is about, and the sky streams through its lens instead — which keeps stars arcing,
   // doubling and flaring in view for as long as anyone watches. Pinned dead still: it briefly
   // had a breathing drift, and even that read as the hole waving — the fixed point of the
-  // whole page has no business waving. The wormhole still pans and wraps on a lane well
-  // below the disk, the wandering counterpart that proves the centre one is pinned.
+  // whole page has no business waving. Everything else travels around it: the star layers,
+  // the asterism, the nebulas, and the occasional meteor.
   float span = (uSize.x / uSize.y) * 2.0 + 1.4;
   vec2 holeAt = vec2(0.0, 0.03);
-  float boreX = mod(uTime * 0.075 + span * 0.94, span) - span * 0.5;
-  vec2 boreAt = vec2(boreX, -0.56 + 0.07 * cos(uTime * 0.11));
 
   // One free parameter, the Schwarzschild radius; everything else about the hole follows from
   // it the way it does in the real object. The dark disc is not the horizon — it is the photon
@@ -287,7 +304,6 @@ void main() {
   float rs = 0.075;
   float holeR = 2.598 * rs;
   float einstein = 0.22;
-  float boreR = 0.24;
 
   // Time, bent. Two separate relativistic effects, and they show up in different ways:
   //
@@ -332,8 +348,6 @@ void main() {
   float uSrc = length(sky - holeAt) / einstein;
   float magn = min((uSrc * uSrc + 2.0) / max(uSrc * sqrt(uSrc * uSrc + 4.0), 1e-3), 6.0);
 
-  sky = throat(sky, boreAt, boreR, uTime * 0.09);
-
   // The incursions, as strain: displacement applied to the sky, envelopes kept for the blur.
   float breathe1 = smoothstep(0.30, 0.95, sin(uTime * 0.047) * 0.5 + 0.5);
   float breathe2 = smoothstep(0.38, 0.98, cos(uTime * 0.031) * 0.5 + 0.5) * 0.7;
@@ -360,6 +374,18 @@ void main() {
   float dust = (noise(dustAt * 1.7) * 0.65 + noise(dustAt * 3.9) * 0.35);
   dust *= smoothstep(0.95, 0.10, abs(sky.y * 1.6 - sky.x * 0.28)) * mix(0.030, 0.016, uShadow);
 
+  // Small nebulas, where the wormhole used to be. Three wisps riding two of the sky's depth
+  // layers, wrapping on the same span as everything else that travels — so they cross, leave,
+  // and come back around, and the parallax between the pair and the loner is one more depth
+  // cue for free. Extended sources, so like the graticule they bend through the lens without
+  // brightening.
+  vec2 nebA = sky + vec2(mod(tSky * 0.0230 + span * 0.31, span) - span * 0.5, 0.0);
+  vec2 nebB = sky + vec2(mod(tSky * 0.0400 + span * 0.77, span) - span * 0.5, 0.0);
+  float nebula = wisp(nebA, vec2(-0.72, 0.47), 0.17)
+               + wisp(nebA, vec2(0.95, -0.50), 0.21)
+               + wisp(nebB, vec2(0.18, 0.62), 0.13);
+  nebula *= mix(0.085, 0.045, uShadow);
+
   // The ranging sweep: a hairline circle opening from wherever the plate was last struck, fast
   // at first and easing to a stop. The one thing here that happens because someone asked.
   float age = uPulse.z;
@@ -382,10 +408,15 @@ void main() {
   float deep = catalogue(sky - vec2(tSky * 0.0230, 0.0), 8.0, 0.20, uTime, 0.55 * weight, px, swell, glow, dil);
   float mid = catalogue(sky - vec2(tSky * 0.0400, 0.0), 5.0, 0.17, uTime, 0.85 * weight, px, swell, glow, dil);
   float near = catalogue(sky - vec2(tSky * 0.0680, 0.0), 2.9, 0.14, uTime, 1.00 * weight, px, swell, glow, dil);
-  float stars = max(near, max(mid, deep));
+  // A fourth layer, behind the deep one: star dust. Denser, fainter, smaller and slower than
+  // everything in front of it — the veil that keeps the gaps between catalogued stars from
+  // reading as empty paper.
+  float veil = catalogue(sky - vec2(tSky * 0.0150, 0.0), 13.0, 0.30, uTime, 0.30 * weight, px, swell, glow * 0.4, dil);
+  float stars = max(max(near, veil), max(mid, deep));
 
-  // The asterism rides the middle layer, wrapping on the same span as the masses, so it leaves
-  // at one edge and returns at the other where the mask has already faded it to nothing.
+  // The asterism rides the middle layer, wrapping on the same span as everything that
+  // travels, so it leaves at one edge and returns at the other where the mask has already
+  // faded it to nothing.
   vec2 figure = vec2(mod(uTime * 0.0400 + span * 0.5, span) - span * 0.5, 0.0);
   vec2 pf = sky + figure;
 
@@ -453,9 +484,12 @@ void main() {
   // The sweep lifts the magnitude of every star it crosses, which is the whole point of it —
   // it is not a ring travelling over the chart, it is the chart being read. The point sources
   // alone carry the lens magnification, for the surface-brightness reason given above.
-  float field = max(graticule, max(dust, asterism));
+  float field = max(graticule, max(dust, max(asterism, nebula)));
   field = max(field, disk);
   field = max(field, max(stars, nodes) * magn * (1.0 + sweep * 1.8 + anomaly * 0.35));
+  // Meteors are point-like too, so they carry the magnification: one crossing behind the
+  // hole flares as it goes, which is worth the wait when it happens.
+  field = max(field, (meteor(sky, uTime, 3.1, px) + meteor(sky, uTime, 7.9, px)) * 0.6 * magn);
   field = max(field, sweep * 0.30);
 
   // Inside the capture radius there is nothing to draw — not dark ink, *no* ink, so the disc
@@ -480,16 +514,7 @@ void main() {
   // on a white one.
   ring += smoothstep(holeR * 1.10, holeR * 2.4, holeD) * smoothstep(holeR * 3.2, holeR * 1.3, holeD) * mix(0.05, 0.018, uShadow);
 
-  // The throat's rim: two hairlines, the outer one fainter, so the mouth reads as an aperture
-  // with a thickness rather than as a circle drawn on the sky — and a third, faintest, inside
-  // it: the antipodal ring, where a throat images the single point directly behind its far
-  // mouth into a circle, the one landmark the far sky is guaranteed to produce.
-  float boreD = length(p - boreAt);
-  float rim = smoothstep(hair * 1.3 + px, hair * 1.3 - px, abs(boreD - boreR)) * 0.28;
-  rim = max(rim, smoothstep(hair + px, hair - px, abs(boreD - boreR * 1.16)) * 0.12);
-  rim = max(rim, smoothstep(hair + px, hair - px, abs(boreD - boreR * 0.58)) * 0.08);
-
-  float ink = max(field, max(ring, rim));
+  float ink = max(field, ring);
 
   // No marker rings the subject any more — the dashed reticle went with the portrait, and
   // the halo that cleared space for it went too. A hole that bends the whole sky around
