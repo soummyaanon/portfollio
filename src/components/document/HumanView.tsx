@@ -402,11 +402,16 @@ function Projects() {
 /**
  * Two rails of tools running in opposite directions.
  *
- * A marquee is usually decoration bolted onto a list. Here it *is* the list: the group
- * labels ride along in the stream, so the taxonomy survives, and every tool keeps its name
- * beside its mark — a row of bare logos is a quiz, and it is invisible to every crawler and
- * language model that reads this page. Counter-rotation is what stops two parallel rails
- * reading as one block sliding sideways.
+ * A marquee is usually decoration bolted onto a list. Here it *is* the list: every tool keeps
+ * its name beside its mark, because a row of bare logos is a quiz and it is invisible to every
+ * crawler and language model that reads this page. Counter-rotation is what stops two parallel
+ * rails reading as one block sliding sideways.
+ *
+ * Only tools ride the rails. The group labels used to travel in the stream too, which meant a
+ * reader scanning past caught the word "AI" as often as the name of anything — a category is
+ * not a tool, and interleaving the two made the list look padded. The taxonomy is not lost: it
+ * is still in the data, and the machine view prints these grouped under their field keys, which
+ * is the rendering where a label is the point.
  *
  * Hovering stops it, so a name that catches your eye can actually be read.
  */
@@ -429,16 +434,13 @@ function Skills() {
             pauseOnHover
             className="[--duration:52s] [--gap:2.25rem] py-1.5"
           >
-            {groups.flatMap((group) => [
-              <span key={group.id} className="field-label shrink-0 text-muted-foreground/55">
-                {group.label}
-              </span>,
-              ...group.items.map((item) => (
+            {groups.flatMap((group) =>
+              group.items.map((item) => (
                 <span key={item} className="shrink-0 text-body text-foreground/85">
                   <ToolMark name={item} />
                 </span>
               )),
-            ])}
+            )}
           </Marquee>
         ))}
       </div>

@@ -10,6 +10,8 @@ import {
   useTransform,
 } from 'framer-motion'
 
+import { AudioToggle } from './AudioToggle'
+
 /**
  * The one moving thing on the page.
  *
@@ -813,6 +815,10 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
             two layers being animated at different rates and hoping it reads. */}
         <div className="relative [transform:translateZ(52px)]">{children}</div>
       </motion.div>
+
+      {/* Outside the tilting box on purpose: a control that leans away when you reach for it
+          is a worse control, and this one must also not inherit the canvas's scroll fade. */}
+      <AudioToggle />
     </div>
   )
 }

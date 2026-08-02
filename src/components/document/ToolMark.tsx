@@ -15,7 +15,7 @@ type Mark = (props: SVGProps<SVGSVGElement>) => React.ReactElement
 
 /**
  * Brand marks, keyed by the exact string in `skills`. Not every tool has one and that is
- * fine — "Prompt engineering" has no logo and should not be given a stand-in glyph. Items
+ * fine — "Anthropic SDK" has no vendored mark and should not be given a stand-in glyph. Items
  * without a mark simply render as their name, which is also why the name is always present
  * even when a mark is: the logo is recognition, the word is the content, and a wall of
  * unlabelled logos is a guessing game for anyone who does not already know the ecosystem.
@@ -33,7 +33,7 @@ const MARKS: Readonly<Record<string, Mark>> = {
   Python: Python,
   React: ReactLight,
   'shadcn/ui': ShadcnUi,
-  'OpenAI API': Openai,
+  'OpenAI SDK': Openai,
   PostgreSQL: Postgresql,
   MongoDB: MongodbIconLight,
   Prisma: Prisma,

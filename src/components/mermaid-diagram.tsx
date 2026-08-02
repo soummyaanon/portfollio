@@ -65,7 +65,7 @@ export function MermaidDiagram({ chart, className = '' }: MermaidDiagramProps) {
     return (
       <div className={`mermaid-error ${className}`}>
         <pre>{chart}</pre>
-        <p className="text-red-500 text-sm mt-2">{error}</p>
+        <p className="text-destructive text-sm mt-2">{error}</p>
       </div>
     )
   }

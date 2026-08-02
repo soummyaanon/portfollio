@@ -57,9 +57,9 @@
 ## Skills
 - Languages: TypeScript, JavaScript, Python, Go
 - Frameworks: Next.js, React, Node.js, Tailwind CSS, shadcn/ui
-- AI: OpenAI API, Anthropic Claude, Agent SDKs, Prompt engineering
+- AI: OpenAI SDK, Anthropic SDK
 - Data: PostgreSQL, MongoDB, Prisma
-- Workflow: Git
+- Workflow: Git, Claude Code
 
 ## Projects
 

@@ -376,7 +376,10 @@ export const skills: readonly SkillGroup[] = [
   {
     id: 'ai',
     label: 'AI',
-    items: ['OpenAI API', 'Anthropic Claude', 'Agent SDKs', 'Prompt engineering'],
+    // Products with names, not activities. "Agent SDKs" named no SDK and "Prompt engineering"
+    // is a thing you do rather than a thing you use — neither told a reader anything they
+    // could check. Short is fine; this list only grows when there is a real tool to add.
+    items: ['OpenAI SDK', 'Anthropic SDK'],
   },
   {
     id: 'data',
@@ -386,7 +389,7 @@ export const skills: readonly SkillGroup[] = [
   {
     id: 'workflow',
     label: 'Workflow',
-    items: ['Git'],
+    items: ['Git', 'Claude Code'],
   },
 ]
 

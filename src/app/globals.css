@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* `rea.md` is a design document at the repo root full of example React with Tailwind classes
+   in it. Tailwind scans it like source and was emitting the whole gray and red scale into
+   this stylesheet — utilities nothing on the site ever applies, and the only non-neutral
+   values left in the build. Not a rendering bug, but on a page that is now strictly black
+   and white it is the wrong thing to leave lying in the CSS. */
+@source not "../../rea.md";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
