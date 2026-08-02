@@ -13,17 +13,30 @@ import {
 /**
  * The one moving thing on the page.
  *
- * A grey contour field — an interference plot, the kind of thing an instrument draws —
- * radiating from the portrait at the centre of the plate and bending around the pointer.
+ * A star chart with two masses crossing it. A faint graticule, three magnitude classes of
+ * stars parallaxed against each other, an asterism, a dust lane, and a broken circle ringing
+ * the portrait the way an atlas rings the object its plate is about. Click it and a ranging
+ * circle opens from the point of contact, lifting the magnitude of every star it crosses.
+ *
+ * The black hole is built from its physics rather than drawn: the sky behind it is sampled
+ * through the point-mass lens equation, so stars and graticule lines arc around it and a
+ * second inverted image appears inside the Einstein radius without being asked for. The dark
+ * disc is the photon capture radius at 2.598 rs, not the horizon, which is why it is larger
+ * than the horizon would be. Time bends too — the Schwarzschild factor slows the scintillation
+ * of stars seen near the mass, and the Shapiro delay leaves the sky beside it running a fixed
+ * interval behind the sky around it. The wormhole beside it inverts its interior radially,
+ * which is the standard mapping for the far side of a throat.
+ *
  * It is drawn on a raw WebGL2 canvas rather than through a scene graph: this is a single
  * full-quad fragment shader, so Three.js would have bought a camera, a renderer, and
- * ~170 kB of gzip for a mesh that never moves. The whole effect is the eighty lines of
- * GLSL below.
+ * ~170 kB of gzip for a mesh that never moves. The whole thing is the GLSL below.
  *
  * It is decoration with an argument behind it: the page's thesis is that a person is a
- * document, and this one is a readout. The lines come out of the portrait because that is
- * where the record's subject is. No hue — the ink is the page's own mid-grey, which is
- * also why it survives a theme flip without a second palette.
+ * document, and an atlas plate is the oldest form of that argument there is — a subject
+ * reduced to a catalogued position among other catalogued positions. No hue — the ink is
+ * the page's own mid-grey, which is also why it survives a theme flip without a second
+ * palette, and why the same drawing reads as printed stars on paper in the light theme and
+ * as an actual sky in the dark one.
  *
  * Cheap by construction — one draw call per frame, paused off-screen, capped at 2× DPR,
  * frozen on the first frame when the visitor prefers reduced motion, and silently absent
@@ -44,28 +57,48 @@ uniform vec2  uSize;     // drawing buffer size, px
 uniform float uTime;     // seconds
 uniform vec2  uPointer;  // plate space (y up, 1 unit = half the plate height)
 uniform float uHover;    // 0 at rest, 1 while the pointer is over the plate
-uniform vec3  uInk;      // resolved mid-grey, 0..1
+uniform vec3  uInk;      // resolved page ink, 0..1
+uniform vec3  uPulse;    // xy = where the plate was last struck, z = seconds since
 uniform float uOpacity;
 uniform float uShadow;   // 1 when the ink is darker than the paper, 0 when it is lighter
 
 out vec4 fragColor;
 
 /**
- * One light, one direction, for the whole plate: down and to the right. The cast shadow
- * between the sheets and the contact shadow under the portrait both use it, which is the
- * only reason the two read as the same physical scene rather than two separate tricks.
+ * The asterism. Seven catalogued positions in plate space, in two figures that flank the
+ * portrait — hand-placed rather than generated, because a random graph of lines looks like
+ * a network diagram and a chosen one looks like a constellation.
  */
-const vec2 SHADOW_OFFSET = vec2(0.030, -0.038);
+const vec2 NODES[7] = vec2[7](
+  vec2(-1.30,  0.40), vec2(-0.98,  0.60), vec2(-0.84,  0.16), vec2(-1.18, -0.26),
+  vec2( 0.90, -0.46), vec2( 1.18, -0.08), vec2( 1.42,  0.30)
+);
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }
 
+vec2 hash2(vec2 p) {
+  return vec2(hash(p), hash(p + vec2(41.7, 17.3)));
+}
+
+/** Value noise, two octaves. Only the dust lane uses it, and only at a few percent alpha. */
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = p - i;
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+    mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+    f.y
+  );
+}
+
 /**
- * Coverage of the nearest contour of a scalar field, antialiased. "soft" widens the band:
- * it is the only focus control a line drawing has, and it is what puts the distant sheets
- * out of focus. The final factor fades a family out entirely once its lines pack closer
- * than they can be resolved, which stops dense zones turning into a flat moiré wash.
+ * Coverage of the nearest contour of a scalar field, antialiased. "soft" widens the band.
+ * The final factor fades a family out entirely once its lines pack closer than they can be
+ * resolved — which is what keeps the graticule from turning to moiré where the lens crushes
+ * it against the horizon.
  */
 float contour(float f, float soft) {
   float w = fwidth(f) * soft;
@@ -73,24 +106,144 @@ float contour(float f, float soft) {
   return (1.0 - smoothstep(0.0, clamp(w, 0.0008, 0.42), d)) * smoothstep(0.45, 0.16, w);
 }
 
-/** Slow, non-repeating domain wobble — what turns concentric rings into engraving. */
-vec2 wobble(vec2 q, float t) {
-  return q + 0.062 * vec2(
-    sin(q.y * 2.7 + t * 0.21) + 0.6 * sin(q.y * 5.1 - t * 0.13),
-    sin(q.x * 2.3 - t * 0.17) + 0.6 * sin(q.x * 4.4 + t * 0.11)
-  );
+/** Perpendicular distance to a line segment — the asterism is drawn from these. */
+float segment(vec2 p, vec2 a, vec2 b) {
+  vec2 pa = p - a;
+  vec2 ba = b - a;
+  return length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
 }
 
 /**
- * One sheet of the stack: two elliptical families with perpendicular anisotropy, crossing
- * at a shallow angle so they read as woven engraving rather than as a target.
+ * Gravitational lensing — the actual point-mass lens equation, traced backwards.
+ *
+ * Nothing here draws a black hole. This bends the coordinate the sky is *sampled* at, so every
+ * star and every graticule line behind the mass arcs around it on its own. Where the earlier
+ * version used an invented softened 1/r pull, this is the real relation: a ray arriving at
+ * angle θ from the mass left the source plane at β = θ − θE²/θ, with θE the Einstein radius —
+ * the radius at which a source exactly behind the lens is smeared into a full ring. The
+ * deflection that falls out of it goes as 1/b, which is the 4GM/c²b of general relativity.
+ *
+ * Tracing backwards from the image plane gets the second image for free, and that is the whole
+ * reason to do it this way. Inside θE the bracket goes negative, the direction flips, and the
+ * pixel samples the far side of the source plane — which is precisely the faint inverted
+ * counter-image that a point lens produces, appearing without being asked for.
  */
-float sheet(vec2 p, float t, float scale, float phase, float soft) {
-  vec2 a = wobble(p * scale, t + phase);
-  vec2 b = wobble(p * scale * 1.13, t * 0.78 + phase + 37.0);
-  float f1 = length(a * vec2(0.54, 1.0)) * 6.0 - t * 0.17;
-  float f2 = length(b * vec2(1.0, 0.62)) * 4.6 + t * 0.12;
-  return max(contour(f1, soft), contour(f2, soft) * 0.34);
+vec2 lens(vec2 s, vec2 c, float einstein) {
+  vec2 d = s - c;
+  float r = max(length(d), 1e-4);
+  // Clamped only against the singularity at r → 0, which is inside the shadow and never seen.
+  float source = clamp(r - einstein * einstein / r, -14.0, 14.0);
+  return c + d * (source / r);
+}
+
+/**
+ * A wormhole throat, as the same kind of transform.
+ *
+ * Inside the rim the radial coordinate is inverted — r becomes R²/r — which is the standard
+ * mapping for "the other side": the centre of the disc samples the far sky, and the further
+ * in you look the further out you are seeing. The interior is also spun, slowly and in the
+ * opposite sense to the drift, so the patch inside the rim is visibly not the patch around
+ * it. Clamped, because an unclamped inversion samples coordinates large enough to break the
+ * hash and fill the throat with aliasing.
+ */
+vec2 throat(vec2 s, vec2 c, float radius, float spin) {
+  vec2 d = s - c;
+  float r = length(d);
+  if (r >= radius) return s;
+  float inv = min(radius * radius / max(r, 0.004), 9.0);
+  float a = spin;
+  mat2 rot = mat2(cos(a), -sin(a), sin(a), cos(a));
+  return c + rot * (d / max(r, 1e-4)) * inv;
+}
+
+/**
+ * An incursion: a region where another sky is pressing through this one.
+ *
+ * Two gaussians on long, mutually prime drift periods, each breathing right down through zero
+ * so the anomaly arrives, holds and is gone. It shears the coordinate rather than tinting the
+ * picture — the graticule buckles and the stars behind it swim, which is a far stranger effect
+ * than anything a colour could have done, and it costs the plate no second ink.
+ */
+float incursion(vec2 p, float t) {
+  vec2 c1 = vec2(sin(t * 0.061) * 1.30, cos(t * 0.043) * 0.50);
+  vec2 c2 = vec2(cos(t * 0.037) * 1.05, sin(t * 0.029) * 0.58);
+  float g1 = exp(-dot(p - c1, p - c1) * 4.60) * smoothstep(0.30, 0.95, sin(t * 0.047) * 0.5 + 0.5);
+  float g2 = exp(-dot(p - c2, p - c2) * 6.20) * smoothstep(0.38, 0.98, cos(t * 0.031) * 0.5 + 0.5);
+  return clamp(g1 + g2 * 0.7, 0.0, 1.0);
+}
+
+/**
+ * One magnitude class of the catalogue.
+ *
+ * A hashed grid: each cell either holds a star or does not, and the ones that do place it at a
+ * hashed offset so nothing lands on a lattice. Three of these at different scales, panning at
+ * different rates, make the sky — the rate difference is the parallax, and the parallax is the
+ * only reason a flat plate reads as depth.
+ *
+ * Every star is a tight core, a halo and — on the brighter half — two crossed diffraction
+ * spikes. The halo is the one part that cannot be shared between the themes: on a night
+ * ground it is a glow, and on paper the identical mark is a smudge. So it arrives as a
+ * parameter and is all but switched off in the light theme, where a printed chart wants a
+ * hard dot and nothing around it. The core is never allowed below a device pixel: sub-pixel stars
+ * scintillate on their own as the field slides, which reads as a rendering fault rather than
+ * as an atmosphere.
+ *
+ * No derivatives in here: the loop skips empty cells, so control flow is non-uniform and
+ * fwidth() would be undefined. Hence px arriving as an argument.
+ */
+float catalogue(vec2 p, float scale, float cut, float t, float bright, float px, float swell, float glow, float dil) {
+  vec2 g = p * scale;
+  vec2 cell = floor(g);
+  vec2 f = g - cell;
+  float acc = 0.0;
+
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 o = vec2(float(i), float(j));
+      vec2 id = cell + o;
+      float pick = hash(id);
+      if (pick > cut) continue;
+
+      vec2 at = o + 0.18 + 0.64 * hash2(id + 3.1);
+      vec2 dv = (f - at) / scale;
+      float d = length(dv);
+
+      // Magnitude, squared so bright stars are rare — an even spread of brightness reads as
+      // noise, and the legibility of a star field is entirely in its few anchors.
+      float m = hash(id + 7.7);
+      m *= m;
+
+      // Scintillation. Each star gets its own rate as well as its own phase: a field on one
+      // shared rate pulses like a cursor, and it is the spread of rates that makes a sky look
+      // like many separate things rather than one thing blinking.
+      // "dil" is the local rate of time at this pixel, from the Schwarzschild factor. A star
+      // seen close to the mass is being watched through slowed time, so it blinks slower — the
+      // one place on this plate where the clock is not the same everywhere.
+      float rate = 0.60 + 2.00 * hash(id + 19.3);
+      float mag = bright * mix(0.62, 1.0, m) * (0.60 + 0.40 * sin(t * rate * dil + pick * 51.0));
+
+      // Sizes are in plate units, which are independent of device pixels — a star is the same
+      // size on the page at 1× and at 2×. The pixel floor is only a floor, and it must not be
+      // what decides how big a star is: sized off px, the whole catalogue halved on a retina
+      // screen and the field turned to specks.
+      float core = max(mix(0.0110, 0.0240, m), px) * swell;
+      float halo = 0.045 + 0.040 * m;
+
+      float spike = 0.0;
+      if (m > 0.28) {
+        float across = core * 0.62;
+        spike = m * 0.24 * (
+          exp(-(dv.y * dv.y) / (across * across)) * exp(-abs(dv.x) / (0.030 + 0.060 * m)) +
+          exp(-(dv.x * dv.x) / (across * across)) * exp(-abs(dv.y) / (0.022 + 0.042 * m))
+        );
+      }
+
+      acc = max(acc, mag * (
+        exp(-(d * d) / (core * core)) + spike + glow * m * exp(-(d * d) / (halo * halo))
+      ));
+    }
+  }
+  return acc;
 }
 
 void main() {
@@ -98,50 +251,167 @@ void main() {
   // Origin at the portrait, isotropic: one unit is half the plate height on both axes.
   vec2 p = (uv - 0.5) * vec2(uSize.x / uSize.y, 1.0) * 2.0;
 
-  // The pointer pinches the field toward itself, so the rings crowd under the cursor and
-  // relax again behind it. Gaussian falloff, so there is no edge to the influence.
-  vec2 toPointer = p - uPointer;
-  p -= toPointer * uHover * 0.34 * exp(-dot(toPointer, toPointer) * 1.9);
+  // One device pixel, in plate units — used only as a floor on how thin a line may get. Sizes
+  // here are otherwise in plate units, so the drawing is the same size on the page at 1× and
+  // at 2×. Sized off px instead, everything halved on a retina screen: hairlines came out at
+  // a third of a CSS pixel and the whole plate rendered as a faint dusting of specks.
+  float px = 2.0 / uSize.y;
+  float hair = max(0.0060, px);
 
-  // Two surfaces and the shadow one throws on the other. Four cues carry the depth, none
-  // of them a gradient or a blur filter:
+  // The pointer slides the sky rather than deforming it. The plate this replaced pinched
+  // space toward the cursor, which on a chart is an error: a chart's promise is that the
+  // positions on it are true, and the only thing allowed to bend them here is mass.
+  vec2 slide = uPointer * uHover * 0.09;
+
+  // The two masses travel. They do not orbit a point and they do not merely wander — they pan
+  // across the plate with the sky they are embedded in and wrap, so in the ten seconds anyone
+  // actually spends looking at this, the hole has visibly moved. The span is one plate width
+  // plus a margin, so the wrap always happens off the edge and neither object is ever gone.
+  float span = (uSize.x / uSize.y) * 2.0 + 1.4;
+  float holeX = mod(uTime * 0.075 + span * 0.5, span) - span * 0.5;
+  float boreX = mod(uTime * 0.075 + span * 0.94, span) - span * 0.5;
+  vec2 holeAt = vec2(holeX, 0.30 + 0.11 * sin(uTime * 0.13));
+  vec2 boreAt = vec2(boreX, -0.30 + 0.09 * cos(uTime * 0.11));
+
+  // One free parameter, the Schwarzschild radius; everything else about the hole follows from
+  // it the way it does in the real object. The dark disc is not the horizon — it is the photon
+  // capture cross-section at √27/2 · rs ≈ 2.598 rs, which is what an observer actually sees and
+  // is why a black hole always looks larger than its own horizon. The Einstein radius is the
+  // one genuinely free choice here, since it depends on distances this scene does not have.
+  float rs = 0.058;
+  float holeR = 2.598 * rs;
+  float einstein = 0.29;
+  float boreR = 0.26;
+
+  // Time, bent. Two separate relativistic effects, and they show up in different ways:
   //
-  //  · cast shadow — the near sheet, resampled displaced along a fixed light vector and
-  //    thrown out of focus. That is all a shadow is, and it is the only cue here that
-  //    survives a screenshot: parallax needs you to move, this does not.
-  //  · occlusion — painted back to front with an over-composite, so a near line covers the
-  //    far one instead of adding to it. Two crossing lines at equal tone read as one flat
-  //    lattice; one clearly on top of the other reads as two surfaces.
-  //  · focus and tone — the far sheet is fainter and its contour band is four times wider,
-  //    so it sits behind by being softer and paler. Atmospheric perspective.
-  //  · parallax — the sheets slide by different fractions of the pointer, so they move
-  //    against each other under the cursor.
-  vec2 slide = uPointer * uHover * 0.18;
+  //  · dilation — the Schwarzschild factor √(1 − rs/r), which is the rate a distant observer
+  //    sees a clock tick at radius r. It runs to zero at the horizon and to one far away. It
+  //    is taken from the shadow edge rather than the horizon itself, because the horizon is
+  //    hidden inside the shadow and a gradient nobody can see is not worth computing. Stars
+  //    near the mass blink slower; the effect is continuous, so there is no edge to it.
+  //  · Shapiro delay — light passing close to a mass takes measurably longer to arrive, by an
+  //    amount going as ln of the impact parameter. This is a fixed lag, not a slower rate, so
+  //    the sky near the hole sits a constant interval behind the sky around it and the field
+  //    shears rather than tears. A rate difference would have wound the two apart without
+  //    bound and eventually ripped the plate in half.
+  float holeDist = length(p - holeAt);
+  float dil = sqrt(clamp(1.0 - holeR / max(holeDist, holeR), 0.0, 1.0));
+  float shapiro = 19.0 * rs * log(1.0 + 3.0 * holeR / max(holeDist, holeR * 0.6));
+  float tSky = uTime - shapiro;
 
-  // A cast shadow only works when ink is darker than paper. Inverted — light lines on a
-  // dark ground — the same layer paints a bright smudge, which reads as a glow, the exact
-  // opposite cue. So the shadow terms are gated on polarity, and the dark theme buys its
-  // depth by widening the tonal gap instead: the far sheet drops further back rather than
-  // the near one casting forward.
-  float far = sheet(p + slide * 0.16, uTime, 0.74, 0.0, 4.2) * mix(0.12, 0.20, uShadow);
-  float castShadow = sheet(p + slide - SHADOW_OFFSET, uTime, 1.26, 23.0, 3.4) * 0.30 * uShadow;
-  float near = sheet(p + slide, uTime, 1.26, 23.0, 1.0);
+  // The sky is sampled through everything that bends it, in the order light would meet them.
+  float anomaly = incursion(p, uTime);
+  vec2 sky = p + slide;
+  sky = lens(sky, holeAt, einstein);
+  sky = throat(sky, boreAt, boreR, uTime * 0.09);
+  // The incursion shears rather than displaces: the buckle has no single direction, so the
+  // grid inside it folds instead of sliding sideways as one piece.
+  sky += anomaly * 0.085 * vec2(sin(sky.y * 5.3 + uTime * 0.31), cos(sky.x * 4.1 - uTime * 0.27));
 
-  float ink = far;
-  ink = castShadow + ink * (1.0 - castShadow);
-  ink = near + ink * (1.0 - near);
+  // The graticule: meridians and parallels, each bowed a little by the other's coordinate, so
+  // the grid carries the suggestion of a projected sphere before anything bends it. It is the
+  // paper, not the subject — but it is also the only thing on the plate whose *shape* is known
+  // in advance, which is what makes it the instrument that shows the lensing.
+  vec2 q = vec2(sky.x * (1.0 + 0.055 * sky.y * sky.y), sky.y + 0.045 * sky.x * sky.x);
+  float graticule = max(contour(q.x * 1.35, 3.0), contour(q.y * 1.35, 3.0)) * 0.075;
 
-  // Clear halo, so the portrait sits on unruled paper rather than in a thicket of lines.
-  ink *= smoothstep(mix(0.44, 0.38, uShadow), 0.76, length(p));
+  // A dust lane, drifting with the deep sky. Two octaves of value noise inside a soft diagonal
+  // band, at a few percent — enough that the field is not evenly empty, never enough to read
+  // as a cloud someone painted.
+  vec2 dustAt = sky * vec2(0.9, 2.1) - vec2(uTime * 0.0075, 0.0);
+  float dust = (noise(dustAt * 1.7) * 0.65 + noise(dustAt * 3.9) * 0.35);
+  dust *= smoothstep(0.95, 0.10, abs(sky.y * 1.6 - sky.x * 0.28)) * mix(0.030, 0.016, uShadow);
 
-  // Contact shadow. The portrait is an object resting on the stack, so it occludes a soft
-  // ellipse just beneath itself — offset the same way the light throws everything else.
-  // The only mark on the plate that is tone rather than line, and the cue that makes the
-  // portrait sit *above* the field instead of being a hole punched in it.
-  float contact = smoothstep(0.70, 0.16, length((p - vec2(0.02, -0.09)) * vec2(1.0, 1.35)));
-  ink = max(ink, contact * 0.14 * uShadow);
+  // The ranging sweep: a hairline circle opening from wherever the plate was last struck, fast
+  // at first and easing to a stop. The one thing here that happens because someone asked.
+  float age = uPulse.z;
+  float sweepLife = clamp(age / 4.6, 0.0, 1.0);
+  float sweepRadius = 1.55 * (1.0 - exp(-age * 1.15));
+  float sweepEdge = abs(length(p - uPulse.xy) - sweepRadius);
+  float sweepFade = (1.0 - sweepLife) * (1.0 - sweepLife);
+  float sweep = smoothstep(hair * 1.6 + px, hair * 1.6 - px, sweepEdge) * sweepFade;
 
-  // One mask, applied last, covering lines and tone alike — so nothing reaches the edge of
+  // Three magnitude classes, panning at different rates — the near layer crosses about eight
+  // CSS pixels a second, which is slow enough to be weather and fast enough that the sky has
+  // plainly moved by the time you look up from the name. Counts are deliberately sparse: an
+  // atlas plate is mostly empty paper and a dense one is just grain. The whole catalogue is
+  // carried heavier on a light ground, where a mid-grey dot is a far weaker mark than a pale
+  // one on near-black at the same alpha. Inside an incursion the cores swell, which is the
+  // blur — stars going out of focus because the space they are being seen through is not flat.
+  float weight = mix(1.0, 1.10, uShadow);
+  float glow = mix(0.20, 0.055, uShadow);
+  float swell = 1.0 + anomaly * 0.55;
+  float deep = catalogue(sky - vec2(tSky * 0.0230, 0.0), 8.0, 0.20, uTime, 0.55 * weight, px, swell, glow, dil);
+  float mid = catalogue(sky - vec2(tSky * 0.0400, 0.0), 5.0, 0.17, uTime, 0.85 * weight, px, swell, glow, dil);
+  float near = catalogue(sky - vec2(tSky * 0.0680, 0.0), 2.9, 0.14, uTime, 1.00 * weight, px, swell, glow, dil);
+  float stars = max(near, max(mid, deep));
+
+  // The asterism rides the middle layer, wrapping on the same span as the masses, so it leaves
+  // at one edge and returns at the other where the mask has already faded it to nothing.
+  vec2 figure = vec2(mod(uTime * 0.0400 + span * 0.5, span) - span * 0.5, 0.0);
+  vec2 pf = sky + figure;
+
+  float nodes = 0.0;
+  for (int k = 0; k < 7; k++) {
+    vec2 d = pf - NODES[k];
+    float dd = dot(d, d);
+    nodes = max(nodes, exp(-dd / (0.0230 * 0.0230)) + 0.18 * exp(-dd / (0.070 * 0.070)));
+  }
+
+  // Two open figures, three segments and two. Never a closed shape — a closed one reads as a
+  // polygon someone drew, an open one reads as a path between stars.
+  float links = 1e9;
+  links = min(links, segment(pf, NODES[0], NODES[1]));
+  links = min(links, segment(pf, NODES[1], NODES[2]));
+  links = min(links, segment(pf, NODES[2], NODES[3]));
+  links = min(links, segment(pf, NODES[4], NODES[5]));
+  links = min(links, segment(pf, NODES[5], NODES[6]));
+  float asterism = smoothstep(hair + px, hair - px, links) * 0.15;
+
+  // The sky, in the order a plate is printed: paper, dust, the lines drawn on it, the objects.
+  // The sweep lifts the magnitude of every star it crosses, which is the whole point of it —
+  // it is not a ring travelling over the chart, it is the chart being read.
+  float field = max(graticule, max(dust, asterism));
+  field = max(field, max(stars, nodes) * (1.0 + sweep * 1.8 + anomaly * 0.35));
+  field = max(field, sweep * 0.30);
+
+  // Inside the capture radius there is nothing to draw — not dark ink, *no* ink, so the disc
+  // is the colour of whatever the plate is sitting on. On paper that is a hole punched in the
+  // chart; on a dark ground it is the thing itself. One rule, and the theme decides what it
+  // means. The edge is nearly hard, because the photon sphere is: a ray one hair inside it
+  // does not come back.
+  float holeD = holeDist;
+  field *= smoothstep(holeR * 0.90, holeR * 1.02, holeD);
+
+  // The photon ring, sitting on the capture radius itself. The brightest mark on the plate and
+  // the only one allowed to be: it is where light has gone all the way around the mass, more
+  // than once, and come back out to the eye.
+  float ring = smoothstep(hair * 1.5 + px, hair * 1.5 - px, abs(holeD - holeR * 1.03)) * 0.52;
+  // A breath of light outside the ring, where the lensed sky piles up. Nearly switched off
+  // on paper: the identical mark that reads as light on a dark ground reads as a thumbprint
+  // on a white one.
+  ring += smoothstep(holeR * 1.10, holeR * 2.4, holeD) * smoothstep(holeR * 3.2, holeR * 1.3, holeD) * mix(0.05, 0.018, uShadow);
+
+  // The throat's rim: two hairlines, the outer one fainter, so the mouth reads as an aperture
+  // with a thickness rather than as a circle drawn on the sky.
+  float boreD = length(p - boreAt);
+  float rim = smoothstep(hair * 1.3 + px, hair * 1.3 - px, abs(boreD - boreR)) * 0.28;
+  rim = max(rim, smoothstep(hair + px, hair - px, abs(boreD - boreR * 1.16)) * 0.12);
+
+  float ink = max(field, max(ring, rim));
+
+  // Clear halo, so the portrait sits on unruled paper rather than in a thicket of stars.
+  ink *= smoothstep(mix(0.46, 0.40, uShadow), 0.78, length(p));
+
+  // The subject marker: a broken circle around the portrait, the way an atlas rings the one
+  // object on the plate that the plate is actually about. Drawn after the halo, because it
+  // belongs to the clear space rather than to the field the halo is clearing.
+  float dash = step(0.42, fract(atan(p.y, p.x) * 1.9 + uTime * 0.012));
+  float reticle = smoothstep(hair + px, hair - px, abs(length(p) - 0.54)) * dash * 0.13;
+  ink = max(ink, reticle);
+
+  // One mask, applied last, covering lines and objects alike — so nothing reaches the edge of
   // the drawing buffer and the plate has no boundary of its own.
   float mask = smoothstep(2.0, 0.35, length(p * vec2(0.62, 1.0)));
   mask *= smoothstep(0.0, 0.30, uv.x) * smoothstep(1.0, 0.70, uv.x);
@@ -174,15 +444,28 @@ function compile(gl: WebGL2RenderingContext, type: number, source: string) {
 }
 
 /**
+ * One 1×1 scratch canvas for the life of the module, not one per read. Three probes are
+ * resolved every animation frame, and minting a canvas and a 2D context for each of them was
+ * ~180 throwaway contexts a second on a plate whose whole claim is that it is cheap.
+ */
+let colourContext: CanvasRenderingContext2D | null | undefined
+
+/**
  * Resolve a CSS colour of any syntax — the palette is authored in oklch — to RGB, by
  * letting a 1×1 2D canvas do the parsing the browser already knows how to do.
  */
 function readColour(probe: HTMLElement): [number, number, number] {
   const fallback: [number, number, number] = [0.52, 0.52, 0.54]
   const colour = getComputedStyle(probe).color
-  const context = document.createElement('canvas').getContext('2d')
+  if (colourContext === undefined) {
+    colourContext = document.createElement('canvas').getContext('2d')
+  }
+  const context = colourContext
   if (!context) return fallback
 
+  // The scratch pixel is shared now, so it has to be cleared rather than assumed blank —
+  // otherwise a colour with alpha would composite onto whatever the last probe left there.
+  context.clearRect(0, 0, 1, 1)
   context.fillStyle = colour
   context.fillRect(0, 0, 1, 1)
   const [r, g, b] = context.getImageData(0, 0, 1, 1).data
@@ -219,10 +502,14 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
    *
    * Spring-damped rather than linearly eased: a spring overshoots very slightly and settles,
    * which is what makes a tilt feel like it has mass instead of like a slider being dragged.
+   *
+   * Softer than it was, on both counts. The travel is down to a little over half (see the
+   * clamps in the pointer handler) and the spring is heavier and more damped, so the plate
+   * leans rather than snaps. A surface with mass does not keep up with a cursor.
    */
   const tiltTargetX = useMotionValue(0)
   const tiltTargetY = useMotionValue(0)
-  const springConfig = { stiffness: 140, damping: 18, mass: 0.35 }
+  const springConfig = { stiffness: 96, damping: 24, mass: 0.55 }
   const rotateX = useSpring(tiltTargetX, springConfig)
   const rotateY = useSpring(tiltTargetY, springConfig)
 
@@ -275,6 +562,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     const uPointer = gl.getUniformLocation(program, 'uPointer')
     const uHover = gl.getUniformLocation(program, 'uHover')
     const uInk = gl.getUniformLocation(program, 'uInk')
+    const uPulse = gl.getUniformLocation(program, 'uPulse')
     const uOpacity = gl.getUniformLocation(program, 'uOpacity')
     const uShadow = gl.getUniformLocation(program, 'uShadow')
 
@@ -290,6 +578,11 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     // Targets are set by input; the rendered values chase them, so a fast pointer drags the
     // field rather than teleporting it.
     const pointer = { x: 0, y: -3, targetX: 0, targetY: -3, hover: 0, targetHover: 0 }
+
+    // Where the plate was last struck, and when. `at` starts far enough in the past that the
+    // strike term is already dead on the first frame — an unclicked plate has never been
+    // clicked, rather than having been clicked at the origin at time zero.
+    const pulse = { x: 0, y: 0, at: -1000 }
 
     function resize() {
       if (!gl) return
@@ -311,18 +604,19 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       gl.uniform1f(uTime, time)
       gl.uniform2f(uPointer, pointer.x, pointer.y)
       gl.uniform1f(uHover, pointer.hover)
-      // Both probes are read every frame rather than cached, which is what lets a theme
+      // Every probe is read every frame rather than cached, which is what lets a theme
       // flip take effect without any wiring between the toggle and this canvas.
       const ink = readColour(probe!)
       const paper = readColour(paperProbe!)
       const inkIsDarker = luminance(ink) < luminance(paper)
 
       gl.uniform3fv(uInk, ink)
+      gl.uniform3f(uPulse, pulse.x, pulse.y, time - pulse.at)
       gl.uniform1f(uShadow, inkIsDarker ? 1 : 0)
-      // Held under full strength, and lifted on a dark ground: the same mid-grey that is
-      // plainly visible on near-white sits much closer to near-black, so the light theme
-      // needs holding back and the dark theme needs help.
-      gl.uniform1f(uOpacity, inkIsDarker ? 0.72 : 0.82)
+      // Points, unlike the contour field this plate used to draw, cover almost none of the
+      // canvas — so the light theme is no longer the one that needs holding back. Near full
+      // strength there, and a shade under it on a dark ground where pale ink carries further.
+      gl.uniform1f(uOpacity, inkIsDarker ? 1.0 : 0.90)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }
 
@@ -349,24 +643,54 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       frame = 0
     }
 
-    function onPointerMove(event: PointerEvent) {
-      if (!visible || reduceMotion.matches) return
+    /** Viewport pixels to plate space — the shader's coordinates, y up, origin at the portrait. */
+    function toPlateSpace(event: PointerEvent) {
       const rect = canvas!.getBoundingClientRect()
-      if (rect.height === 0) return
+      if (rect.height === 0) return null
       const x = (event.clientX - rect.left) / rect.width
       const y = 1 - (event.clientY - rect.top) / rect.height
-      pointer.targetX = (x - 0.5) * (rect.width / rect.height) * 2
-      pointer.targetY = (y - 0.5) * 2
+      return { x, y, px: (x - 0.5) * (rect.width / rect.height) * 2, py: (y - 0.5) * 2 }
+    }
+
+    function onPointerMove(event: PointerEvent) {
+      if (!visible || reduceMotion.matches) return
+      const at = toPlateSpace(event)
+      if (!at) return
+      pointer.targetX = at.px
+      pointer.targetY = at.py
       // Influence is gated on being roughly over the plate, so scrolling far below it does
       // not leave a phantom dent in the engraving.
-      const near = x > -0.35 && x < 1.35 && y > -1.1 && y < 2.1
+      const near = at.x > -0.35 && at.x < 1.35 && at.y > -1.1 && at.y < 2.1
       pointer.targetHover = near ? 1 : 0
 
       // Tilt is clamped rather than scaled, so the plate reaches its limit while the cursor
-      // is still over it and does not keep rolling as you travel across the page.
+      // is still over it and does not keep rolling as you travel across the page. Both limits
+      // are down by about half: at 5.5° and 7° the plate was swinging far enough that the
+      // portrait's translateZ read as the thing being animated.
       const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value))
-      tiltTargetX.set(near ? clamp((y - 0.5) * 2 * 5.5, 5.5) : 0)
-      tiltTargetY.set(near ? clamp((x - 0.5) * 2 * 7, 7) : 0)
+      tiltTargetX.set(near ? clamp((at.y - 0.5) * 2 * 3.0, 3.0) : 0)
+      tiltTargetY.set(near ? clamp((at.x - 0.5) * 2 * 3.8, 3.8) : 0)
+    }
+
+    /**
+     * Strike the plate. A click opens a ranging circle from where it landed — the one thing
+     * on this canvas that happens because you asked for it rather than on its own schedule.
+     *
+     * Bound to the canvas, not the window, so it answers the plate and nothing else; and the
+     * listener is not there at all under reduced motion, where the shader is a still frame and
+     * a click would have nowhere to go. Decoration stays out of the tab order, so this is
+     * deliberately pointer-only — nothing is behind it that a keyboard user would be missing.
+     */
+    function onPointerDown(event: PointerEvent) {
+      if (reduceMotion.matches) return
+      const at = toPlateSpace(event)
+      if (!at) return
+      pulse.x = at.px
+      pulse.y = at.py
+      pulse.at = elapsed
+      // A strike while the canvas is paused off-screen would otherwise sit unrendered and
+      // then appear mid-life when the plate scrolls back in.
+      if (!frame) draw(elapsed)
     }
 
     function onPointerLeave() {
@@ -412,6 +736,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     }
 
     window.addEventListener('pointermove', onPointerMove, { passive: true })
+    canvas.addEventListener('pointerdown', onPointerDown, { passive: true })
     document.addEventListener('pointerleave', onPointerLeave)
     reduceMotion.addEventListener('change', onMotionPreferenceChange)
 
@@ -425,6 +750,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       resizeObserver.disconnect()
       themeObserver.disconnect()
       window.removeEventListener('pointermove', onPointerMove)
+      canvas.removeEventListener('pointerdown', onPointerDown)
       document.removeEventListener('pointerleave', onPointerLeave)
       reduceMotion.removeEventListener('change', onMotionPreferenceChange)
       gl.deleteProgram(program)
@@ -439,13 +765,13 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     // is the only arrangement where translateZ on the portrait actually reads as depth
     // rather than as a scale.
     <div className="relative isolate mx-auto grid h-[clamp(11rem,19vw,15rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]">
-      {/* Colour probe. The shader reads the mid-grey off this element's resolved `color`,
+      {/* Colour probe. The shader reads its ink off this element's resolved `color`,
           which costs nothing and keeps the palette in one place instead of duplicated in
           GLSL — including across a light/dark flip, where this simply resolves differently. */}
       <span
         ref={probeRef}
         aria-hidden
-        className="pointer-events-none absolute text-muted-foreground opacity-0"
+        className="pointer-events-none absolute text-foreground opacity-0"
       />
       {/* Second probe for the paper. Comparing the two luminances is how the shader learns
           which way round the theme is, without anything here knowing the word "dark". */}
@@ -469,14 +795,15 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
           style={prefersReducedMotion ? undefined : { y: parallax, opacity: fade }}
         />
 
-        {/* Where WebGL2 is unavailable the plate still has a ruled ground, just a static one. */}
+        {/* Where WebGL2 is unavailable the portrait still sits on a field of points — a
+            printed plate rather than a photographed sky, which is the honest downgrade. */}
         {!supported && (
           <div
             aria-hidden
             className="absolute inset-0 opacity-[0.5] [mask-image:radial-gradient(closest-side,transparent_22%,black_46%,transparent_92%)]"
             style={{
-              backgroundImage:
-                'repeating-radial-gradient(circle at 50% 50%, transparent 0 7px, var(--border) 7px 8px)',
+              backgroundImage: 'radial-gradient(var(--border) 1px, transparent 1.4px)',
+              backgroundSize: '19px 19px',
             }}
           />
         )}

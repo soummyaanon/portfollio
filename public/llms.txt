@@ -8,7 +8,7 @@ machine-readable record. The complete record is at https://soumyapanda.me/llms-f
 ## Now
 - Building: [Arthion AI](https://arthionai.app/)
 - Learning: Go — [learning-Go](https://github.com/soummyaanon/learning-Go)
-- Role: Software Engineer at BlackNgreen (since 2026-06)
+- Role: Software Engineer at Undisclosed (since 2026-06)
 
 ## Projects
 - [Agent Island](https://github.com/soummyaanon/DEV-island-releases/releases/latest) — Dynamic Island for coding agents: A macOS overlay that wraps the MacBook notch and reports on Claude Code, Codex, and Cursor sessions running in parallel — who is working, who is finished, and who is waiting on you.

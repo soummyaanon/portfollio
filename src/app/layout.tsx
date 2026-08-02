@@ -67,7 +67,8 @@ export const metadata: Metadata = {
     person.title,
     ...person.focus,
     ...skills.flatMap((group) => group.items),
-    ...roles.map((role) => role.org),
+    // A withheld employer contributes no keyword — "Undisclosed" is not a topic.
+    ...roles.filter((role) => !role.withheld).map((role) => role.org),
   ],
   icons: {
     icon: '/favicon-2025.png?v=1',

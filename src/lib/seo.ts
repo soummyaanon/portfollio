@@ -40,8 +40,16 @@ export function organisationId(name: string): string {
   return `${SITE_URL}/#org-${slug(name)}`
 }
 
+/** The roles whose employer is actually named, which are the only ones the graph can link. */
+function named(all: typeof roles): typeof roles {
+  return all.filter((role) => !role.withheld)
+}
+
 export function organisationSchemas(): JsonLd[] {
-  const employers = unique(roles.map((role) => role.org)).map((name) => ({
+  // A withheld employer gets no node. The alternative is asserting an Organization called
+  // "Undisclosed" into the graph, which is a claim about a company that does not exist —
+  // structured data is read by machines that cannot tell a placeholder from a name.
+  const employers = unique(named(roles).map((role) => role.org)).map((name) => ({
     '@type': 'Organization',
     '@id': organisationId(name),
     name,
@@ -68,12 +76,14 @@ function employmentSchema(): JsonLd[] {
     startDate: role.from,
     ...(role.until ? { endDate: role.until } : {}),
     ...(role.summary ? { description: role.summary } : {}),
-    worksFor: { '@id': organisationId(role.org) },
+    // The role, its dates and its description still stand; only the employer link drops. The
+    // timeline is the part anyone actually wants from a CV, and it survives intact.
+    ...(role.withheld ? {} : { worksFor: { '@id': organisationId(role.org) } }),
   }))
 }
 
 export function personSchema(description: string): JsonLd {
-  const current = roles.filter((role) => role.until === null)
+  const current = named(roles).filter((role) => role.until === null)
 
   return {
     '@type': 'Person',

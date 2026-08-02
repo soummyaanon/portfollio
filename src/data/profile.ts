@@ -53,6 +53,17 @@ export interface Role {
   readonly summary?: string
   readonly stack?: readonly string[]
   readonly logo?: string
+  /**
+   * This employer is not being named. `org` carries the stand-in that is published in its
+   * place — the real name is absent from this file, which is the only way it is absent from
+   * everything derived from it — and this flag is what tells the rest of the site to treat
+   * the field as withheld rather than as an ordinary name: veiled where it is set as type,
+   * and left out of the structured data instead of asserting a company that does not exist.
+   *
+   * Set this rather than dropping `org` altogether. A role with no employer reads as an
+   * oversight; a role with a withheld one reads as a decision.
+   */
+  readonly withheld?: boolean
 }
 
 export interface Education {
@@ -116,8 +127,16 @@ export const roles: readonly Role[] = [
     // Location and stack are not filled in yet — see the note in the Role interface for why
     // that is allowed rather than stubbed. `title` defaults to the person's stated title
     // because none was given for this role specifically.
-    id: 'blackngreen',
-    org: 'BlackNgreen',
+    //
+    // The employer is withheld, and it is withheld *here* — the real name is not in this
+    // file, so it is not in the bundle, the markup, the JSON-LD, the clipboard or llms.txt,
+    // and there is nothing for a reader with dev tools open to find. A veil painted over a
+    // string that is still in the DOM hides a name from a visitor, not from anyone looking.
+    // The id is printed beside the record in the machine view, so it cannot be a slug of the
+    // name either.
+    id: 'undisclosed',
+    org: 'Undisclosed',
+    withheld: true,
     title: person.title,
     from: '2026-06',
     until: null,

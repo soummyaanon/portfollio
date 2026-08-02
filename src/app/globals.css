@@ -182,6 +182,10 @@
      the page at full contrast. */
   --signal: oklch(0.2600 0.0070 260);
   --signal-ink: oklch(0.1900 0.0060 260);
+
+  /* The one hue on the site, and it appears in exactly one place: blooming behind the
+     employer that is being withheld. Everything else, the signal plate included, is grey. */
+  --withheld-green: oklch(0.7400 0.1900 150);
   /* Contribution levels: a straight lightness ramp, no hue anywhere. */
   --chart-1: oklch(0.9250 0.0030 260);
   --chart-2: oklch(0.7900 0.0040 260);
@@ -241,6 +245,8 @@
 
   --signal: oklch(0.9250 0.0035 260);
   --signal-ink: oklch(0.8300 0.0045 260);
+  /* Lifted and thinned for a dark ground, the way a lit colour behaves in a dark room. */
+  --withheld-green: oklch(0.8200 0.2000 150);
   --chart-1: oklch(0.2400 0.0050 260);
   --chart-2: oklch(0.3600 0.0055 260);
   --chart-3: oklch(0.5200 0.0060 260);
@@ -827,11 +833,11 @@ body {
 /**
  * The one word on this site that is not meant to be read.
  *
- * "BlackNgreen" stays in the record — in the markup, in the structured data, on the
- * clipboard — but the glyphs are veiled past legibility, so the row reads as a name withheld
- * rather than a name missing. The two colours the word names are still behind it: black
- * under the first half, green under the second, each blurred far past its own edges. What is
- * left is a coloured smudge the length of the word.
+ * A withheld employer prints a stand-in — the actual name is not in the data, so it is not
+ * in the markup either and there is nothing here to expose. What this rule adds is the fact
+ * that something is being withheld: the glyphs are veiled past legibility, so the row reads
+ * as a name held back rather than as a company called "Undisclosed". Two blooms sit behind
+ * the smudge, black and green, each blurred far past its own edges.
  *
  * The blur sits on the element, so it takes the pseudo-elements with it — they are already
  * formless, a little more costs nothing — and it is also what makes `z-index: -1` land behind
@@ -877,7 +883,7 @@ body {
 
 .wordmark-veil::after {
   right: -3%;
-  background: oklch(0.7400 0.1900 150);
+  background: var(--withheld-green);
   opacity: 0.42;
 }
 
@@ -892,7 +898,7 @@ body {
 }
 
 .dark .wordmark-veil::after {
-  background: oklch(0.8200 0.2000 150);
+  /* `--withheld-green` already lifts for the dark theme; only the opacity is this rule's own. */
   opacity: 0.30;
 }
 
