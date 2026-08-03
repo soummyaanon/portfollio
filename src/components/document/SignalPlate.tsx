@@ -16,10 +16,12 @@ import { AudioToggle } from './AudioToggle'
  * The black hole is built from its physics rather than drawn: the sky behind it is sampled
  * through the point-mass lens equation, so stars and graticule lines arc around it and a
  * second inverted image appears inside the Einstein radius without being asked for. Around it
- * an accretion disk lives in the source plane and is seen only through that lens, which is
- * what folds its far side into the arc riding over the shadow; its light carries the Doppler
+ * an accretion disk lives in the source plane and is seen through that lens, which is what
+ * folds its far side into the arc riding over the shadow; its light carries the Doppler
  * beaming of matter orbiting at four tenths of c, the gravitational redshift of the inner
- * annulus, and the winding shear of a Keplerian flow. Point sources brighten by the lens's
+ * annulus, and the winding shear of a Keplerian flow in two octaves of turbulence, with the
+ * sampling folded at the disk's inner edge so wings, crown and the ring of light around the
+ * shadow are one unbroken flow where a flat lens would leave wedges. Point sources brighten by the lens's
  * true magnification as they cross behind — extended ones do not, because lensing conserves
  * surface brightness — so a star drifting into alignment flares into an Einstein ring on its
  * own schedule. The dark disc is the photon capture radius at 2.598 rs, not the horizon, and
@@ -57,8 +59,11 @@ precision highp float;
 
 uniform vec2  uSize;     // drawing buffer size, px
 uniform float uTime;     // seconds
-uniform vec2  uPointer;  // plate space (y up, 1 unit = half the plate height)
-uniform float uHover;    // 0 at rest, 1 while the pointer is over the plate
+uniform vec2  uMark;      // the cursor mark's tip, plate space — the CPU owns the choreography
+uniform vec2  uMarkDir;   // unit infall line at the mark, the axis of the tidal stretch
+uniform float uMarkTide;  // stretch along the infall line; the squeeze across is its square root
+uniform float uMarkAlpha; // hover gate × Schwarzschild dimming × phase — 0 hides the mark
+uniform float uMarkSpin;  // glyph rotation, radians — the swirl of the drain
 uniform vec3  uInk;      // resolved page ink, 0..1
 uniform vec3  uPulse;    // xy = where the plate was last struck, z = seconds since
 uniform float uOpacity;
@@ -228,6 +233,90 @@ vec3 gwave(vec2 p, vec2 c, float t, float w, float k, float breathe, float psi) 
 }
 
 /**
+ * The accretion disk's light at an offset d from the hole, sampled through the lens: the
+ * far side of the annulus folds up over the shadow and arrives as the arc riding the ring,
+ * its inverted twin hugging the underside — nothing here draws either arc. The shadow
+ * itself stays clean: a band across it was tried and retired, because at this size the
+ * plate reads better with the dark disc unbroken.
+ *
+ * The disk is a thin annulus from the innermost stable orbit at 3 rs out to 9 rs, seen at
+ * ~83° of inclination — the camera riding just above the disk plane, which is where the
+ * film put it. Its light is Keplerian speed √(rs/2r), Doppler beaming, and gravitational
+ * redshift — but the beaming arrives heavily muted, at anderthalb power instead of cubed,
+ * because that is the film's own call: Thorne's full asymmetry left half the disk missing
+ * and Nolan had it evened out rather than explain it. A hot rim just outside the ISCO
+ * carries the brightness the film put there, and the whole thing runs through a soft-knee
+ * tonemap, 1 − e^(−x), so the inner band saturates into an even blaze instead of clipping
+ * into a flat wedge — blown out the way film stock blows out, not the way a clamp does.
+ *
+ * The texture is silk, not smoke: two octaves of noise stretched long along the flow and
+ * fine across it, at low contrast, carried on annular bands that each turn at their own
+ * Keplerian rate — banded because a continuous shear winds any pattern below pixel scale
+ * within minutes, and the finer octave shearing 35% faster than the lanes it rides is the
+ * turbulence. The streaks live in the disk's midtones; the blaze at the rim is allowed to
+ * swallow them exactly as an overexposed frame would.
+ *
+ * The last term is bloom without a blur pass: a taller, fainter ellipse of haze riding the
+ * same annulus, carrying the same muted beaming. Nearly off on paper, where haze reads as
+ * a thumbprint.
+ */
+float diskLight(vec2 d, float rs, float t, float shadow) {
+  float sinI = 0.992;
+  float cosI = 0.125;
+  vec2 dplane = vec2(d.x, d.y / cosI);
+  float diskIn = 3.0 * rs;
+  float diskOut = 9.0 * rs;
+  // The wrap. A flat lens leaves a void around the shadow — the radii it hands this
+  // function dive inside the inner edge, where nothing emits, and the disk used to arrive
+  // as two flaps floating beside a separate ring. In the film's render that void is filled
+  // by light that crossed the disk plane more than once on its way around the mass.
+  // Folding the radius back across the inner edge is this plate's version of the same
+  // thing: a pixel the lens sends inside the edge samples the inner annulus again, so the
+  // wings, the crown and the ring of light around the shadow are one piece of material
+  // seen more than once — the lanes bend around the hole because they are the lanes,
+  // continued.
+  float rd0 = max(length(dplane), 1e-4);
+  float rd = diskIn + abs(rd0 - diskIn);
+  // Every per-orbit factor stays clamped at the ISCO, which the fold now enforces by
+  // construction — and it keeps β from passing 1 where the raw radius ran through zero.
+  float rdc = max(rd, diskIn);
+  float phi = atan(dplane.y, dplane.x);
+  // The rotation is the point of the disk, so it is allowed to be seen: the inner lanes lap
+  // the hole in a few seconds and the outer ones in tens, on the same r^(-3/2) law.
+  float bandR = max((floor(rd * 32.0) + 0.5) / 32.0, diskIn);
+  float whirl = 0.34 / pow(bandR, 1.5);
+  float coarse = noise(vec2(rd * 40.0, (phi - whirl * t) * 2.6));
+  float fine = noise(vec2(rd * 110.0, (phi - whirl * t * 1.35) * 7.0) + 7.3);
+  // Contrast pitched so the streaks live in the tonemap's midtones across most of the
+  // disk — silk was tried and the rotation vanished into it; a whirl nobody can see is
+  // not a whirl.
+  float lanes = 0.42 + 0.42 * coarse + 0.26 * fine;
+  float beta = sqrt(rs / (2.0 * rdc));
+  float dopp = pow(1.0 / (1.0 - beta * sinI * (dplane.x / rdc)), 1.5);
+  // The Doppler flip. Inside the fold the lens is showing the counter-image of the
+  // opposite limb, so the raw beaming changes sides right at the ring — a dim sliver
+  // hugging the shadow on the bright side, which is precisely what read as the wing
+  // floating free of the hole. But the wrap is light from every part of the orbit at
+  // once, so its beaming is blended flat, and the wings fade smoothly into an evenly
+  // lit ring instead of docking against their own dimmed reflection.
+  float foldMix = smoothstep(diskIn * 1.1, diskIn * 0.5, rd0);
+  float doppEff = mix(min(dopp, 3.5), 1.15, foldMix);
+  float gfac = sqrt(max(1.0 - rs / rdc, 0.0));
+  float rim = 1.0 + 1.0 * smoothstep(diskIn * 1.9, diskIn * 1.02, rd);
+  float body = pow(rs / rdc, 1.7) * 17.0
+    * smoothstep(diskOut * 1.25, diskOut * 0.75, rd)
+    * lanes * rim * doppEff * gfac;
+  float film = 1.0 - exp(-body);
+  vec2 hp = vec2(d.x, d.y / 0.42);
+  float hr = length(hp);
+  float haze = smoothstep(diskIn * 0.85, diskIn * 1.15, hr)
+    * smoothstep(diskOut * 1.5, diskIn * 1.1, hr)
+    * (0.25 + 0.75 * min(dopp, 3.5) / 3.5)
+    * mix(0.10, 0.03, shadow);
+  return max(film * mix(0.92, 0.62, shadow), haze);
+}
+
+/**
  * One magnitude class of the catalogue.
  *
  * A hashed grid: each cell either holds a star or does not, and the ones that do place it at a
@@ -332,7 +421,7 @@ void main() {
   // disk folds up against the ring instead of floating above it.
   float rs = 0.075;
   float holeR = 2.598 * rs;
-  float einstein = 0.22;
+  float einstein = 0.25;
 
   // Time, bent. Two separate relativistic effects, and they show up in different ways:
   //
@@ -467,48 +556,10 @@ void main() {
   links = min(links, segment(pf, NODES[5], NODES[6]));
   float asterism = smoothstep(hair + px, hair - px, links) * 0.15;
 
-  // The accretion disk — the proper view of the hole, in the same single ink.
-  //
-  // The disk is a thin annulus living in the source plane, from the innermost stable orbit
-  // at 3 rs out to where its emission has died, seen at ~78° of inclination. Because it is
-  // sampled through the lens above, the famous silhouette assembles itself: the far side of
-  // the disk is folded up over the shadow and arrives as the arc riding the ring, with its
-  // inverted twin hugging the underside — nothing here draws either arc.
-  //
-  // Its light is shaped by three real factors. Keplerian speed √(rs/2r), four tenths of c at
-  // the inner edge; the Doppler factor cubed, which is why the approaching limb is laid in
-  // dense ink and the receding one in almost none — beaming, rendered as line weight; and
-  // the gravitational redshift √(1 − rs/r), quietly dimming the innermost annulus that the
-  // beaming would otherwise overstate. The lanes are noise carried on annular bands, each
-  // band turning at its own Keplerian rate — banded on purpose, because a continuous shear
-  // winds any pattern below pixel scale within minutes, and adjacent lanes visibly slipping
-  // past each other is precisely what differential rotation looks like on a plate.
-  float sinI = 0.978;
-  float cosI = 0.208;
-  vec2 dsrc = sky - holeAt;
-  vec2 dplane = vec2(dsrc.x, dsrc.y / cosI);
-  float rd = max(length(dplane), 1e-4);
-  float diskIn = 3.0 * rs;
-  float diskOut = 7.0 * rs;
-  // Every per-orbit factor is clamped at the ISCO: inside it nothing orbits and nothing
-  // emits — and the raw radius runs through zero near the Einstein ring, where an unclamped
-  // β would pass 1 and the Doppler term would divide by nothing.
-  float rdc = max(rd, diskIn);
-  float phi = atan(dplane.y, dplane.x);
-  // The rotation is the point of the disk, so it is allowed to be seen: the inner lanes lap
-  // the hole in a few seconds and the outer ones in tens, on the same r^(-3/2) law, and the
-  // contrast between lanes is kept high enough that the motion reads from across the room.
-  float bandR = max((floor(rd * 26.0) + 0.5) / 26.0, diskIn);
-  float whirl = 0.16 / pow(bandR, 1.5);
-  float lanes = 0.35 + 0.90 * noise(vec2(rd * 46.0, (phi - whirl * uTime) * 3.0));
-  float beta = sqrt(rs / (2.0 * rdc));
-  float dopp = pow(1.0 / (1.0 - beta * sinI * (dplane.x / rdc)), 3.0);
-  float gfac = sqrt(max(1.0 - rs / rdc, 0.0));
-  float disk = pow(rs / rdc, 2.0) * 26.0
-    * smoothstep(diskIn * 0.92, diskIn * 1.22, rd)
-    * smoothstep(diskOut * 1.55, diskOut * 0.72, rd)
-    * lanes * min(dopp, 6.0) * gfac * gfac
-    * mix(0.34, 0.30, uShadow);
+  // The accretion disk — the proper view of the hole, in the same single ink. The annulus
+  // lives in the source plane and is seen here through the lens above, which is what folds
+  // its far side into the arcs over and under the shadow; the physics is all in diskLight.
+  float disk = diskLight(sky - holeAt, rs, uTime, uShadow);
 
   // The sky, in the order a plate is printed: paper, dust, the lines drawn on it, the objects.
   // The sweep lifts the magnitude of every star it crosses, which is the whole point of it —
@@ -558,31 +609,22 @@ void main() {
   mask *= smoothstep(0.0, 0.30, uv.y) * smoothstep(1.0, 0.70, uv.y);
   ink *= mask;
 
-  // The cursor, absorbed. The native cursor is hidden over the canvas and the arrow drawn
-  // here stands in for it — same silhouette, tip on the same hotspot — drawn where the
-  // hole's gravity says it is, not where the hand says. At arm's length the two agree and
-  // nobody notices the swap. Then the pull comes on over most of the plate: the arrow is
-  // dragged off the hand toward the mass, harder the closer it gets, stretched along the
-  // infall line and squeezed across it — the tide.
-  //
-  // It never vanishes and it never crosses. The infall is clamped just outside the ring,
-  // where the arrow freezes, dims by the Schwarzschild factor, and waits — which is exactly
-  // how a distant observer watches a thing fall in, and also what keeps a quarter of the
-  // plate from becoming a dead zone with no cursor in it at all. Pull the hand back and
-  // the arrow climbs back out to the fingertip.
-  float reach = length(uPointer - holeAt);
-  float grab = smoothstep(1.10, 0.10, reach);
-  vec2 handDir = (uPointer - holeAt) / max(reach, 1e-3);
-  float rawDist = reach * (1.0 - pow(max(grab, 1e-4), 1.35) * 0.98);
-  float markDist = max(rawDist, holeR * 1.06);
-  vec2 markAt = holeAt + handDir * markDist;
-  vec2 inDir = -handDir;
-  vec2 md = p - markAt;
-  float tide = 1.0 + 5.0 * grab * grab;
+  // The cursor, absorbed — now on a schedule with teeth. The native cursor is hidden over
+  // the canvas and the arrow drawn here stands in for it — same silhouette, tip on the
+  // same hotspot — but the choreography moved to the CPU, which is the one that knows what
+  // time it is. Drift too close and the hole stops dragging the arrow and takes it: wound
+  // around the drain, stretched along the infall line and squeezed across it, dimming by
+  // the Schwarzschild factor all the way down, gone entirely for a few seconds — and then
+  // thrown back out toward the hand, because a spinning mass is allowed one piece of
+  // theatre. The shader just draws the glyph where it is told, at the stretch and the
+  // angle and the alpha it is handed.
+  float cSpin = cos(uMarkSpin);
+  float sSpin = sin(uMarkSpin);
+  vec2 md = mat2(cSpin, -sSpin, sSpin, cSpin) * (p - uMark);
+  vec2 inDir = uMarkDir;
   float along = dot(md, inDir);
   vec2 perpD = vec2(-inDir.y, inDir.x);
-  vec2 msd = inDir * (along / tide) + perpD * (dot(md, perpD) * sqrt(tide));
-  float alive = sqrt(clamp(1.0 - holeR / markDist, 0.0, 1.0));
+  vec2 msd = inDir * (along / max(uMarkTide, 1.0)) + perpD * (dot(md, perpD) * sqrt(max(uMarkTide, 1.0)));
 
   // Black body, white rim, small — the macOS arrow, in its own two inks on top of the
   // plate's one. The cursor is the visitor's property, not the chart's subject, so it is
@@ -591,7 +633,7 @@ void main() {
   float dC = sdCursor(msd / cs) * cs;
   float bodyM = smoothstep(px * 1.2, -px * 1.2, dC);
   float rimM = smoothstep(px * 1.2, -px * 1.2, dC - px * 1.7) * (1.0 - bodyM);
-  float curA = (bodyM + rimM) * uHover * alive;
+  float curA = (bodyM + rimM) * clamp(uMarkAlpha, 0.0, 1.0);
   vec3 curRGB = mix(vec3(1.0), vec3(0.0), bodyM);
 
   // Grain multiplies rather than adds. Added, it survived the mask and laid a faint dither
@@ -724,8 +766,11 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
 
     const uSize = gl.getUniformLocation(program, 'uSize')
     const uTime = gl.getUniformLocation(program, 'uTime')
-    const uPointer = gl.getUniformLocation(program, 'uPointer')
-    const uHover = gl.getUniformLocation(program, 'uHover')
+    const uMark = gl.getUniformLocation(program, 'uMark')
+    const uMarkDir = gl.getUniformLocation(program, 'uMarkDir')
+    const uMarkTide = gl.getUniformLocation(program, 'uMarkTide')
+    const uMarkAlpha = gl.getUniformLocation(program, 'uMarkAlpha')
+    const uMarkSpin = gl.getUniformLocation(program, 'uMarkSpin')
     const uInk = gl.getUniformLocation(program, 'uInk')
     const uPulse = gl.getUniformLocation(program, 'uPulse')
     const uOpacity = gl.getUniformLocation(program, 'uOpacity')
@@ -750,6 +795,112 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     // teleporting it — which near the mass reads as the hand losing the tug of war. Parked
     // far off-plate so the mark's first appearance is a fade-in, not a jump from origin.
     const pointer = { x: 0, y: -3, targetX: 0, targetY: -3, hover: 0, targetHover: 0 }
+
+    // Mirrors of the shader's geometry — the hole's seat and its capture radius — so the
+    // CPU can choreograph what the GPU draws. Change rs in the GLSL and change it here.
+    const HOLE_X = 0
+    const HOLE_Y = 0.03
+    const HOLE_R = 2.598 * 0.075
+
+    /**
+     * The mark's life as a state machine, because the absorption is now an event with a
+     * clock, not a spring. FREE is the old tug of war: dragged off the hand toward the
+     * mass, frozen just outside the ring. Cross the trigger radius and ABSORB takes over —
+     * the arrow is wound around the drain and pulled through the ring, fading by the same
+     * Schwarzschild factor that always dimmed it, which lands it at zero exactly as it
+     * crosses: a distant observer never does see a thing fall in. HELD is five seconds of
+     * the visitor genuinely having no cursor over the plate, which is the point of the
+     * whole routine. EJECT throws it back out along the line to the hand — the one
+     * unphysical beat, granted to the theatre — and FREE resumes with a short cooldown so
+     * a hand parked at the trigger radius cycles rather than strobes.
+     */
+    const mark = {
+      phase: 'free' as 'free' | 'absorb' | 'held' | 'eject',
+      since: 0,
+      cooldownUntil: 0,
+      startDist: 0,
+      startAngle: 0,
+      x: 0,
+      y: -3,
+      dirX: 0,
+      dirY: 1,
+      tide: 1,
+      alpha: 0,
+      spin: 0,
+    }
+
+    function smooth(a: number, b: number, x: number) {
+      const t = Math.min(Math.max((x - a) / (b - a), 0), 1)
+      return t * t * (3 - 2 * t)
+    }
+
+    function updateMark(now: number) {
+      const hx = pointer.x - HOLE_X
+      const hy = pointer.y - HOLE_Y
+      const reach = Math.max(Math.hypot(hx, hy), 1e-3)
+      const dirX = hx / reach
+      const dirY = hy / reach
+
+      if (mark.phase === 'free') {
+        const grab = smooth(1.1, 0.1, reach)
+        const dist = Math.max(reach * (1 - Math.pow(Math.max(grab, 1e-4), 1.35) * 0.98), HOLE_R * 1.06)
+        mark.x = HOLE_X + dirX * dist
+        mark.y = HOLE_Y + dirY * dist
+        mark.dirX = -dirX
+        mark.dirY = -dirY
+        mark.tide = 1 + 5 * grab * grab
+        mark.spin = 0
+        mark.alpha = Math.sqrt(Math.max(1 - HOLE_R / dist, 0)) * pointer.hover
+        if (pointer.hover > 0.5 && reach < 0.42 && now >= mark.cooldownUntil) {
+          mark.phase = 'absorb'
+          mark.since = now
+          mark.startDist = dist
+          mark.startAngle = Math.atan2(dirY, dirX)
+        }
+      } else if (mark.phase === 'absorb') {
+        const u = Math.min((now - mark.since) / 0.9, 1)
+        // The plunge accelerates (u^2.2) while the drain winds it around and the tide
+        // climbs — spaghettification as a cursor understands it.
+        const dist = mark.startDist + (HOLE_R * 0.5 - mark.startDist) * Math.pow(u, 2.2)
+        const ang = mark.startAngle + 3.2 * u * u
+        mark.x = HOLE_X + Math.cos(ang) * dist
+        mark.y = HOLE_Y + Math.sin(ang) * dist
+        mark.dirX = -Math.cos(ang)
+        mark.dirY = -Math.sin(ang)
+        mark.tide = 6 + 10 * u * u
+        mark.spin = 5.5 * u * u
+        mark.alpha = Math.sqrt(Math.max(1 - HOLE_R / Math.max(dist, 1e-3), 0)) * pointer.hover
+        if (u >= 1) {
+          mark.phase = 'held'
+          mark.since = now
+        }
+      } else if (mark.phase === 'held') {
+        mark.alpha = 0
+        if (now - mark.since >= 5.0) {
+          mark.phase = 'eject'
+          mark.since = now
+        }
+      } else {
+        const u = Math.min((now - mark.since) / 0.7, 1)
+        const e = 1 - Math.pow(1 - u, 3)
+        const dist = HOLE_R * 1.06 + (Math.max(reach, 0.9) * 1.15 - HOLE_R * 1.06) * e
+        mark.x = HOLE_X + dirX * dist
+        mark.y = HOLE_Y + dirY * dist
+        mark.dirX = -dirX
+        mark.dirY = -dirY
+        mark.tide = 1 + 5 * (1 - e)
+        mark.spin = 2 * (1 - e)
+        mark.alpha = Math.sqrt(Math.max(1 - HOLE_R / dist, 0)) * pointer.hover
+        if (u >= 1) {
+          mark.phase = 'free'
+          mark.cooldownUntil = now + 2.5
+          // Land the chase where the throw ended, so the arrow glides back to the
+          // fingertip instead of teleporting there.
+          pointer.x = mark.x
+          pointer.y = mark.y
+        }
+      }
+    }
 
     // The canvas's geometry, cached. Everything that needs the plate's position or size reads
     // it from here rather than from the element, because both `clientWidth` and
@@ -781,8 +932,11 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       resize()
       gl.uniform2f(uSize, width, height)
       gl.uniform1f(uTime, time)
-      gl.uniform2f(uPointer, pointer.x, pointer.y)
-      gl.uniform1f(uHover, pointer.hover)
+      gl.uniform2f(uMark, mark.x, mark.y)
+      gl.uniform2f(uMarkDir, mark.dirX, mark.dirY)
+      gl.uniform1f(uMarkTide, mark.tide)
+      gl.uniform1f(uMarkAlpha, mark.alpha)
+      gl.uniform1f(uMarkSpin, mark.spin)
       // Every probe is read every frame rather than cached, which is what lets a theme
       // flip take effect without any wiring between the toggle and this canvas.
       const ink = readColour(probe!)
@@ -806,6 +960,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       pointer.x += (pointer.targetX - pointer.x) * 0.3
       pointer.y += (pointer.targetY - pointer.y) * 0.3
       pointer.hover += (pointer.targetHover - pointer.hover) * 0.12
+      updateMark(elapsed)
       draw(elapsed)
       frame = requestAnimationFrame(loop)
     }
