@@ -36,28 +36,27 @@ const MONTHS = [
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 /**
- * A ramp built from the site's own greyscale rather than GitHub's green.
+ * GitHub's own contribution ramp, so the calendar reads as the thing it is.
  *
- * The grid is the only large block of tone on the page, so borrowing GitHub's palette put a
- * green rectangle in the middle of a greyscale document. These are the five steps of the
- * page's own lightness ramp — level 0 is the muted surface, level 4 is full ink — so the
- * calendar reads as part of the same material. Perceptually even, because OKLCH lightness
- * is: four contributions look like twice two.
+ * Levels 1–4 are GitHub's published palette verbatim — the grid is recognisable at a glance
+ * and the green is the one people have already learned. Level 0 stays on the page's own
+ * neutral surface rather than GitHub's (#ebedf0 / #161b22) so the empty cells sit on the
+ * document's material instead of importing a second background colour.
  */
 const GITHUB_CONTRIBUTION_COLORS_LIGHT = [
-  'oklch(0.9250 0.0030 260)', // Level 0 — no contributions
-  'oklch(0.7900 0.0040 260)', // Level 1
-  'oklch(0.6200 0.0055 260)', // Level 2
-  'oklch(0.4200 0.0065 260)', // Level 3
-  'oklch(0.2300 0.0070 260)', // Level 4 — highest
+  'oklch(0.9250 0.0030 260)', // Level 0 — no contributions (page surface, not GitHub's)
+  '#9be9a8', // Level 1
+  '#40c463', // Level 2
+  '#30a14e', // Level 3
+  '#216e39', // Level 4 — highest
 ]
 
 const GITHUB_CONTRIBUTION_COLORS_DARK = [
-  'oklch(0.2400 0.0050 260)', // Level 0 — no contributions
-  'oklch(0.3600 0.0055 260)', // Level 1
-  'oklch(0.5200 0.0060 260)', // Level 2
-  'oklch(0.7100 0.0050 260)', // Level 3
-  'oklch(0.9250 0.0035 260)', // Level 4 — highest
+  'oklch(0.2400 0.0050 260)', // Level 0 — no contributions (page surface, not GitHub's)
+  '#0e4429', // Level 1
+  '#006d32', // Level 2
+  '#26a641', // Level 3
+  '#39d353', // Level 4 — highest
 ]
 
 const CONTRIBUTION_LEVELS = [0, 1, 2, 3, 4]
