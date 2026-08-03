@@ -68,6 +68,8 @@ uniform vec3  uInk;      // resolved page ink, 0..1
 uniform vec3  uPulse;    // xy = where the plate was last struck, z = seconds since
 uniform float uOpacity;
 uniform float uShadow;   // 1 when the ink is darker than the paper, 0 when it is lighter
+uniform vec4  uPsr;      // the pulsar: xy = where it is, z = the flyby gate, w = beam axis angle
+uniform vec2  uPsrLit;   // x = the lighthouse flash, 0..1; y = Doppler beaming on the flux
 
 out vec4 fragColor;
 
@@ -317,6 +319,55 @@ float diskLight(vec2 d, float rs, float t, float shadow) {
 }
 
 /**
+ * The pulsar: a lighthouse, drawn from above.
+ *
+ * Two beams leave the magnetic poles a hundred and eighty degrees apart and sweep with the
+ * star's rotation, and a distant observer sees a pulse each time one crosses the line of
+ * sight. That is the whole of the lighthouse model, and it is the reason the object has a
+ * period at all — nothing about the star is blinking, only its aim. Both beams are drawn
+ * faintly at all times, because a top-down view of a lighthouse shows you the beam that is
+ * not currently pointed at you; the flash is carried by the core.
+ *
+ * The beam is a cone of roughly eighteen degrees half-width, which puts the duty cycle near
+ * a tenth of the period. Real pulsars are narrower — a few percent is typical — but a few
+ * percent of this star's 0.6 s period is an eighteen-millisecond flash, and at sixty frames
+ * a second that is one frame, seen or missed depending on where the raster lands.
+ *
+ * Nothing here decides *when* it flashes. The spin, the two time dilations and the Doppler
+ * shift are integrated on the CPU across the whole flyby and arrive as an angle and a flux;
+ * this function draws the star where it is told.
+ */
+vec2 pulsar(vec2 s, vec2 at, float ang, float flash, float px) {
+  vec2 d = s - at;
+  vec2 axis = vec2(cos(ang), sin(ang));
+  // Absolute value on both projections folds the two poles onto one evaluation: the beam and
+  // its antipode are the same cone, drawn once and mirrored through the star.
+  float along = abs(dot(d, axis));
+  float across = abs(dot(d, vec2(-axis.y, axis.x)));
+  float halfW = 0.013 + along * 0.30;
+  float lobe = 1.0 - clamp(across / halfW, 0.0, 1.0);
+  float reach = max(1.0 - along / 0.34, 0.0);
+  float beams = lobe * lobe * reach * reach;
+
+  // Core, halo, glow. The proportions matter more than they look like they should, and both
+  // times they were wrong it was the same mistake in a different direction: first the core was
+  // a hundredth of a unit against beams a quarter of one, so the star came out a bare streak
+  // with nothing at the middle of it — a shard, not an object. Then the whole thing was sized
+  // against a test render twice the width of the real plate, where it shrank to a blue speck.
+  // These are set against the plate's own furniture: the halo is about a quarter of the
+  // shadow's radius, the beams a little under twice it.
+  float dd = dot(d, d);
+  float w = max(0.0200, px);
+  float core = exp(-dd / (w * w))
+    + 0.50 * exp(-dd / (0.045 * 0.045))
+    + 0.16 * exp(-dd / (0.105 * 0.105));
+
+  // Split, because the two halves lens differently: a point source collects its magnified
+  // flux into the same dot and brightens, an extended one does not. Caller applies it.
+  return vec2(core * (0.52 + 0.48 * flash), beams * (0.15 + 0.55 * flash));
+}
+
+/**
  * One magnitude class of the catalogue.
  *
  * A hashed grid: each cell either holds a star or does not, and the ones that do place it at a
@@ -561,6 +612,14 @@ void main() {
   // its far side into the arcs over and under the shadow; the physics is all in diskLight.
   float disk = diskLight(sky - holeAt, rs, uTime, uShadow);
 
+  // The pulsar on its flyby, drawn against the lensed sky exactly like the catalogue stars —
+  // which is what makes the lens carry it for free: crossing behind the mass it arcs,
+  // doubles and flares toward a ring without a line here asking for any of it. The core is a
+  // point source and takes the magnification; the beams are extended, and lensing conserves
+  // surface brightness, so they are handed it unbrightened.
+  vec2 psrParts = pulsar(sky, uPsr.xy, uPsr.w, uPsrLit.x, px) * uPsr.z * uPsrLit.y;
+  float psr = psrParts.x * magn + psrParts.y;
+
   // The sky, in the order a plate is printed: paper, dust, the lines drawn on it, the objects.
   // The sweep lifts the magnitude of every star it crosses, which is the whole point of it —
   // it is not a ring travelling over the chart, it is the chart being read. The point sources
@@ -572,6 +631,7 @@ void main() {
   // hole flares as it goes, which is worth the wait when it happens.
   field = max(field, (meteor(sky, uTime, 3.1, px) + meteor(sky, uTime, 7.9, px)) * 0.6 * magn);
   field = max(field, sweep * 0.30);
+  field = max(field, psr);
 
   // Inside the capture radius there is nothing to draw — not dark ink, *no* ink, so the disc
   // is the colour of whatever the plate is sitting on. On paper that is a hole punched in the
@@ -579,7 +639,8 @@ void main() {
   // means. The edge is nearly hard, because the photon sphere is: a ray one hair inside it
   // does not come back.
   float holeD = holeDist;
-  field *= smoothstep(holeR * 0.90, holeR * 1.02, holeD);
+  float cut = smoothstep(holeR * 0.90, holeR * 1.02, holeD);
+  field *= cut;
 
   // The photon ring, and its sub-rings. Light that has gone one more half-orbit around the
   // mass arrives exponentially closer to the critical curve and exponentially fainter — the
@@ -596,6 +657,47 @@ void main() {
   ring += smoothstep(holeR * 1.10, holeR * 2.4, holeD) * smoothstep(holeR * 3.2, holeR * 1.3, holeD) * mix(0.05, 0.018, uShadow);
 
   float ink = max(field, ring);
+
+  // Colour, on the two objects that have one — and on nothing else. The plate was single-ink
+  // by rule and mostly still is: the graticule, the dust, the catalogue, the asterism, the
+  // nebulas, the meteors and the sweep all remain the page's own foreground colour, because
+  // an atlas plate is printed in one ink and a chart that colours everything is a poster. The
+  // hole and the pulsar are the exceptions, and they are exceptions on the same grounds — both
+  // are emitting, and what they emit has a temperature, and a temperature is a colour.
+  //
+  // The disk is a blackbody read off the brightness it already computed: the cool outer
+  // annulus runs amber, the hot inner rim and the photon ring run up to white-gold. That
+  // ramp is not a stylisation of the temperature gradient, it is the temperature gradient —
+  // the disk is hotter where it is brighter, for the same reason in both cases. The pulsar
+  // gets cyan: a neutron star's surface sits near a million kelvin, far off the blue end of
+  // anything else on the plate.
+  //
+  // Both ends deepen and saturate on paper. A pale amber on white is not a colour, it is a
+  // smudge — the same reason the halos and the glow already switch down in the light theme.
+  // uShadow is 1 on *paper* — it means the ink is darker than the page — so the second
+  // argument of each of these mixes is the light theme's value, not the dark one. Written the
+  // other way round first, which put the near-white hot end on white paper and turned the
+  // whole disk into a pale peach smudge, and handed the dark theme the burnt end meant for
+  // print. The rule is the same one the halos and the glow already follow, in both directions:
+  // on a dark ground the colour can be bright, on paper it has to be deep to be a colour at all.
+  vec3 emberCool = mix(vec3(0.96, 0.44, 0.07), vec3(0.66, 0.26, 0.02), uShadow);
+  vec3 emberHot = mix(vec3(1.00, 0.90, 0.72), vec3(0.92, 0.62, 0.14), uShadow);
+  vec3 emberRGB = mix(emberCool, emberHot, smoothstep(0.16, 0.80, disk));
+  vec3 psrRGB = mix(vec3(0.65, 0.94, 1.00), vec3(0.03, 0.45, 0.58), uShadow);
+
+  // Weighted by each source's own contribution, and the shadow's cut applied to the two that
+  // sit behind it, so the tint follows the ink rather than floating free of it: where the disk
+  // is what you are looking at the pixel is amber, where a catalogue star crosses it the ink
+  // takes its share back, and inside the shadow — where there is no ink at all — there is no
+  // colour either. Read before the mask and the grain, which scale ink and hue alike and so
+  // cancel out of the ratio.
+  float diskLit = disk * cut;
+  float psrLit = psr * cut;
+  float hueW = diskLit + ring + psrLit;
+  // The ring takes the hot end flat rather than the ramp: it is light that has orbited the
+  // mass and come back out, so it is the disk's own material seen at its most beamed.
+  vec3 hue = emberRGB * diskLit + emberHot * ring + psrRGB * psrLit;
+  vec3 baseInk = mix(uInk, hue / max(hueW, 1e-4), clamp(hueW / max(ink, 1e-4), 0.0, 1.0));
 
   // No marker rings the subject any more — the dashed reticle went with the portrait, and
   // the halo that cleared space for it went too. A hole that bends the whole sky around
@@ -641,11 +743,12 @@ void main() {
   // against the page. Multiplied, zero stays zero and the plate has no visible extent.
   ink *= 1.0 + (hash(gl_FragCoord.xy) - 0.5) * 0.13;
 
-  // The plate in its one ink and the cursor in its two, composited source-over. Divided
-  // back out of premultiplied form, because the context was asked for straight alpha.
+  // The plate in its page ink plus the two objects allowed their own colour, and the cursor
+  // in its two, composited source-over. Divided back out of premultiplied form, because the
+  // context was asked for straight alpha.
   float baseA = clamp(ink, 0.0, 1.0) * uOpacity;
   float outA = curA + baseA * (1.0 - curA);
-  fragColor = vec4((curRGB * curA + uInk * baseA * (1.0 - curA)) / max(outA, 1e-4), outA);
+  fragColor = vec4((curRGB * curA + baseInk * baseA * (1.0 - curA)) / max(outA, 1e-4), outA);
 }
 `
 
@@ -775,6 +878,8 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     const uPulse = gl.getUniformLocation(program, 'uPulse')
     const uOpacity = gl.getUniformLocation(program, 'uOpacity')
     const uShadow = gl.getUniformLocation(program, 'uShadow')
+    const uPsr = gl.getUniformLocation(program, 'uPsr')
+    const uPsrLit = gl.getUniformLocation(program, 'uPsrLit')
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 
@@ -902,6 +1007,153 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       }
     }
 
+    /**
+     * The pulsar's flyby, solved on the CPU for the same reason the absorption is: the shader
+     * cannot know what time it is. The observed pulse phase is an integral over the whole
+     * flyby — every stretch of it dilated and Doppler-shifted by a different amount — and a
+     * per-pixel program that starts from nothing on every fragment has no history to
+     * integrate. It is also two million times cheaper to solve one orbit per frame than one
+     * orbit per pixel.
+     *
+     * Re-integrated from the start of the cycle on every frame rather than advanced from the
+     * last one, which costs about fourteen hundred steps and buys immunity to everything that
+     * interrupts this canvas: the IntersectionObserver pausing it off-screen, a resize
+     * redrawing it while paused, a theme flip, a reduced-motion still frame. The path is a
+     * pure function of the clock, so all of those land on it correctly by construction.
+     */
+    const PSR_RS = 0.075                    // mirrors rs in the GLSL — change both together
+    const PSR_GM = PSR_RS / 2               // geometric units: c = 1, lengths in plate units
+    const PSR_R0 = 2.6                      // handed to the integrator well off the plate
+    const PSR_V0 = 0.3                      // c, comfortably above escape at r0 — unbound
+    const PSR_LIFE = 17                     // seconds of flyby, about ten of them on the plate
+    const PSR_PERIOD = 41                   // and this long from one flyby to the next
+    const PSR_STEP = 0.012                  // leapfrog step: sub-pixel across the whole run
+    const PSR_SPIN = (Math.PI * 2) / 0.6    // rad/s at the star. 0.6 s is an ordinary period —
+                                            // B0329+54 sits at 0.714 s; the Crab's 33 ms would
+                                            // arrive as a blur and read as a flickering star
+    const PSR_COS_BEAM = Math.cos(0.32)     // the flash threshold: cos of the beam half-width
+    const PSR_SIN_I = 0.992                 // the disk's inclination, reused — the viewer is +y
+
+    const pulsar = { x: 0, y: -9, gate: 0, beam: 0, flash: 0, flux: 1 }
+
+    /** The shader's hash, in JS, so the schedule is drawn from the same kind of noise. */
+    function psrHash(n: number) {
+      const s = Math.sin(n * 127.1 + 311.7) * 43758.5453
+      return s - Math.floor(s)
+    }
+
+    function updatePulsar(now: number) {
+      const cycle = Math.floor(now / PSR_PERIOD)
+      const local = now - cycle * PSR_PERIOD
+      if (local > PSR_LIFE) {
+        pulsar.gate = 0
+        return
+      }
+
+      // Every flyby is drawn fresh from its cycle index, so no two are the same path. The aim —
+      // the angle between the inbound line and the line to the hole, which sets the impact
+      // parameter — is the number that decides the whole event, because there is a critical
+      // value of it either side of which the star does something completely different. Solved
+      // numerically against this potential, that value is 0.20842: below it every path crosses
+      // the shadow and the star is eaten, above it every path turns and the star escapes.
+      //
+      // So the schedule draws from two bands well clear of the edge, and one flyby in three is
+      // doomed. Both bands were swept across every entry angle and both directions of travel to
+      // confirm they never cross over: the survivors' closest approach is 4.05 rs, and the
+      // doomed are always taken, at around seven seconds in. A guaranteed slingshot every time
+      // is a loop; a guaranteed death every time is also a loop. The capture has to be possible
+      // and not certain, or watching one go past means nothing.
+      const doomed = psrHash(cycle * 7.3 + 4.8) < 0.34
+      const side = psrHash(cycle * 1.7 + 0.3) < 0.5 ? 1 : -1
+      const hand = psrHash(cycle * 3.1 + 9.4) < 0.5 ? 1 : -1
+      const spread = psrHash(cycle * 5.9 + 2.6)
+      const aim = (doomed ? 0.170 + 0.035 * spread : 0.245 + 0.055 * spread) * hand
+      // In from one side or the other, because the plate is wide and short.
+      const th0 = (side > 0 ? 0 : Math.PI) + (psrHash(cycle * 11.3 + 7.2) - 0.5) * 0.44
+
+      let x = PSR_R0 * Math.cos(th0)
+      let y = PSR_R0 * Math.sin(th0)
+      // The aim is the angle between the inbound line and the line to the hole, so the impact
+      // parameter is r0·sin(aim) and its sign is which way round the star goes.
+      let vx = -PSR_V0 * Math.cos(th0 + aim)
+      let vy = -PSR_V0 * Math.sin(th0 + aim)
+      let phase = 0
+      let flux = 1
+      let dim = 1
+      let eaten = false
+
+      // A whole number of fixed steps plus one partial step for the remainder. Fixed, so the
+      // path is identical on every frame no matter when the frame lands; plus the remainder, so
+      // the star travels smoothly instead of in twelve-millisecond hops.
+      const whole = Math.floor(local / PSR_STEP)
+      for (let i = 0; i <= whole; i++) {
+        const dt = i < whole ? PSR_STEP : local - whole * PSR_STEP
+        if (dt <= 0) break
+
+        // Leapfrog under Paczyński–Wiita, Φ = −GM/(r − rs): one extra term over Newton, and it
+        // puts the innermost stable orbit and the strong-field bending where Schwarzschild puts
+        // them. So the periastron advance is not applied to this path afterwards — it *is* this
+        // path, straight out of the potential.
+        let r = Math.max(Math.hypot(x, y), PSR_RS * 1.05)
+        let pull = -PSR_GM / Math.pow(Math.max(r - PSR_RS, PSR_RS * 0.05), 2)
+        vx += ((pull * x) / r) * dt * 0.5
+        vy += ((pull * y) / r) * dt * 0.5
+        x += vx * dt
+        y += vy * dt
+        r = Math.max(Math.hypot(x, y), PSR_RS * 1.05)
+        pull = -PSR_GM / Math.pow(Math.max(r - PSR_RS, PSR_RS * 0.05), 2)
+        vx += ((pull * x) / r) * dt * 0.5
+        vy += ((pull * y) / r) * dt * 0.5
+
+        // Three separate reasons the pulses do not arrive at the rate they left, and they
+        // multiply:
+        //  · gravitational dilation, √(1 − rs/r) — the star's clock runs slow to a distant one
+        //  · relativistic dilation, √(1 − v²) — it passes 0.6 c at periastron, so this is not a
+        //    rounding error on the first one
+        //  · Doppler, 1/(1 − β) — the pulses bunch on the approach and stretch on the retreat,
+        //    and unlike the other two this factor changes sign halfway through the pass
+        const redshift = Math.sqrt(Math.max(1 - PSR_RS / r, 0))
+        const speed = Math.min(Math.hypot(vx, vy), 0.97)
+        const doppler = 1 / Math.max(1 - vy * PSR_SIN_I, 0.22)
+        phase += PSR_SPIN * redshift * Math.sqrt(1 - speed * speed) * doppler * dt
+        // Beaming, at the same muted exponent the disk already uses — the plate's own
+        // precedent, and the honest cube would make the retreat leg vanish outright. Dimmed on
+        // top of it by the redshift, the one factor that never works in the star's favour.
+        flux = Math.min(Math.pow(doppler, 1.5) * redshift, 2.6)
+
+        // The ending, for the ones that do not come back out. A distant observer never sees
+        // anything cross a horizon: the light it sends on the way in arrives redder, slower and
+        // fainter without limit, and the object fades where it is rather than disappearing at a
+        // moment. This is the same factor the cursor's absorption already fades on, against the
+        // same radius, and it reaches exactly zero at the edge of the shadow — so the star runs
+        // out of light precisely as it reaches the black disc, and there is no pop to hide.
+        // Survivors are spared it: their dimming is the redshift in the flux above, and putting
+        // this on top of that would double-count the gravity and mute the one moment worth
+        // watching.
+        if (doomed) {
+          dim = Math.sqrt(Math.max(1 - HOLE_R / r, 0))
+          if (r <= HOLE_R) {
+            eaten = true
+            break
+          }
+        }
+      }
+
+      pulsar.x = HOLE_X + x
+      pulsar.y = HOLE_Y + y
+      pulsar.beam = phase % (Math.PI * 2)
+      // The flash: the beam axis is the phase, and the line of sight is +y — the same direction
+      // the disk's beaming already assumes the viewer sits in. The absolute value counts both
+      // poles, so the star pulses twice per turn, which is what a two-pole lighthouse does.
+      pulsar.flash = smooth(PSR_COS_BEAM, 1, Math.abs(Math.sin(pulsar.beam)))
+      pulsar.flux = flux
+      // Fade the event in and out. The plate's edge mask will not do it alone: out at r0 the
+      // mask still passes about 15%, so without this the star would wink into existence. A star
+      // that was eaten stays at nothing for the rest of the cycle — the integrator stopped at
+      // the shadow, so there is no position left to trust either.
+      pulsar.gate = eaten ? 0 : smooth(0, 0.9, local) * smooth(PSR_LIFE, PSR_LIFE - 1.4, local) * dim
+    }
+
     // The canvas's geometry, cached. Everything that needs the plate's position or size reads
     // it from here rather than from the element, because both `clientWidth` and
     // `getBoundingClientRect()` force the browser to flush pending layout — and one of the
@@ -930,6 +1182,10 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     function draw(time: number) {
       if (!gl) return
       resize()
+      // Solved here rather than in the loop, so every path that renders a frame — the loop, a
+      // resize while paused, a theme flip, the reduced-motion still — gets a pulsar that agrees
+      // with the clock that frame was drawn for.
+      updatePulsar(time)
       gl.uniform2f(uSize, width, height)
       gl.uniform1f(uTime, time)
       gl.uniform2f(uMark, mark.x, mark.y)
@@ -937,6 +1193,8 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       gl.uniform1f(uMarkTide, mark.tide)
       gl.uniform1f(uMarkAlpha, mark.alpha)
       gl.uniform1f(uMarkSpin, mark.spin)
+      gl.uniform4f(uPsr, pulsar.x, pulsar.y, pulsar.gate, pulsar.beam)
+      gl.uniform2f(uPsrLit, pulsar.flash, pulsar.flux)
       // Every probe is read every frame rather than cached, which is what lets a theme
       // flip take effect without any wiring between the toggle and this canvas.
       const ink = readColour(probe!)

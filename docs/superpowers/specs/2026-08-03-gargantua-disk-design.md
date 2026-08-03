@@ -8,10 +8,17 @@ single-ink monochrome design and one-draw-call architecture.
 
 ## Decisions (locked with user)
 
-- **Colour:** stays monochrome. The disk uses the page's single ink like
-  everything else on the plate. The Gargantua feel comes from shape, motion,
-  and light — not hue. The theme-flip trick (probe-read ink, `uShadow` mix)
-  is untouched.
+- **Colour:** ~~stays monochrome~~ **superseded 2026-08-03.** The disk uses the
+  page's single ink like everything else on the plate. The Gargantua feel comes
+  from shape, motion, and light — not hue.
+
+  > **Reversed later the same day.** The hole and the pulsar now carry their own
+  > colour — a blackbody amber-to-white-gold ramp on the disk and photon ring,
+  > light cyan on the pulsar — while every other mark on the plate stays in the
+  > page's ink. The grounds for the exception: both objects are emitting, and
+  > what they emit has a temperature. Everything else here still holds, and the
+  > theme-flip trick (probe-read ink, `uShadow` mix) is still untouched — the
+  > accents ride it too, deepening on paper the way the halos already do.
 - **Scope:** full Gargantua silhouette — including the near-side band of the
   disk crossing in front of the shadow, which the current shadow mask eats.
 
