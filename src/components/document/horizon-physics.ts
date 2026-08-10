@@ -114,16 +114,19 @@ const TIDE_K = 20
 const FREEZE = 3
 
 /**
- * The grab: what fraction of a shred's flight is spent anchored in place, reaching.
+ * The stretch: HALF of a shred's flight, spent anchored in place while gravity draws it out.
  *
- * This is the beat that makes the pull legible as a pull. Before anything travels, the hole
- * takes hold of the section and draws its near edge out toward itself — the tail stays exactly
- * where it was, the head extends, the body narrows — and only then does the whole thing go.
- * Without it, a section simply departs, and departure reads as animation rather than gravity.
+ * This is the first of the two acts every section plays — stretch, then dissolve — and it is
+ * the beat that makes the pull legible as gravity rather than animation. The tail stays
+ * exactly where it was; the head is drawn out toward the hole, slowly, as its own event, and
+ * the target is not a styling number: the head reaches for the hole's lip itself, however far
+ * away that is, stopped only by the shred's raster ceiling. Nothing is eaten during this act —
+ * the head is held just outside the ring on purpose, so the dissolve is unmistakably a second
+ * thing that happens to an already-stretched body, not a blur of both at once.
  */
-const GRAB = 0.3
-/** How far the head reaches during the grab, as a scale along the infall line. */
-const GRAB_S = 2.4
+const GRAB = 0.5
+/** Where the reach stops, in ring radii — just off the lip, so act one eats nothing. */
+const REACH_TO = 1.2
 
 /**
  * The melt: how many steps the dissolution is quantised to.
@@ -140,9 +143,16 @@ const GRAB_S = 2.4
  * on a long section that finished the entire sweep during the grab — the whole section read as
  * consumed while its tail was still anchored to the page, seven hundred pixels out.
  */
-const MELT_STEPS = 8
+/**
+ * 32, not 8 — the dissolve must read as continuous. Eight steps was budgeted for a hundred and
+ * sixty row-sized shreds and it showed at section scale: a dissolve lasting most of a second
+ * advanced in eight visible bites, and the swallow read as things stepping through the hole
+ * chunk by chunk. At fourteen section-sized shreds, thirty-two steps is ~450 small repaints
+ * across the whole run — nothing — and the mask sweep is smooth to the eye.
+ */
+const MELT_STEPS = 32
 /** How soft the eaten edge is, as a percentage of the shred's own length along the infall line. */
-const MELT_SOFT = 38
+const MELT_SOFT = 46
 
 /**
  * Distance and bearing from the hole to a point.
@@ -194,15 +204,15 @@ export function localTime(g: number, wave: number, span: number, flight: number)
  * The infall itself. `u` is the shred's own progress, 0 at rest and 1 consumed; `ringR` is
  * the photon ring's current radius in pixels, which grows as the hole eats.
  *
- * A shred's flight has two beats, and the caller must anchor `transform-origin` at the tail
- * for either of them to read:
+ * A shred's flight is two acts of equal weight, and the caller must anchor `transform-origin`
+ * at the tail for either of them to read:
  *
- *  1. **The grab** (u ∈ [0, GRAB]): nothing translates. The hole takes hold and the head is
- *     drawn out toward it — stretch ramps to GRAB_S about the pinned tail, the body narrowing
- *     by the square root — the section visibly *reaching* before it goes.
- *  2. **The pull** (u ∈ [GRAB, 1]): the tail lets go and rides the freeze profile down to the
- *     ring — fast through the empty middle distance, asymptotically slow at the lip — while
- *     the tide takes over the stretch and the melt eats the shred from the head back.
+ *  1. **The stretch** (u ∈ [0, GRAB]): nothing translates and nothing is eaten. The hole takes
+ *     hold and slowly draws the head out toward its own lip — however far away that is, capped
+ *     only by the raster ceiling — the body narrowing by the square root, the tail pinned.
+ *  2. **The dissolve** (u ∈ [GRAB, 1]): the tail lets go and rides the freeze profile down to
+ *     the ring — fast through the empty middle distance, asymptotically slow at the lip —
+ *     while the already-stretched body is consumed continuously from the head back.
  */
 export function infall(seed: ShredSeed, u: number, ringR: number): InfallFrame {
   // Both radii are floored before anything divides by them, and both floors are load-bearing
@@ -215,14 +225,20 @@ export function infall(seed: ShredSeed, u: number, ringR: number): InfallFrame {
 
   const uc = clamp(u, 0, 1)
 
-  // Beat one: the grab, eased so the reach starts gently and arrives settled.
+  // Act one: the stretch. The head reaches for the lip of the hole itself — the scale that
+  // puts the leading edge at REACH_TO ring radii, clamped by the shred's raster ceiling —
+  // eased so the reach starts gently and arrives settled. For a distant section this is the
+  // whole drama: a body drawn out across the page toward a hole screens away.
   const g = Math.min(uc / GRAB, 1)
-  const reach = 1 + (Math.min(GRAB_S, seed.sMax) - 1) * (g * g * (3 - 2 * g))
+  const reachTarget = clamp((r0 - REACH_TO * ring) / Math.max(seed.len, 1e-6), 1, seed.sMax)
+  const reach = 1 + (reachTarget - 1) * (g * g * (3 - 2 * g))
 
-  // Beat two: the pull. Its own clock eases in and out, and the TAIL rides (1−s)³ down to the
-  // ring — not to the centre. A gentle release, a fast fall, and a long asymptotic hang at the
-  // lip with radial speed reaching zero exactly at the ring: the distant observer's freeze,
-  // which is what the plate already shows in its star stream and its doomed pulsars.
+  // Act two: the dissolve. Its own clock eases in and out, and the TAIL rides (1−s)³ down to
+  // the ring — not to the centre. A gentle release, a fast fall, and a long asymptotic hang at
+  // the lip with radial speed reaching zero exactly at the ring: the distant observer's
+  // freeze, which is what the plate already shows in its star stream and its doomed pulsars.
+  // The already-stretched body streams in head first, and the melt below consumes it
+  // continuously from the moment the head crosses the ring.
   const v = clamp((uc - GRAB) / (1 - GRAB), 0, 1)
   const s = v * v * (3 - 2 * v)
   const tailR = ring + (r0 - ring) * Math.pow(1 - s, FREEZE)

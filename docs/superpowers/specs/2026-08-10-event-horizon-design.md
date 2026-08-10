@@ -80,11 +80,11 @@ element finishes exactly where it started, and so does the scroll position.
 | --- | --- |
 | 0.0 | Press. The Colophon's hairlines retract into the dot. User scroll locks and `html`'s `scroll-behavior: smooth` is suspended. All content goes `pointer-events: none` so nothing in flight can be clicked. Button disables. `horizon:duck` fires; audio ramps to 0.1 over 1.2s if it was playing. |
 | 0.0–1.4 | **The ride.** Scroll climbs to the top on an `easeOutCubic`, so the plate comes into view — and fades in for free, because its opacity is already driven by scroll position. |
-| 0.4–7.9 | **The sections, in sequence.** The hole takes the page one section at a time, in document order — masthead first, the pressed dot last. Each section is *grabbed* first (its head drawn out toward the hole while its tail stays anchored), then pulled through, eaten leading-edge first as it crosses the ring. ~1.9s of flight per section, the next grabbed as the current one is half swallowed. |
+| 0.4–8.9 | **The sections, in sequence — two acts each.** The hole takes the page one section at a time, in document order, masthead first, the pressed dot last. Act one, half of each flight: the section is *stretched* — tail anchored to the page, head slowly drawn out to the lip of the hole, nothing eaten. Act two: the tail releases and the stretched body streams in, *dissolving* continuously from the head as it crosses the ring. ~1.8s per section, two or three in the air at once — one stretching while the previous dissolves. |
 | — | The hole's radius steps up a notch per absorbed section, from `rs` 0.075 to 0.255. The sky drains to nothing on the same fraction. It got that way from the page. |
-| 8.3–11.3 | **Hold.** The hole alone in a void — no stars, no galaxies, no pulsars, because it ate those too. At 8.7s one tracked line fades in beneath it. |
-| 11.3–13.3 | **Return.** The line fades. Sections unwind outward along the paths they fell, last-eaten-first-out, faster than the fall — falling in is dread and coming back is release. The hole gives back radius, the sky comes back, and scroll rides down to where the visitor pressed. |
-| 13.7 | The hole settles to its own size. One faint ring pulse opens from it and dies. Hairlines extend. Scroll unlocks, `scroll-behavior` restores, `pointer-events` restore, audio ramps back to the level the visitor had set, button re-enables. |
+| 9.3–12.3 | **Hold.** The hole alone in a void — no stars, no galaxies, no pulsars, because it ate those too. At 9.7s one tracked line fades in beneath it. |
+| 12.3–14.3 | **Return.** The line fades. Sections unwind outward along the paths they fell, last-eaten-first-out, faster than the fall — falling in is dread and coming back is release. The hole gives back radius, the sky comes back, and scroll rides down to where the visitor pressed. |
+| 14.7 | The hole settles to its own size. One faint ring pulse opens from it and dies. Hairlines extend. Scroll unlocks, `scroll-behavior` restores, `pointer-events` restore, audio ramps back to the level the visitor had set, button re-enables. |
 
 ### Copy
 
@@ -238,11 +238,12 @@ root. On this page the walk finds ~14 shreds.
 The launch order is by RANK, not by distance ratio: the nearest section is wave 0, the
 furthest wave 1, evenly spaced whatever the actual distances are. Ratio-normalised waves
 bunched the launches and the pull read as a scatter; ranked, the hole takes the page one
-section at a time, in document order (the hole is at the top). Each flight lasts twice the
-launch spacing — `flight = 2/(n+1)` of the swallow window, derived from the count — so the
-next section is grabbed as the current one is about half swallowed: a continuous stream, never
-the whole page in the air. With ~14 sections over the 7.5s swallow window that is ~1.9s of
-flight per section.
+section at a time, in document order (the hole is at the top). Each flight lasts roughly 3×
+the launch spacing — `flight = min(0.45, 3.2/(n+1))` of the swallow window, derived from the
+count — so two or three sections are in the air at once: one being slowly stretched while the
+previous one dissolves. With ~14 sections over the 8.5s swallow window that is ~1.8s of flight
+per section, half of it pure stretching. Tighter sequencing was tried; each section got barely
+a second and the stretch went by too fast to register as an act of its own.
 
 There is still no `data-shred` attribute anywhere in the markup, and the set still adapts to
 whichever disclosures the visitor happens to have open.
@@ -253,9 +254,11 @@ The model is anchored at each shred's TAIL — the point of it furthest from the
 the tail's distance, `transform-origin` is set to the tail, and a flight has two beats:
 
 ```
-GRAB (u ∈ [0, 0.3])   nothing translates. The head is drawn out toward the hole —
-                      stretch ramps 1 → min(2.4, sMax) about the pinned tail.
-PULL (u ∈ [0.3, 1])   the tail lets go:
+STRETCH (u ∈ [0, 0.5])  half the flight. Nothing translates and nothing is eaten:
+                        the head is drawn out toward the hole's own lip — stretch
+                        ramps 1 → clamp((r0 − 1.2rq)/len, 1, sMax) about the
+                        pinned tail, held just outside the ring.
+DISSOLVE (u ∈ [0.5, 1]) the tail lets go:
   v        = the pull's own smoothstep clock
   tailR(v) = rq + (r0 − rq)·(1 − v)³          plunge, then FREEZE at the ring
   θ        = θ0 + WIND·((r0/tailR)^1.5 − 1)   Keplerian r^−3/2, capped
@@ -264,24 +267,26 @@ PULL (u ∈ [0.3, 1])   the tail lets go:
   across   = 1 / √stretch
   headR    = tailR − stretch·len              where the drawn head actually is
   melt     = (rq − headR) / (tailR − headR)   the share of the drawn length inside
-                                              the ring — floored to 8 steps, exactly
+                                              the ring — floored to 32 steps, exactly
                                               1 as the tail lands
   opacity  = (1 − rq/tailR)^(1/4)             rq = the photon ring, 2.598·rs
 ```
 
 Composed as `translate(…) rotate(θ) scale(stretch, across) rotate(−θ)` about the tail origin,
-plus the mask. `sMax` is set per shred from its own projected length (`≈2.2 viewport-heights ÷
-len`, clamped to [1.6, 14]) so every section's reach comes out at roughly the same absolute
-size — a caption may stretch 14×, a whole section barely 2×, and both draw a filament about
-two screens long.
+plus the mask. `sMax` is a raster guard, not a look: the reach target is the hole's lip
+itself, computed from the actual distance, and `sMax` (≈3 viewport-heights ÷ len, clamped to
+[1.6, 18]) only stops a drawn filament exceeding ~3 screens of texture.
 
-**The grab is the beat that makes the pull legible as a pull.** Before anything travels, the
-hole takes hold of the section and draws its near edge out toward itself — the tail stays
-exactly where it was, the head extends, the body narrows — and only then does the whole thing
-go. Without it, a section simply departs, and departure reads as animation rather than
-gravity. This, with the sequential waves above, is the revision that answered "it should pull
-the sections slowly, by stretching them": the earlier model moved forty row-sized rectangles
-at once and stretched them only at the last moment.
+**Two acts of equal weight — stretch, then dissolve — and they do not overlap.** This is the
+revision that answered "the black hole stretches the thing, okay, then slowly dissolves it":
+earlier versions blurred the two into one motion, and the swallow read as things stepping into
+the hole rather than being drawn out and consumed. Now half of every section's flight is spent
+anchored — tail pinned to the page, head slowly drawn out to the lip of the hole and held just
+outside the ring, nothing eaten — and only then does the tail release and the stretched body
+stream in, dissolving continuously from the head. The melt's 8-step quantisation was the other
+half of the "stepping" read: budgeted for 160 row-shreds, at section scale each bite was
+plainly visible. At 14 shreds, 32 steps costs ~450 small repaints per run and reads as
+continuous.
 
 **The melt fraction is literal**: the share of the shred's drawn length that has crossed
 inside the photon ring, eaten leading-edge first, zero until something has actually crossed
@@ -332,16 +337,17 @@ inverted.
 
 ### Transform and opacity, plus one stepped paint
 
-No `filter: blur()`, no `box-shadow`, no `background` animation. A hundred and sixty nodes
-moving on the compositor is free; a hundred and sixty blurred nodes is a slideshow on a laptop.
-Softness comes from the plate's own analytic glow, which is being drawn either way.
+No `filter: blur()`, no `box-shadow`, no `background` animation. Fourteen nodes moving on the
+compositor is free; fourteen blurred section-sized nodes is a slideshow on a laptop. Softness
+comes from the plate's own analytic glow, which is being drawn either way.
 
 The mask is the single exception, and it is the one thing here that costs paint — so it is
-**quantised to 8 steps** rather than written per frame. A shred repaints eight times across its
-whole crossing instead of sixty times a second, which is why `melt` is rounded in the physics
-module rather than at the call site: the quantisation is part of the model, not an optimisation
-bolted onto it. Total budget for the run is 160 × 8 ≈ 1280 repaints of small elements spread
-over ten seconds, against 160 × 600 if it were continuous.
+**quantised to 32 steps** rather than written per frame, in the physics module rather than at
+the call site: the quantisation is part of the model, not an optimisation bolted onto it.
+Thirty-two, not eight: eight was budgeted for 160 row-sized shreds, and at section scale a
+dissolve lasting most of a second advanced in eight visible bites — the swallow read as things
+stepping through the hole. At 14 section-sized shreds, 32 steps is ~450 repaints across the
+whole run against ~12,000 if it were continuous, and the sweep is smooth to the eye.
 
 Two details that would otherwise bite:
 
@@ -455,10 +461,10 @@ should; there is no overlay to sit behind, so nothing needs a z-index it did not
      suspension is the thing being tested;
    - the swallow runs at the stated timings, the drain sweeps down the document, and the hole
      visibly swells while the sky drains;
-   - **the melt reads as melting**: shreds hold their shape until they are close, then smear into
-     filaments and are eaten leading-edge first rather than fading as whole rectangles. The
-     8-step quantisation must not read as a visible flicker — if it does, the step count goes up
-     and the repaint budget with it;
+   - **the two acts read as two acts**: each section is first visibly stretched — tail pinned,
+     head slowly drawn out to the hole's lip, nothing eaten — and then dissolves continuously
+     from the head as it streams in. No stepping: the 32-step mask sweep must read as smooth,
+     and if it does not, the step count goes up and the repaint budget with it;
    - the plate and the audio control are *not* eaten; everything else is, including the mode
      toggle;
    - the hold shows the hole alone in a void, and the line appears and fades;

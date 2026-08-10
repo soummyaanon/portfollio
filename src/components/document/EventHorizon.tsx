@@ -54,20 +54,21 @@ import {
  */
 const T_RIDE = 1.4 // scroll climbs to the top
 const T_ABSORB_FROM = 0.4
-const T_ABSORB_TO = 7.9
-const T_HOLD_FROM = 8.3
-const T_HOLD_TO = 11.3
-const T_EJECT_TO = 13.3
-const T_END = 13.7 // the ring, and the hole settling back to its own size
+const T_ABSORB_TO = 8.9
+const T_HOLD_FROM = 9.3
+const T_HOLD_TO = 12.3
+const T_EJECT_TO = 14.3
+const T_END = 14.7 // the ring, and the hole settling back to its own size
 
 /**
  * How long each section's flight is, as a fraction of the swallow window — derived from the
- * count, not fixed, so the sequence stays sequential whatever the walk found. Each flight is
- * twice the launch spacing: the next section is grabbed as the current one is about half
- * swallowed, which keeps a continuous stream without ever having the whole page in the air.
+ * count, not fixed. Each flight is roughly 3× the launch spacing, so two or three sections
+ * are in the air at once: one being slowly stretched while the previous one dissolves. Tighter
+ * sequencing was tried and each section got barely a second — the stretch, which is half the
+ * flight and the whole point, went by too fast to register as an act of its own.
  */
 function flightOf(count: number): number {
-  return Math.min(0.4, 2 / (Math.max(count, 1) + 1))
+  return Math.min(0.45, 3.2 / (Math.max(count, 1) + 1))
 }
 /** The return comes back faster — release, not dread — so its flights overlap more. */
 function backFlightOf(count: number): number {
@@ -192,10 +193,11 @@ function seedAt(
   const { r0: centreR, a0 } = seedOf(cx, cy, holeX, holeY)
   // The element's extent along the infall line: the projection of its box onto the bearing.
   const len = Math.abs(Math.cos(a0)) * w + Math.abs(Math.sin(a0)) * h
-  // Stretch ceiling from the element's own length, so every section's reach comes out at
-  // roughly the same absolute size — a caption may stretch 14×, a whole section barely 2×,
-  // and both draw a filament about two screens long instead of one invisible and one absurd.
-  const sMax = clampNum(sMaxPx / Math.max(len, 24), 1.6, 14)
+  // The raster ceiling, from the element's own length. This is a GPU guard, not a look: the
+  // reach target itself is "the hole's lip", computed in the physics from the actual distance,
+  // and this only stops a drawn filament exceeding ~3 screens of texture. The floor keeps even
+  // an adjacent element visibly stretchable.
+  const sMax = clampNum(sMaxPx / Math.max(len, 24), 1.6, 18)
   return {
     seed: { r0: centreR + len / 2, a0, len, sMax },
     origin: `${w / 2 + (Math.cos(a0) * w) / 2}px ${h / 2 + (Math.sin(a0) * h) / 2}px`,
@@ -379,8 +381,8 @@ export function EventHorizonProvider({
     document.documentElement.style.scrollBehavior = 'auto'
 
     const scrollFrom = window.scrollY
-    // Every section's reach comes out at about this absolute size, whatever its own length.
-    const sMaxPx = 2.2 * window.innerHeight
+    // A drawn filament may span up to about three screens of texture — the GPU guard on reach.
+    const sMaxPx = 3.0 * window.innerHeight
 
     // One layout read for the whole run: the elements, then their boxes, then never measure
     // again. Everything after this is writes. Section-grained: a shred is a whole section
