@@ -47,21 +47,32 @@ import {
  *    page byte for byte, including the scroll position and `html`'s own scroll behaviour.
  */
 
-/** The beats, in seconds from the press. */
+/**
+ * The beats, in seconds from the press. Slower than they were: the swallow is sequential now —
+ * the hole takes the page a section at a time, and each section needs its beat of being
+ * grabbed, stretched, and drawn through to read as being *taken* rather than as leaving.
+ */
 const T_RIDE = 1.4 // scroll climbs to the top
 const T_ABSORB_FROM = 0.4
-const T_ABSORB_TO = 4.4
-const T_HOLD_FROM = 4.8
-const T_HOLD_TO = 7.8
-const T_EJECT_TO = 9.8
-const T_END = 10.2 // the ring, and the hole settling back to its own size
+const T_ABSORB_TO = 7.9
+const T_HOLD_FROM = 8.3
+const T_HOLD_TO = 11.3
+const T_EJECT_TO = 13.3
+const T_END = 13.7 // the ring, and the hole settling back to its own size
 
-/** How much of the swallow window is spent launching shreds, and how long each one flies. */
-const WAVE_SPAN = 0.45
-const WAVE_FLIGHT = 0.55
-/** The return: a tighter stagger and a longer flight, so it comes back faster and lands softly. */
-const BACK_SPAN = 0.4
-const BACK_FLIGHT = 0.6
+/**
+ * How long each section's flight is, as a fraction of the swallow window — derived from the
+ * count, not fixed, so the sequence stays sequential whatever the walk found. Each flight is
+ * twice the launch spacing: the next section is grabbed as the current one is about half
+ * swallowed, which keeps a continuous stream without ever having the whole page in the air.
+ */
+function flightOf(count: number): number {
+  return Math.min(0.4, 2 / (Math.max(count, 1) + 1))
+}
+/** The return comes back faster — release, not dread — so its flights overlap more. */
+function backFlightOf(count: number): number {
+  return Math.min(0.55, 3 / (Math.max(count, 1) + 1))
+}
 
 /** Where the hold line sits, as a fraction of viewport height below the hole. */
 const LINE_DROP = 0.22
@@ -140,14 +151,17 @@ interface Shred {
    * and is recomputed against the hole's live viewport position every frame instead.
    */
   readonly fixed: boolean
-  /** Viewport-space centre at the moment of the press — fixed elements only. */
+  /** Viewport-space box at the moment of the press — fixed elements only. */
   readonly vx: number
   readonly vy: number
+  readonly vw: number
+  readonly vh: number
   readonly transform: string
   readonly opacity: string
   readonly willChange: string
   readonly pointerEvents: string
   readonly maskImage: string
+  readonly transformOrigin: string
   /**
    * The transform the element already wears from its stylesheet, as a resolved matrix — the
    * dock centres itself with translateX(-50%), and an inline transform *replaces* class
@@ -156,6 +170,40 @@ interface Shred {
    * shred.
    */
   readonly base: string
+}
+
+/**
+ * A shred's seed and its anchor, from its box and the hole.
+ *
+ * The tail — the point of the element furthest from the hole along the line between them — is
+ * both the seed's radius (`r0` is the tail's distance, not the centre's) and the element's
+ * `transform-origin`, because the whole grab-and-pull model is anchored there: stretch about
+ * the tail is the head reaching toward the hole while the rest of the section stays put.
+ */
+function seedAt(
+  cx: number,
+  cy: number,
+  w: number,
+  h: number,
+  holeX: number,
+  holeY: number,
+  sMaxPx: number,
+): { seed: Omit<ShredSeed, 'wave'>; origin: string } {
+  const { r0: centreR, a0 } = seedOf(cx, cy, holeX, holeY)
+  // The element's extent along the infall line: the projection of its box onto the bearing.
+  const len = Math.abs(Math.cos(a0)) * w + Math.abs(Math.sin(a0)) * h
+  // Stretch ceiling from the element's own length, so every section's reach comes out at
+  // roughly the same absolute size — a caption may stretch 14×, a whole section barely 2×,
+  // and both draw a filament about two screens long instead of one invisible and one absurd.
+  const sMax = clampNum(sMaxPx / Math.max(len, 24), 1.6, 14)
+  return {
+    seed: { r0: centreR + len / 2, a0, len, sMax },
+    origin: `${w / 2 + (Math.cos(a0) * w) / 2}px ${h / 2 + (Math.sin(a0) * h) / 2}px`,
+  }
+}
+
+function clampNum(v: number, lo: number, hi: number): number {
+  return v < lo ? lo : v > hi ? hi : v
 }
 
 export function EventHorizonProvider({
@@ -210,6 +258,7 @@ export function EventHorizonProvider({
       shred.el.style.opacity = shred.opacity
       shred.el.style.willChange = shred.willChange
       shred.el.style.pointerEvents = shred.pointerEvents
+      shred.el.style.transformOrigin = shred.transformOrigin
       shred.el.style.transition = ''
       setMask(shred.el, shred.maskImage)
     }
@@ -266,24 +315,24 @@ export function EventHorizonProvider({
       el: HTMLElement,
       seed: ShredSeed,
       fixed: boolean,
-      vx: number,
-      vy: number,
+      box: { vx: number; vy: number; vw: number; vh: number },
     ): Shred => ({
       el,
       seed,
       fixed,
-      vx,
-      vy,
+      ...box,
       transform: el.style.transform,
       opacity: el.style.opacity,
       willChange: el.style.willChange,
       pointerEvents: el.style.pointerEvents,
       maskImage: el.style.maskImage,
+      transformOrigin: el.style.transformOrigin,
       base: (() => {
         const t = getComputedStyle(el).transform
         return t && t !== 'none' ? t : ''
       })(),
     })
+    const NO_BOX = { vx: 0, vy: 0, vw: 0, vh: 0 }
 
     // Reduced motion: no travel, no spin, no scrolling, no scroll lock. The hole swells where it
     // stands, the page crossfades out and back, and the joke survives without a vestibular
@@ -293,7 +342,7 @@ export function EventHorizonProvider({
       drive.rs = RS_FED
       drive.field = FIELD_FED
       shredsRef.current = outside.map((el) =>
-        remember(el, { r0: 1, a0: 0, wave: 0 }, true, 0, 0),
+        remember(el, { r0: 1, a0: 0, wave: 0, len: 0, sMax: 1 }, true, NO_BOX),
       )
       const fading = [root, ...outside]
       for (const el of fading) {
@@ -330,10 +379,13 @@ export function EventHorizonProvider({
     document.documentElement.style.scrollBehavior = 'auto'
 
     const scrollFrom = window.scrollY
+    // Every section's reach comes out at about this absolute size, whatever its own length.
+    const sMaxPx = 2.2 * window.innerHeight
 
     // One layout read for the whole run: the elements, then their boxes, then never measure
-    // again. Everything after this is writes.
-    const flow = collectShreds(root, HOLE)
+    // again. Everything after this is writes. Section-grained: a shred is a whole section
+    // unless it is taller than most of a screen.
+    const flow = collectShreds(root, HOLE, window.innerHeight * 0.85)
     const holeRect = hole.getBoundingClientRect()
     // Document space, so the arithmetic is untouched by the page scrolling under it. The plate
     // lives near the top of the document, so this is also very nearly its on-screen position once
@@ -341,15 +393,20 @@ export function EventHorizonProvider({
     const holeDocX = holeRect.left + holeRect.width / 2
     const holeDocY = holeRect.top + scrollFrom + holeRect.height / 2
 
+    const origins = new Map<HTMLElement, string>()
     const flowShreds = flow.map((el) => {
       const rect = el.getBoundingClientRect()
-      const seed = seedOf(
+      const { seed, origin } = seedAt(
         rect.left + rect.width / 2,
         rect.top + scrollFrom + rect.height / 2,
+        rect.width,
+        rect.height,
         holeDocX,
         holeDocY,
+        sMaxPx,
       )
-      return remember(el, { ...seed, wave: 0 }, false, 0, 0)
+      origins.set(el, origin)
+      return remember(el, { ...seed, wave: 0 }, false, NO_BOX)
     })
     // Fixed chrome is seeded from where it will sit relative to the hole once the climb is done,
     // which is what puts it in a sensible place in the wave order. Its actual per-frame geometry
@@ -357,9 +414,15 @@ export function EventHorizonProvider({
     // rides up even though the element itself never moves.
     const fixedShreds = outside.map((el) => {
       const rect = el.getBoundingClientRect()
-      const vx = rect.left + rect.width / 2
-      const vy = rect.top + rect.height / 2
-      return remember(el, { ...seedOf(vx, vy, holeDocX, holeDocY), wave: 0 }, true, vx, vy)
+      const box = {
+        vx: rect.left + rect.width / 2,
+        vy: rect.top + rect.height / 2,
+        vw: rect.width,
+        vh: rect.height,
+      }
+      const { seed, origin } = seedAt(box.vx, box.vy, box.vw, box.vh, holeDocX, holeDocY, sMaxPx)
+      origins.set(el, origin)
+      return remember(el, { ...seed, wave: 0 }, true, box)
     })
 
     // One wave ordering across both frames, so the fixed chrome takes its turn by distance like
@@ -370,11 +433,20 @@ export function EventHorizonProvider({
 
     for (const shred of shredsRef.current) {
       shred.el.style.willChange = 'transform, opacity'
+      // The anchor for the whole grab-and-pull model: stretch about the tail is the head
+      // reaching toward the hole while the rest of the section stays put.
+      shred.el.style.transformOrigin = origins.get(shred.el) ?? ''
       // Per element as well as on the root: the fixed chrome is not inside the root, so the
       // root's own pointer-events would not cover it, and a mode toggle that is halfway into a
       // black hole must not still be clickable.
       shred.el.style.pointerEvents = 'none'
     }
+
+    // The sequencing, from the count the walk actually found.
+    const flight = flightOf(all.length)
+    const span = 1 - flight
+    const backFlight = backFlightOf(all.length)
+    const backSpan = 1 - backFlight
 
     const shreds = shredsRef.current
     const startedAt = performance.now()
@@ -406,8 +478,8 @@ export function EventHorizonProvider({
         const wave = shreds[i]!.seed.wave
         const u =
           giveBack > 0
-            ? 1 - easeOutCubic(localTime(giveBack, 1 - wave, BACK_SPAN, BACK_FLIGHT))
-            : localTime(swallow, wave, WAVE_SPAN, WAVE_FLIGHT)
+            ? 1 - easeOutCubic(localTime(giveBack, 1 - wave, backSpan, backFlight))
+            : localTime(swallow, wave, span, flight)
         us[i] = u
         if (u >= 0.999) fed++
       }
@@ -428,10 +500,19 @@ export function EventHorizonProvider({
         if (!shred.el.isConnected) continue
         // A fixed element is pinned to the viewport, so its distance to the hole changes as the
         // page rides up even though nothing about the element moved. Re-seeded per frame against
-        // where the hole actually is on screen right now.
+        // where the hole actually is on screen right now — the full seed, because the bearing
+        // moves and the projected length and stretch ceiling move with it.
         const seed = shred.fixed
           ? {
-              ...seedOf(shred.vx, shred.vy, holeDocX, holeDocY - window.scrollY),
+              ...seedAt(
+                shred.vx,
+                shred.vy,
+                shred.vw,
+                shred.vh,
+                holeDocX,
+                holeDocY - window.scrollY,
+                sMaxPx,
+              ).seed,
               wave: shred.seed.wave,
             }
           : shred.seed

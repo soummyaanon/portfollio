@@ -24,15 +24,34 @@
 
 /** Where a shred started, in polar coordinates about the hole. Viewport pixels, y down. */
 export interface ShredSeed {
-  /** Distance from the hole's centre at the moment of the press. */
+  /**
+   * The TAIL's distance from the hole at the moment of the press — the far edge, not the
+   * centre. The whole model is anchored there: the tail is what stays put while the head is
+   * stretched toward the hole, and the tail is what the translate moves when the pull begins.
+   */
   readonly r0: number
   /** Bearing from the hole's centre at the moment of the press, radians. */
   readonly a0: number
-  /** Launch order, 0 at the nearest shred and 1 at the furthest. */
+  /** Launch order, 0 for the first section taken and 1 for the last. */
   readonly wave: number
+  /** The element's extent along the infall line, px — how much of it there is to stretch. */
+  readonly len: number
+  /**
+   * This shred's own stretch ceiling. A section is hundreds of pixels long where the cursor
+   * glyph was 0.095 plate units, so one global cap would either do nothing to a paragraph or
+   * raster a five-screen filament for a section: the caller sets it per shred from the
+   * element's length, so every section's reach comes out at roughly the same absolute size.
+   */
+  readonly sMax: number
 }
 
-/** One shred's state on one frame. Offsets are deltas from where the element already sits. */
+/**
+ * One shred's state on one frame. Offsets are deltas from where the element already sits, and
+ * the transform they describe is taken about the element's TAIL — the caller sets
+ * `transform-origin` to the point of the element furthest from the hole, which is what makes a
+ * growing stretch read as the head reaching toward the hole while the tail stays put, rather
+ * than the element inflating in place.
+ */
 export interface InfallFrame {
   readonly dx: number
   readonly dy: number
@@ -75,13 +94,6 @@ const WIND_CAP = 6.0
  */
 const TIDE_K = 20
 /**
- * The ceiling. The plate allows its cursor 40×, but a cursor is 0.095 plate units long and a
- * paragraph is 600 pixels wide — the same multiple on a shred is a filament wider than any
- * texture worth rastering. 16× is violent and stays inside sane layer sizes; by the time the
- * law would ask for more, the shred is through the ring and has no light left anyway.
- */
-const TIDE_CAP = 16
-/**
  * The freeze: how hard the observed infall flattens as a shred approaches the ring.
  *
  * The first profile here was the cursor's own accelerating plunge, u^2.2 — and it was the wrong
@@ -102,15 +114,32 @@ const TIDE_CAP = 16
 const FREEZE = 3
 
 /**
- * The melt: where dissolution starts, in ring radii, and how many steps it is quantised to.
+ * The grab: what fraction of a shred's flight is spent anchored in place, reaching.
+ *
+ * This is the beat that makes the pull legible as a pull. Before anything travels, the hole
+ * takes hold of the section and draws its near edge out toward itself — the tail stays exactly
+ * where it was, the head extends, the body narrows — and only then does the whole thing go.
+ * Without it, a section simply departs, and departure reads as animation rather than gravity.
+ */
+const GRAB = 0.3
+/** How far the head reaches during the grab, as a scale along the infall line. */
+const GRAB_S = 2.4
+
+/**
+ * The melt: how many steps the dissolution is quantised to.
  *
  * A shred does not fade out as a whole — it is *eaten*, leading edge first, so what is left is
  * the tail that has not gone through yet. That is the difference between an element vanishing
  * and an element being swallowed, and it is the only part of this effect that costs paint, which
  * is why it is stepped: eight repaints across a shred's whole crossing rather than sixty a
  * second.
+ *
+ * The eaten fraction is literal: the share of the shred's drawn length that has crossed inside
+ * the photon ring. Nothing is eaten until something has actually crossed. An earlier version
+ * keyed the melt on how far the head had swept through a fixed neighbourhood of the hole, and
+ * on a long section that finished the entire sweep during the grab — the whole section read as
+ * consumed while its tail was still anchored to the page, seven hundred pixels out.
  */
-const MELT_FROM = 2.4
 const MELT_STEPS = 8
 /** How soft the eaten edge is, as a percentage of the shred's own length along the infall line. */
 const MELT_SOFT = 38
@@ -136,16 +165,20 @@ export function seedOf(
 }
 
 /**
- * Launch order from distance: nearest first, furthest last, normalised so the waves always
- * span the full window whatever the viewport happens to be.
+ * Launch order by RANK, not by distance ratio: the nearest section is wave 0, the furthest is
+ * wave 1, and everything between is evenly spaced whatever the actual distances are.
  *
- * Equal distances get equal waves, so a row of things at the same radius goes together —
- * which is what makes the drain read as working outward rather than as eighty independent
- * departures.
+ * This is what makes the swallow sequential. Normalising by distance bunched the launches —
+ * everything in the top half of the document left within the first half of the window and the
+ * pull read as a scatter. Ranked, the hole takes the page one section at a time, in order,
+ * however the sections happen to be spaced. Equal distances share a rank, so a pair of columns
+ * side by side still goes together.
  */
 export function wavesOf(distances: readonly number[]): number[] {
-  const far = Math.max(...distances, 1)
-  return distances.map((d) => Math.min(d / far, 1))
+  const sorted = [...new Set(distances)].sort((a, b) => a - b)
+  if (sorted.length <= 1) return distances.map(() => 0)
+  const rank = new Map(sorted.map((d, i) => [d, i / (sorted.length - 1)]))
+  return distances.map((d) => rank.get(d)!)
 }
 
 /**
@@ -160,63 +193,79 @@ export function localTime(g: number, wave: number, span: number, flight: number)
 /**
  * The infall itself. `u` is the shred's own progress, 0 at rest and 1 consumed; `ringR` is
  * the photon ring's current radius in pixels, which grows as the hole eats.
+ *
+ * A shred's flight has two beats, and the caller must anchor `transform-origin` at the tail
+ * for either of them to read:
+ *
+ *  1. **The grab** (u ∈ [0, GRAB]): nothing translates. The hole takes hold and the head is
+ *     drawn out toward it — stretch ramps to GRAB_S about the pinned tail, the body narrowing
+ *     by the square root — the section visibly *reaching* before it goes.
+ *  2. **The pull** (u ∈ [GRAB, 1]): the tail lets go and rides the freeze profile down to the
+ *     ring — fast through the empty middle distance, asymptotically slow at the lip — while
+ *     the tide takes over the stretch and the melt eats the shred from the head back.
  */
 export function infall(seed: ShredSeed, u: number, ringR: number): InfallFrame {
   // Both radii are floored before anything divides by them, and both floors are load-bearing
-  // rather than defensive habit.
-  //
-  // A shred can genuinely start with r0 = 0: the dot that is pressed is the seed the hole grows
-  // out of, and that dot is itself on screen, so the element nearest the hole is sitting exactly
-  // on it. Unfloored, q is 0/0, theta is NaN, and the browser is handed
-  // `translate(NaNpx, NaNpx)` — which it drops, leaving one element standing untouched in the
-  // middle of a page that is being eaten. Floored, that shred has a defined bearing, stays where
-  // it is, stretches, and goes out, which is what a thing sitting on a hole should do.
-  const r0 = Math.max(seed.r0, 1e-6)
+  // rather than defensive habit: a shred genuinely can start with its tail at distance 0 (the
+  // pressed dot is on the page too), and unfloored that is 0/0 through the wind term and
+  // `translate(NaNpx, NaNpx)` in the browser — which drops the property, leaving one element
+  // standing untouched in the middle of a page that is being eaten.
+  const r0 = Math.max(seed.r0, Math.max(ringR, 1e-6))
   const ring = Math.max(ringR, 1e-6)
 
-  // The flight's own clock eases in and out (smoothstep), and the radius rides (1−s)³ down to
-  // the ring — not to the centre. Together: a gentle launch, a fast fall through the empty
-  // middle distance, and a long asymptotic hang across the melt zone, radial speed reaching
-  // zero exactly at the ring. The freeze note above is the reason this shape is load-bearing.
   const uc = clamp(u, 0, 1)
-  const s = uc * uc * (3 - 2 * uc)
-  const r = ring + (r0 - ring) * Math.pow(1 - s, FREEZE)
 
-  // Keplerian: the angle swept goes as the integral of r^(−3/2), so the wind is nothing out
-  // at the start and runs away at the end. Floored at six percent of the starting radius —
-  // below that the shred is already invisible and the term only costs precision.
-  const q = r0 / Math.max(r, r0 * 0.06)
+  // Beat one: the grab, eased so the reach starts gently and arrives settled.
+  const g = Math.min(uc / GRAB, 1)
+  const reach = 1 + (Math.min(GRAB_S, seed.sMax) - 1) * (g * g * (3 - 2 * g))
+
+  // Beat two: the pull. Its own clock eases in and out, and the TAIL rides (1−s)³ down to the
+  // ring — not to the centre. A gentle release, a fast fall, and a long asymptotic hang at the
+  // lip with radial speed reaching zero exactly at the ring: the distant observer's freeze,
+  // which is what the plate already shows in its star stream and its doomed pulsars.
+  const v = clamp((uc - GRAB) / (1 - GRAB), 0, 1)
+  const s = v * v * (3 - 2 * v)
+  const tailR = ring + (r0 - ring) * Math.pow(1 - s, FREEZE)
+
+  // Keplerian wind, on the tail. Zero through the whole grab (tailR = r0 there), so nothing
+  // swirls until it is actually travelling.
+  const q = r0 / Math.max(tailR, r0 * 0.06)
   const theta = seed.a0 + Math.min(WIND * (Math.pow(q, 1.5) - 1), WIND_CAP)
 
-  // Spaghettification, on the cube law and measured against the hole's own size rather than
-  // against how far the shred has come. Across is the square root of along, so a shred gets
-  // longer and thinner instead of simply larger — the rule the plate states for its own cursor.
-  const tide = ring / Math.max(r, ring * 0.42)
-  const stretch = Math.min(1 + TIDE_K * tide * tide * tide, TIDE_CAP)
+  // Spaghettification, on the cube law, keyed on the tail and capped by the shred's own
+  // ceiling. The grab hands over to the tide smoothly because max() takes whichever is larger:
+  // far out the reach wins, close in the tide runs past it.
+  const tide = ring / Math.max(tailR, ring * 0.42)
+  const stretch = Math.min(Math.max(reach, 1 + TIDE_K * tide * tide * tide), seed.sMax)
   const across = 1 / Math.sqrt(stretch)
 
-  // The melt. Nothing until the shred is inside a couple of ring radii, then the leading edge
-  // starts going through and the shred is eaten from the front. Quantised so that acting on it
-  // costs eight repaints over the whole crossing rather than one per frame.
-  //
-  // Floored, not rounded — and against the freeze above, the difference is a third of the show.
-  // Rounding promoted the last step early: melt hit 1 while the shred still hung at ~1.09 ring
-  // radii, so the whole tail end of the hang played out fully eaten and invisible. Floored, the
-  // final bite lands only at the ring itself (the epsilon absorbs float dust in raw at r = ring,
-  // where the arithmetic gives exactly 1), and the last eighth of the shred survives the hang as
-  // a dimming tail — the alpha below runs to zero on the same radius, so nothing ever pops off.
-  const raw = (MELT_FROM * ring - r) / Math.max(MELT_FROM * ring - ring, 1e-6)
-  const melt = Math.min(Math.floor(clamp(raw, 0, 1) * MELT_STEPS + 1e-9) / MELT_STEPS, 1)
+  // Where the stretched head actually is: the tail's distance minus the shred's whole drawn
+  // length. With the tail anchored, the head crosses the ring long before the rest of it.
+  const headR = Math.max(tailR - stretch * seed.len, 0)
 
-  // The overall fade is the same factor as every other thing this hole has taken, and it is
-  // deliberately the *slower* of the two now: the melt does the work of making a shred vanish,
-  // and this only makes sure nothing is ever left drawn inside the shadow. Square-rooted once
-  // more so it hangs on while the melt eats, rather than dimming the tail out from under it.
-  const alpha = Math.sqrt(Math.sqrt(Math.max(1 - ring / Math.max(r, ring), 0)))
+  // The melt: the share of the drawn length that is inside the ring, floored to steps
+  // (rounding promoted the last bite early — a third of the hang played out already eaten).
+  // Zero until the head has genuinely crossed; exactly one when the tail arrives at the ring,
+  // which is also the radius where the alpha below reaches zero — both endings land on the
+  // same frame. Monotone by construction: the numerator only grows and the drawn length only
+  // grows, and the one case that shrinks the denominator (the tide capping out while the tail
+  // still falls) shrinks it toward the numerator.
+  // Gated to zero before launch as well: an element at rest is at rest, even if the hole has
+  // grown far enough that its near edge technically pokes inside the ring.
+  const drawn = Math.max(tailR - headR, 1e-6)
+  const raw = uc <= 0 || headR >= ring ? 0 : clamp((ring - headR) / drawn, 0, 1)
+  const melt = Math.min(Math.floor(raw * MELT_STEPS + 1e-9) / MELT_STEPS, 1)
+
+  // The overall fade is the same factor as every other thing this hole has taken, keyed on the
+  // tail — the last part of the shred left — and deliberately the slower of the two: the melt
+  // does the work of making a shred vanish, and this only makes sure nothing is ever left drawn
+  // inside the shadow. It reaches zero exactly as the tail reaches the ring, which is also the
+  // radius where the tail melt term completes: both endings land on the same frame.
+  const alpha = Math.sqrt(Math.sqrt(Math.max(1 - ring / Math.max(tailR, ring), 0)))
 
   return {
-    dx: Math.cos(theta) * r - Math.cos(seed.a0) * r0,
-    dy: Math.sin(theta) * r - Math.sin(seed.a0) * r0,
+    dx: Math.cos(theta) * tailR - Math.cos(seed.a0) * r0,
+    dy: Math.sin(theta) * tailR - Math.sin(seed.a0) * r0,
     theta,
     stretch,
     across,
@@ -280,32 +329,23 @@ export function progress(t: number, from: number, to: number): number {
   return clamp((t - from) / (to - from), 0, 1)
 }
 
-/**
- * How coarse a shred may be before the walk goes inside it, and how many shreds there may be.
- *
- * The whole document is in scope now rather than one screenful, because the page rides up into
- * the hole as it is eaten — anything left untransformed would scroll into view intact while its
- * neighbours were flying away. So the cap is larger and the leaf threshold does more of the
- * work: distant sections come out as single coarse shreds, near ones as individual rows.
- *
- * On overflow the walk stops recursing rather than dropping what it has not reached, so a long
- * document still swallows completely — just in bigger pieces toward the end.
- */
-const LEAF_HEIGHT = 120
-const MAX_SHREDS = 160
+/** A backstop, far above what a section-grained walk of this page produces. */
+const MAX_SHREDS = 64
 
 /**
- * The elements the hole will take: the whole document, at the granularity of a row.
+ * The elements the hole will take: the whole document, at the granularity of a SECTION.
  *
- * Descend from the root; an element is a shred when it has no element children of its own or
- * when it is short enough to read as one thing, and otherwise the walk goes inside it. This is
- * why there is no `data-shred` attribute anywhere in the markup — the set falls out of the
- * layout, so it adapts on its own to whichever disclosures the visitor left open.
+ * The pull is sequential — the hole takes the page one piece at a time — so a piece has to be
+ * big enough to be worth a beat of the sequence. Descend from the root; an element is a shred
+ * when it has no element children of its own or when it fits within `leafHeight` (a viewport's
+ * worth), and otherwise the walk goes inside it. Whole sections come out as single shreds;
+ * only something taller than a screen — the projects catalogue — is split into its natural
+ * children. There is still no `data-shred` attribute anywhere: the set falls out of the layout.
  *
  * `skip` is the attractor's own subtree: the hole cannot eat itself, and the audio control rides
  * along inside the plate's box because the music has to keep playing while the page goes.
  */
-export function collectShreds(root: Element, skip: string): HTMLElement[] {
+export function collectShreds(root: Element, skip: string, leafHeight: number): HTMLElement[] {
   const found: HTMLElement[] = []
   visit(root)
   return found
@@ -331,7 +371,7 @@ export function collectShreds(root: Element, skip: string): HTMLElement[] {
       const rect = child.getBoundingClientRect()
       if (rect.width === 0 || rect.height === 0) continue
 
-      if (child.children.length === 0 || rect.height <= LEAF_HEIGHT) found.push(child)
+      if (child.children.length === 0 || rect.height <= leafHeight) found.push(child)
       else visit(child)
     }
   }

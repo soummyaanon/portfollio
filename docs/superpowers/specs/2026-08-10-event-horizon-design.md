@@ -80,11 +80,11 @@ element finishes exactly where it started, and so does the scroll position.
 | --- | --- |
 | 0.0 | Press. The Colophon's hairlines retract into the dot. User scroll locks and `html`'s `scroll-behavior: smooth` is suspended. All content goes `pointer-events: none` so nothing in flight can be clicked. Button disables. `horizon:duck` fires; audio ramps to 0.1 over 1.2s if it was playing. |
 | 0.0–1.4 | **The ride.** Scroll climbs to the top on an `easeOutCubic`, so the plate comes into view — and fades in for free, because its opacity is already driven by scroll position. |
-| 0.4–4.4 | **The waves.** Nearest shreds launch at 0.4s, furthest at ~2.2s; each flight is ~2.2s. Everything spirals into the plate, winding faster as it falls, and goes out at the photon ring. Ordered by distance, so the drain sweeps *down* the document — chasing the visitor as they rise, and taking the dot they pressed last. |
-| — | The hole's radius steps up a notch per absorbed shred, from `rs` 0.075 to 0.255. The sky drains to nothing on the same fraction. It got that way from the page. |
-| 4.8–7.8 | **Hold.** The hole alone in a void — no stars, no galaxies, no pulsars, because it ate those too. At 5.2s one tracked line fades in beneath it. |
-| 7.8–9.8 | **Return.** The line fades. Shreds unwind outward along the paths they fell, last-eaten-first-out, faster than the fall — falling in is dread and coming back is release. The hole gives back radius, the sky comes back, and scroll rides down to where the visitor pressed. |
-| 10.2 | The hole settles to its own size. One faint ring pulse opens from it and dies. Hairlines extend. Scroll unlocks, `scroll-behavior` restores, `pointer-events` restore, audio ramps back to the level the visitor had set, button re-enables. |
+| 0.4–7.9 | **The sections, in sequence.** The hole takes the page one section at a time, in document order — masthead first, the pressed dot last. Each section is *grabbed* first (its head drawn out toward the hole while its tail stays anchored), then pulled through, eaten leading-edge first as it crosses the ring. ~1.9s of flight per section, the next grabbed as the current one is half swallowed. |
+| — | The hole's radius steps up a notch per absorbed section, from `rs` 0.075 to 0.255. The sky drains to nothing on the same fraction. It got that way from the page. |
+| 8.3–11.3 | **Hold.** The hole alone in a void — no stars, no galaxies, no pulsars, because it ate those too. At 8.7s one tracked line fades in beneath it. |
+| 11.3–13.3 | **Return.** The line fades. Sections unwind outward along the paths they fell, last-eaten-first-out, faster than the fall — falling in is dread and coming back is release. The hole gives back radius, the sky comes back, and scroll rides down to where the visitor pressed. |
+| 13.7 | The hole settles to its own size. One faint ring pulse opens from it and dies. Hairlines extend. Scroll unlocks, `scroll-behavior` restores, `pointer-events` restore, audio ramps back to the level the visitor had set, button re-enables. |
 
 ### Copy
 
@@ -227,34 +227,68 @@ live on-screen position. There are one or two of them; it costs nothing.
   coupling — a context or lifted state would make the audio control's correctness depend on
   a visual gag.
 
-### Finding the shreds
+### Finding the shreds — sections, taken in sequence
 
-Recursive descent from the human-view root. An element becomes a shred when it has no element
-children or its height is under ~120px; otherwise the walk recurses into it. The plate's
+Recursive descent from the human-view root, at SECTION grain: an element becomes a shred when
+it has no element children or it fits within ~85% of a viewport height; only something taller
+than a screen — the projects catalogue — is split into its natural children. The plate's
 subtree is skipped outright. `[data-horizon-eat]` elements are appended, being outside the
-root.
+root. On this page the walk finds ~14 shreds.
 
-Result: `li` rows, section heads, paragraphs, the marquee rails, images, and the contribution
-graph all come out as natural units without a single `data-shred` attribute in the markup, and
-the set adapts automatically to whichever disclosures the visitor happens to have open.
+The launch order is by RANK, not by distance ratio: the nearest section is wave 0, the
+furthest wave 1, evenly spaced whatever the actual distances are. Ratio-normalised waves
+bunched the launches and the pull read as a scatter; ranked, the hole takes the page one
+section at a time, in document order (the hole is at the top). Each flight lasts twice the
+launch spacing — `flight = 2/(n+1)` of the swallow window, derived from the count — so the
+next section is grabbed as the current one is about half swallowed: a continuous stream, never
+the whole page in the air. With ~14 sections over the 7.5s swallow window that is ~1.9s of
+flight per section.
 
-Capped at 160 shreds — the whole document is in scope, not one screenful, because of the ride.
-On overflow the walk stops recursing, so shreds get *coarser* rather than content getting
-dropped: a long document still swallows completely, just in bigger pieces toward the end.
+There is still no `data-shred` attribute anywhere in the markup, and the set still adapts to
+whichever disclosures the visitor happens to have open.
 
 ### The path
 
+The model is anchored at each shred's TAIL — the point of it furthest from the hole. `r0` is
+the tail's distance, `transform-origin` is set to the tail, and a flight has two beats:
+
 ```
-s        = u²(3 − 2u)                        the flight's own clock, eased at both ends
-r(u)     = rq + (r0 − rq)·(1 − s)³           plunge, then FREEZE at the ring
-θ(u)     = θ0 + WIND · ((r0/r)^1.5 − 1)      Keplerian r^−3/2, capped
-stretch  = 1 + 20 · (rq/r)³                  the tide, capped at 16×
-across   = 1 / √stretch                      squeeze across it
-melt     = (2.4·rq − r) / (1.4·rq)           floored to 8 steps; the last lands at the ring
-opacity  = (1 − rq/r)^(1/4)                  rq = the photon ring, 2.598·rs
+GRAB (u ∈ [0, 0.3])   nothing translates. The head is drawn out toward the hole —
+                      stretch ramps 1 → min(2.4, sMax) about the pinned tail.
+PULL (u ∈ [0.3, 1])   the tail lets go:
+  v        = the pull's own smoothstep clock
+  tailR(v) = rq + (r0 − rq)·(1 − v)³          plunge, then FREEZE at the ring
+  θ        = θ0 + WIND·((r0/tailR)^1.5 − 1)   Keplerian r^−3/2, capped
+  stretch  = max(grab, 1 + 20·(rq/tailR)³)    the tide takes over, capped at the
+                                              shred's own sMax
+  across   = 1 / √stretch
+  headR    = tailR − stretch·len              where the drawn head actually is
+  melt     = (rq − headR) / (tailR − headR)   the share of the drawn length inside
+                                              the ring — floored to 8 steps, exactly
+                                              1 as the tail lands
+  opacity  = (1 − rq/tailR)^(1/4)             rq = the photon ring, 2.598·rs
 ```
 
-Composed as `translate(…) rotate(θ) scale(stretch, across) rotate(−θ)`, plus a mask.
+Composed as `translate(…) rotate(θ) scale(stretch, across) rotate(−θ)` about the tail origin,
+plus the mask. `sMax` is set per shred from its own projected length (`≈2.2 viewport-heights ÷
+len`, clamped to [1.6, 14]) so every section's reach comes out at roughly the same absolute
+size — a caption may stretch 14×, a whole section barely 2×, and both draw a filament about
+two screens long.
+
+**The grab is the beat that makes the pull legible as a pull.** Before anything travels, the
+hole takes hold of the section and draws its near edge out toward itself — the tail stays
+exactly where it was, the head extends, the body narrows — and only then does the whole thing
+go. Without it, a section simply departs, and departure reads as animation rather than
+gravity. This, with the sequential waves above, is the revision that answered "it should pull
+the sections slowly, by stretching them": the earlier model moved forty row-sized rectangles
+at once and stretched them only at the last moment.
+
+**The melt fraction is literal**: the share of the shred's drawn length that has crossed
+inside the photon ring, eaten leading-edge first, zero until something has actually crossed
+and exactly one as the tail arrives — the same radius where the opacity reaches zero, so both
+endings land on the same frame. (An earlier form keyed the melt on how far the head had swept
+through a fixed neighbourhood of the hole; on a long section that finished the entire sweep
+during the grab, and the section read as consumed while still anchored to the page.)
 
 **The freeze is load-bearing, and it replaced a measured mistake.** The first profile was the
 cursor's own accelerating plunge, `r = r0·(1 − u^2.2)` — which has its top radial speed exactly
