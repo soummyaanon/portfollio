@@ -2,9 +2,33 @@
 
 **Date:** 2026-08-10
 **Branch:** `feature/event-horizon`
-**Status:** Approved
+**Status:** Approved, revised the same day — see *Revision* below
 **Components:** `EventHorizon.tsx` (new), `horizon-physics.ts` (new),
-`SignalPlate.tsx`, `HumanView.tsx`, `AudioToggle.tsx`
+`SignalPlate.tsx`, `HumanView.tsx`, `ModeToggle.tsx`, `AudioToggle.tsx`
+
+## Revision — the hole moved to the top
+
+> The first version of this design opened a **second** black hole at the foot of the page:
+> a new full-viewport WebGL overlay, seeded at the Colophon dot and drifting to the centre
+> of the screen, with the document held still underneath it.
+>
+> **Superseded.** There is no overlay. The attractor is the Gargantua that has been in the
+> masthead all along, and the page is pulled *up* into it — scroll climbs to the top while
+> the document spirals into the real plate, and rides back down to the dot afterwards.
+>
+> The grounds: a second hole was a second hole. It needed its own WebGL context, its own
+> shader warm-up before the press, its own stacking context to sit behind the page, and a
+> whole `variant` axis through `SignalPlate` to strip the parts of the plate it should not
+> have — while the genuine article, with the real disk and the real photon ring, sat off
+> screen a few thousand pixels up. Pulling upward deletes all of that and puts the actual
+> object on stage.
+>
+> What survived unchanged: every law in `horizon-physics.ts`, the trigger and its copy, the
+> ~3s hold, the unwinding return, the audio duck, and the reduced-motion crossfade. What
+> changed: the scroll ride, document-space seeding, the whole document in scope rather than
+> one screenful, and `uField` repurposed from a performance gate into the drain that takes
+> the sky. Sections below are written to the revised design; this note is the only record
+> of the first.
 
 ## Premise
 
@@ -13,31 +37,35 @@ read the whole document and found the one object on the page that behaves like a
 rather than a decoration. The last thing they meet should be an invitation to find out
 what it does to something bigger than a pointer.
 
-Press the dot that closes the document and it turns out to have been a mass all along: it
-inflates, rises to the centre of the screen, and takes the page apart — every block on
-screen spiralling in, stretching along the line of infall, squeezing across it, going out
-at the photon ring. It holds what it took for three seconds. Then it gives all of it back
-and collapses into punctuation again.
+Press the dot that closes the document and the whole page rides up into the hole in the
+masthead: scroll climbs to the top while every block in the document spirals into the
+plate, stretching along the line of infall, squeezing across it, going out at the photon
+ring. The hole swells on what it swallows and the sky drains with it. It holds for three
+seconds, gives all of it back, and rides the visitor back down to the dot they pressed.
 
 Nothing is destroyed. The DOM is never touched; the effect is transforms and opacity on
-live elements, and the elements are still exactly where they were when it finishes.
+live elements plus three numbers handed to a shader that was already running. Every
+element finishes exactly where it started, and so does the scroll position.
 
 ## Decisions (locked with user)
 
 - **Manual trigger only.** No scroll-triggered firing, no once-per-session autoplay.
   Nobody loses the page without asking for it.
-- **Viewport-scoped, scroll locked.** With scroll locked, what is on screen *is* the whole
-  page as far as the eye can tell. Sections above the fold are not transformed — animating
-  them costs paint nobody can see. The "whole document" feeling comes instead from
-  distance-ordered waves that visibly work the drain outward from the hole.
-- **Real hole, real DOM.** A fixed full-viewport canvas runs the actual Gargantua shader;
-  live elements wind into it in front of the disk. Rejected: rasterising the page with
-  html2canvas and lensing the pixels for real — the library does not understand the 83
-  `oklch()` colours in `globals.css`, the marquee's `mask-image`, or `backdrop-filter`, and
-  the snapshot costs a visible hitch. Also rejected: a CSS-gradient hole with per-glyph
-  shredding, which would put a hole on the page that does not match the one the site owns.
-- **Seeds at the Colophon dot, drifts to centre.** Content then converges from every side
-  rather than all falling downward into a pit at the foot of the screen.
+- **The masthead plate is the attractor.** No second hole, no overlay canvas. Rejected:
+  rasterising the page with html2canvas and lensing the pixels for real — the library does
+  not understand the 83 `oklch()` colours in `globals.css`, the marquee's `mask-image`, or
+  `backdrop-filter`, and the snapshot costs a visible hitch. Also rejected: a CSS-gradient
+  hole with per-glyph shredding, which would put a hole on the page that does not match the
+  one the site owns.
+- **The page rides up into it.** Scroll animates to the top over ~1.4s while the document
+  converges, so the real Gargantua comes into view and is visibly the thing doing the
+  eating. Rejected: flying content off the top edge toward an off-screen hole, where nothing
+  is ever seen to be eaten; and snapping to the top first, where the jump reads as a page
+  navigation before the effect begins.
+- **The whole document is in scope, not one screenful.** A consequence of the ride: anything
+  left untransformed would scroll into view intact while its neighbours flew away.
+- **Scroll returns to where it was pressed.** The scroll position is part of what "nothing is
+  destroyed" is promising.
 - **~3s hold, not 10–20s.** The payoff is the swallow and the return; the emptiness between
   them is dead air, and twenty seconds of dead air is where a visitor closes the tab.
 - **The return unwinds.** Same spiral outward, decelerating into place, no bounce. Rejected:
@@ -50,13 +78,13 @@ live elements, and the elements are still exactly where they were when it finish
 
 | t (s) | Beat |
 | --- | --- |
-| 0.0 | Press. The Colophon's hairlines retract into the dot. Scroll locks. All content goes `pointer-events: none` so nothing in flight can be clicked. Button disables. |
-| 0.0–0.6 | The dot inflates and rises to viewport centre. The disk spins up from nothing. `horizon:duck` fires; audio ramps to 0.1 over 1.2s if it was playing. |
-| 0.4–3.6 | **The waves.** Nearest shreds launch at 0.4s, furthest at ~1.8s; each flight is ~1.6s. Everything spirals in, winding faster as it falls, and goes out at the photon ring. |
-| — | The hole's radius steps up a notch per absorbed shred. By the end it is visibly fatter than it started, and it got that way from the page. |
-| 4.0–7.0 | **Hold.** The hole alone, disk whirling. At 4.4s one tracked line fades in beneath it. |
-| 7.0–9.0 | **Return.** The line fades. Shreds unwind outward along the paths they fell, last-eaten-first-out, ~1.0s each — faster than the fall, because falling in is dread and coming back is release. The hole gives back radius as it gives back content. |
-| 9.2 | The hole collapses into the dot. One faint ring pulse opens from it and dies. Hairlines extend. Scroll unlocks, `pointer-events` restore, audio ramps back to the level the visitor had set, button re-enables. |
+| 0.0 | Press. The Colophon's hairlines retract into the dot. User scroll locks and `html`'s `scroll-behavior: smooth` is suspended. All content goes `pointer-events: none` so nothing in flight can be clicked. Button disables. `horizon:duck` fires; audio ramps to 0.1 over 1.2s if it was playing. |
+| 0.0–1.4 | **The ride.** Scroll climbs to the top on an `easeOutCubic`, so the plate comes into view — and fades in for free, because its opacity is already driven by scroll position. |
+| 0.4–4.4 | **The waves.** Nearest shreds launch at 0.4s, furthest at ~2.2s; each flight is ~2.2s. Everything spirals into the plate, winding faster as it falls, and goes out at the photon ring. Ordered by distance, so the drain sweeps *down* the document — chasing the visitor as they rise, and taking the dot they pressed last. |
+| — | The hole's radius steps up a notch per absorbed shred, from `rs` 0.075 to 0.255. The sky drains to nothing on the same fraction. It got that way from the page. |
+| 4.8–7.8 | **Hold.** The hole alone in a void — no stars, no galaxies, no pulsars, because it ate those too. At 5.2s one tracked line fades in beneath it. |
+| 7.8–9.8 | **Return.** The line fades. Shreds unwind outward along the paths they fell, last-eaten-first-out, faster than the fall — falling in is dread and coming back is release. The hole gives back radius, the sky comes back, and scroll rides down to where the visitor pressed. |
+| 10.2 | The hole settles to its own size. One faint ring pulse opens from it and dies. Hairlines extend. Scroll unlocks, `scroll-behavior` restores, `pointer-events` restore, audio ramps back to the level the visitor had set, button re-enables. |
 
 ### Copy
 
@@ -69,45 +97,62 @@ Both set in `field-label` (the existing uppercase tracked style). The caption si
 Colophon at 40% opacity so touch and keyboard users can find it, and comes to full contrast
 on hover or focus. The dot gains a hairline ring in the same state.
 
-### What gets eaten
+### What gets eaten, and what does not
 
-Everything on screen, including the fixed `ModeToggle` in the top-right corner. Left
+Everything in the document, including the fixed `ModeToggle` in the top-right corner — left
 behind it would be the one object floating over an empty page, which reads as a bug rather
-than a decision. It returns with everything else.
+than a decision.
 
-If the viewport is tall enough that the masthead is still on screen when the trigger is
-pressed, the plate is simply one more shred and the hole eats its own portrait. Two WebGL
-contexts render for those few seconds; both are cheap enough (see Performance).
+Two things are spared, both inside the plate's own subtree, which the walk skips outright:
+
+- **The plate itself.** The hole cannot eat itself. Descending into that subtree would make
+  the canvas a shred and fly the attractor into its own event horizon.
+- **The audio control**, which rides in the plate's box. The music keeps playing through
+  the swallow, so its off switch has to stay reachable.
 
 ### Escape
 
-`Esc` aborts. So does `m`, the existing mode key — it snaps back over 250ms and then flips.
-Nothing else interrupts. With a nine-second run behind a deliberate press, aborting on a
-stray wheel event would mean most visitors never see the thing they just asked for.
+`Esc` aborts. So does `m`, the existing mode key — it unmounts the human view, and the
+provider's teardown restores every recorded style, the scroll position, and `html`'s scroll
+behaviour on the way out, so the mode key aborts correctly without this feature knowing
+that the mode key exists. Nothing else interrupts: with a ten-second run behind a deliberate
+press, aborting on a stray wheel event would mean most visitors never see the thing they
+just asked for.
 
 ## Architecture
 
-### Keystone: one shader, gated by uniforms
+### Keystone: the plate is the hole, driven by three uniforms
 
-`SignalPlate` is not forked, copied, or reimplemented. It gains three uniforms, and the
-horizon overlay mounts the same component with the sky switched off.
+`SignalPlate` is not forked, copied, reimplemented, or given a variant axis. It gains three
+uniforms and one optional prop, and the swallow moves the numbers.
 
-| Uniform | Plate | Horizon | Role |
+| Uniform | At rest | While eating | Role |
 | --- | --- | --- | --- |
-| `uField` (float 0..1) | `1` | `0` | Ambient sky density. At `0` the shader skips the graticule, all four star depths, the nine galaxies, the nebulas, the meteors, the three pulsars, and the gravitational-wave block. |
-| `uRs` (float) | `0.075` | ramped | The Schwarzschild radius, today a GLSL constant. As a uniform, the growth *is* one number moving. |
-| `uSeat` (vec2) | `(0, 0.03)` | animated | The hole's seat, today the `HOLE_X`/`HOLE_Y` constants. Lets the hole rise from the dot to centre. |
+| `uRs` (float) | `0.075` | → `0.255` | The Schwarzschild radius, previously a GLSL constant. The hole's swelling *is* this one number moving; everything else about the object — shadow, photon ring, disk annulus, redshift — already derives from it the way it does in the real thing. |
+| `uField` (float 0..1) | `1` | → `0` | Ambient sky density. At `0` the shader skips the graticule, all four star depths, the nine galaxies, the nebulas, the meteors, the asteroids, the three pulsars, and the gravitational-wave block. |
+| `uSeat` (vec2) | `(0, 0.03)` | unchanged | The hole's seat, previously the `HOLE_X`/`HOLE_Y` constants. Not animated any more, but kept as the single source of the value. |
 
-This gating is what makes a full-viewport hole affordable: the overlay covers roughly nine
-times the plate's pixels, and it is precisely the ambient sky layers that cost. What remains
-— the lens equation, the shadow, the disk and its near-side band, the photon ring and
-sub-rings, the analytic glow — is cheap. The branches are on uniforms, so control flow stays
-uniform across the wavefront and there is no divergence penalty.
+`uField` is a drain, not a dimmer, and it is the plate's own idea at a larger scale: every
+star on this plate is already multiplied by the Schwarzschild factor so that the ones passing
+too close go out. While the document is being swallowed the starlight goes with it.
 
-`uRs` and `uSeat` also remove a standing hazard in the current file: the CPU mirrors the
-hole's geometry in `HOLE_X`, `HOLE_Y`, and `HOLE_R` with a comment asking whoever edits the
-GLSL constant to remember to edit the TypeScript one too. After this change there is one
-source for each value.
+The gate earns its keep precisely when it fires. `uField` reaches `0` at the moment `uRs` is
+at its fattest — the disk running out to 9 rs then covers most of the plate — so the most
+expensive frames of the run are the ones that stop paying for a sky nobody can see. Every
+branch is on a uniform, so control flow stays uniform across the wavefront and there is no
+divergence penalty.
+
+Two standing defects in the file are closed by the same change:
+
+1. **Duplicated geometry.** The CPU mirrored the hole's `HOLE_X`, `HOLE_Y` and `HOLE_R`, and
+   the pulsar integrator its own `PSR_RS`, with comments asking whoever edited the GLSL
+   constant to remember to edit the TypeScript ones too. There is now one source for each.
+2. **The Einstein radius was an absolute.** `einstein = 0.25` only *happened* to sit just
+   outside the capture radius while `rs` was fixed at 0.075. The moment the hole grows, a
+   literal would put the entire strong-lensing region inside the black disc — the far side of
+   the disk would have nothing to fold up against and the photon ring would come apart. It is
+   now the ratio `holeR × 1.283`, which renders the resting plate identically and every other
+   size as the same picture scaled.
 
 ### No re-render per frame
 
@@ -121,39 +166,57 @@ lives entirely outside the render cycle.
 
 | File | Change | Size |
 | --- | --- | --- |
-| `EventHorizon.tsx` | New. The `EventHorizonProvider`, the `useEventHorizon` hook, the fixed overlay layer, the hold line, and the `free → absorb → held → eject` clock — named to echo the plate's own cursor state machine, which is the same idea one scale up. | ~200 |
-| `horizon-physics.ts` | New. Pure functions: `collectShreds`, the infall path, the tidal transform, wave ordering, the easing. No DOM writes, no React, no imports. | ~120 |
-| `SignalPlate.tsx` | Three uniforms, one optional `drive` prop, shader blocks gated on `uField`, CPU geometry constants replaced by the uniform values. | +~50 |
-| `HumanView.tsx` | Wraps its root in `EventHorizonProvider` and hands it the root's `ref`; `Colophon`'s dot becomes a `<button>` with its caption. | +~30 |
-| `AudioToggle.tsx` | A listener for the `horizon:duck` `CustomEvent`, reusing the existing `rampTo`. | +~15 |
+| `EventHorizon.tsx` | New. The `EventHorizonProvider`, the `useEventHorizon` hook, the `HorizonTrigger`, the hold line, the scroll ride, and the run clock. | ~430 |
+| `horizon-physics.ts` | New. Pure functions: `collectShreds`, the infall path, the tidal transform, wave ordering, the easing. No DOM writes, no React, no imports. | ~205 |
+| `SignalPlate.tsx` | Three uniforms, one optional `drive` prop, shader blocks gated on `uField`, duplicated CPU geometry replaced by the shared constants, the Einstein radius made a ratio, `data-horizon-hole` on the plate's box. | +~90 |
+| `HumanView.tsx` | Owns the drive ref, wraps its root in `EventHorizonProvider`, hands the drive to `Masthead`, and `Colophon` becomes `HorizonTrigger`. | +~30 |
+| `ModeToggle.tsx` | `data-horizon-eat`, so fixed chrome can be found. | +~5 |
+| `AudioToggle.tsx` | A listener for the `horizon:duck` `CustomEvent`, reusing the existing `rampTo` with a duration argument. | +~25 |
 
-### Wiring the trigger to the controller
+### Wiring: one ref and one context
 
-The trigger is a leaf inside `Colophon`; the clock and the overlay are at the root. They are
-joined by the smallest thing that will do it — a context exported from `EventHorizon.tsx`:
+The two ends of this feature are as far apart as two things on a page can be — the trigger is
+a leaf at the foot of the document, the hole is in the masthead. They are joined by the two
+smallest things that will do it:
 
-- `EventHorizonProvider` wraps the human-view root, receives that root's `ref`, holds the
-  controller, and renders the overlay layer as its last child.
-- `useEventHorizon()` returns `{ fire, phase, available }`. `Colophon` calls `fire` on press,
-  reads `phase` to disable the button and retract its hairlines, and renders nothing at all
-  when `available` is false.
+- **A drive ref**, created in `HumanView` and handed to both `SignalPlate` and the provider.
+  It holds `{ rs, field, strike, taking }` and at rest holds the plate's own values, so the
+  plate reads it unconditionally and there is no second code path for "nothing is happening".
+  A ref rather than state because the swallow writes to it sixty times a second.
+- **A context** exported from `EventHorizon.tsx`. `useEventHorizon()` returns
+  `{ fire, active, available }`; `HorizonTrigger` calls `fire` on press, reads `active` to
+  disable the button and retract its hairlines, and renders the plain colophon when
+  `available` is false.
 
 `available` comes from a one-line capability probe in the provider — a throwaway
-`document.createElement('canvas').getContext('webgl2')`, run once on mount — rather than
-from `SignalPlate`'s internal `supported` state, which is private to that component and
-belongs to the plate at the top of the page, not to this feature.
+`document.createElement('canvas').getContext('webgl2')`, run once on mount — rather than from
+`SignalPlate`'s internal `supported` state, which is private to that component.
 
-The provider is also what promotes the root to `position: relative; z-index: 1` for the
-duration, as an inline write on the ref it was handed. `HumanView` itself declares no
-z-index and knows nothing about stacking: every style mutation in this feature is made by
-the controller and recorded so it can be undone exactly.
+Because the probe only resolves on the client, the server renders the plain colophon and the
+trigger appears after hydration. That is the correct order: no hydration mismatch, and a
+crawler is never shown a control it cannot use.
+
+### Coordinate frames
+
+The page scrolls while it is being eaten, which is the one thing that makes this harder than
+holding it still. Seeds are therefore measured in **document** coordinates — `rect.top +
+scrollY` — so the infall arithmetic and the scroll animation cannot interfere with each other
+at all. Transforms are relative to an element's own layout position, which does not move in
+document space, so a shred's path is correct at every scroll offset without a single
+recomputation.
+
+Fixed chrome is the exception and is treated as one. A pinned element's distance to the hole
+changes as the page rides up even though the element never moves, so `[data-horizon-eat]`
+elements carry a `fixed` flag and have their seed recomputed each frame against the hole's
+live on-screen position. There are one or two of them; it costs nothing.
 
 ### Component boundaries
 
-- **`horizon-physics.ts`** knows the geometry and nothing else. Given a shred's start box, the
-  hole's seat, and a normalised time, it returns a transform string and an opacity. It never
-  reads or writes the DOM and holds no state, so it can be reasoned about — and later
-  tested — in isolation.
+- **`horizon-physics.ts`** knows the geometry and nothing else. Given a point, the hole's
+  position, and a normalised time, it returns a transform string and an opacity — plain numbers
+  in and out, so it does not know or care whether the caller is working in document space or
+  viewport space. It never reads or writes the DOM and holds no state, so it can be reasoned
+  about — and later tested — in isolation.
 - **`EventHorizon.tsx`** owns the clock, the element list, and every style write. It is the
   only file that mutates anything outside its own tree, and every mutation it makes is
   recorded so it can be undone exactly.
@@ -166,19 +229,18 @@ the controller and recorded so it can be undone exactly.
 
 ### Finding the shreds
 
-Recursive descent from the human-view root. An element becomes a shred when its box
-intersects the viewport **and** either it has no element children or its height is under
-~120px; otherwise the walk recurses into it. The `ModeToggle` is appended by hand, being
-outside the root.
+Recursive descent from the human-view root. An element becomes a shred when it has no element
+children or its height is under ~120px; otherwise the walk recurses into it. The plate's
+subtree is skipped outright. `[data-horizon-eat]` elements are appended, being outside the
+root.
 
-Result: `li` rows, section heads, paragraphs, the marquee rails, images, and the
-contribution graph all come out as natural units without a single `data-*` attribute in the
-markup, and the set adapts automatically to whichever disclosures the visitor happens to
-have open.
+Result: `li` rows, section heads, paragraphs, the marquee rails, images, and the contribution
+graph all come out as natural units without a single `data-shred` attribute in the markup, and
+the set adapts automatically to whichever disclosures the visitor happens to have open.
 
-Capped at ~80 shreds. On overflow the walk stops recursing, so shreds get *coarser* rather
-than content getting dropped — an over-full viewport still swallows completely, just in
-bigger pieces.
+Capped at 160 shreds — the whole document is in scope, not one screenful, because of the ride.
+On overflow the walk stops recursing, so shreds get *coarser* rather than content getting
+dropped: a long document still swallows completely, just in bigger pieces toward the end.
 
 ### The path
 
@@ -204,43 +266,57 @@ inverted.
 ### Transform and opacity only
 
 No `filter: blur()`, no `box-shadow`, no `background` animation — nothing that forces paint
-or a new raster. Eighty nodes moving on the compositor is free; eighty blurred nodes is a
-slideshow on a laptop. The softness that sells the effect comes from the canvas underneath,
-which is already drawing an analytic glow.
+or a new raster. A hundred and sixty nodes moving on the compositor is free; a hundred and
+sixty blurred nodes is a slideshow on a laptop. The softness that sells the effect comes from
+the plate's own analytic glow, which is being drawn either way.
 
 `will-change: transform, opacity` is set on shreds at press and removed when the run ends,
-because a permanent `will-change` on eighty nodes is a permanent memory cost for an effect
-that runs for nine seconds.
+because a permanent `will-change` on that many nodes is a permanent memory cost for an effect
+that runs for ten seconds.
 
-### Stacking
+### Scrolling
 
-The hole layer is `position: fixed; inset: 0; z-index: 0`, painting the page's own
-`--background` behind the canvas so it covers the document. The human-view root takes
-`position: relative; z-index: 1` for the duration, which puts shreds in front of the disk.
-`ModeToggle` keeps its `z-50` and is shredded where it stands.
+Two things are needed beyond animating `window.scrollY`:
 
-All three added properties are inline and removed on teardown.
+1. **`html { scroll-behavior: smooth }` must be suspended.** It is set at `globals.css:339`,
+   and it would intercept every per-frame `scrollTo` — each starting its own easing toward a
+   target that has already moved — so the scroll would lag the animation and never arrive.
+   Set to `auto` for the run and restored on teardown, like every other mutation here.
+2. **rAF with an easing function, not `scrollTo({ behavior: 'smooth' })`.** The ride has to
+   stay in lockstep with the infall, which means one clock driving both.
+
+User scroll is blocked for the duration: `wheel` and `touchmove` are `preventDefault`ed on a
+capturing, non-passive listener, and the scroll keys are swallowed on `keydown`.
+
+No stacking changes at all. The plate is inside the document and already paints where it
+should; there is no overlay to sit behind, so nothing needs a z-index it did not already have.
 
 ## Error handling and degradation
 
 - **No WebGL2.** The provider's capability probe returns false and `useEventHorizon` reports
-  `available: false`, so the trigger does not render at all. There is no fallback rendering:
-  a black hole made of CSS gradients is not worth shipping on this page, and a button that
-  promises gravity and delivers a grey circle is worse than no button.
+  `available: false`, so the trigger does not render at all — the plain colophon stays. Without
+  the plate there is no hole to pull toward, and a button that promises gravity and delivers a
+  scroll-to-top is worse than no button.
 - **`prefers-reduced-motion: reduce`.** The trigger renders and works, degraded to a 400ms
-  crossfade — content fades out, a still hole frame fades in, three-second hold, fade back.
-  No travel, no spin, no scroll lock. The joke survives; the vestibular trigger does not.
-- **Mode flip mid-run.** Abort, restore every recorded inline style, cancel the frame. The
-  loop checks `node.isConnected` before each write, because React may already have detached
-  the human view.
-- **Orientation change or a viewport jump over ~25% mid-run.** Abort rather than recompute
-  against a layout that moved under the animation.
+  crossfade: the hole swells where it stands, content fades out, three-second hold, fade back.
+  No travel, no spin, and **no scrolling** — dragging someone to the top of the document is
+  exactly the motion the preference is asking us not to do. The joke survives; the vestibular
+  trigger does not.
+- **Mode flip mid-run.** Abort, restore every recorded inline style, the scroll position, and
+  `html`'s scroll behaviour; cancel the frame. The loop checks `node.isConnected` before each
+  write, because React may already have detached the human view.
+- **Orientation change or a viewport jump over ~25% mid-run.** Abort rather than animate
+  against a layout that moved under it.
 - **A second press while running.** Impossible: the button is `disabled` for the duration.
-- **Teardown on unmount.** The controller's cleanup restores styles, unlocks scroll, removes
+- **Teardown on unmount.** The provider's cleanup restores styles, scroll behaviour, and
   listeners, and cancels the frame, so a navigation mid-swallow cannot leave the document
-  locked or transformed.
+  locked, transformed, or unable to scroll smoothly again.
+- **Audio left ducked.** The volume is normally handed back at the eject beat for the musical
+  timing of it, but an abort has no eject beat and a mode flip never reaches this file's
+  listeners. `restore()` therefore dispatches the un-duck unconditionally as a safety net;
+  ramping to a level it is already at costs nothing.
 - **Shader compile failure.** Unchanged from today — logs `[SignalPlate] shader failed to
-  compile` and falls back to the static plate, which also means the trigger does not render.
+  compile` and falls back to the static plate.
 
 ## Accessibility
 
@@ -256,15 +332,20 @@ All three added properties are inline and removed on teardown.
 
 ## Performance
 
-- Overlay DPR capped at 1.5 and rendered at 0.85 scale. Nothing in a nine-second animation
-  rewards per-pixel sharpness.
-- `uField = 0` skips the entire ambient sky, which is the expensive half of the shader.
-- Shreds capped at ~80, compositor-only properties, `will-change` scoped to the run.
-- One `requestAnimationFrame` loop total for the DOM, plus the plate's existing loop for the
-  canvas. No per-frame React renders, no per-element `motion` components.
+- **No second WebGL context, no second shader compile, no warm-up.** The plate is already on
+  the page and already running; the swallow hands it three numbers. This is the largest single
+  saving of the revision.
+- `uField → 0` skips the entire ambient sky — the expensive half of the shader — and reaches
+  zero exactly when the swollen disk is costing the most.
+- Shreds capped at 160, compositor-only properties, `will-change` scoped to the run and
+  removed after, because a permanent `will-change` on 160 nodes is a permanent memory cost for
+  an effect that runs for ten seconds.
+- One `requestAnimationFrame` loop for the DOM and the scroll, plus the plate's existing loop
+  for the canvas. No per-frame React renders — the provider changes state exactly twice per
+  run — and no per-element `motion` components.
 - No new dependencies. No new network requests. No change to the static export or to any
-  prerendered HTML — the trigger and the overlay mount client-side into a document that is
-  already complete without them.
+  prerendered HTML: the trigger resolves client-side into a document that is already complete
+  without it.
 
 ## Assumptions
 
@@ -278,18 +359,28 @@ All three added properties are inline and removed on teardown.
 ## Verification
 
 1. `npm run lint` and `npm run build` clean.
-2. Browser check on the running dev server, driven, at desktop and mobile widths:
+2. The pure geometry exercised at its boundaries (see *Assumptions* — no runner is added, so
+   this is a throwaway script rather than a committed suite): endpoints, monotonic infall, the
+   wind cap, `across = 1/√stretch`, alpha in range, degenerate `r0 = 0` and `ringR = 0`,
+   out-of-range `u`, wave normalisation, radius monotonicity.
+3. Both shaders parsed, to catch a scope or brace error in the `uField` gating without a GPU.
+4. Browser check on the running dev server, driven, at desktop and mobile widths:
    - the dot's caption reads at 40% and brightens on hover and on keyboard focus;
-   - the swallow runs at the stated timings and the hole visibly grows as it eats;
-   - the mode toggle is eaten and comes back;
-   - every element lands exactly where it started — compared against a screenshot taken
-     before the press;
-   - the hold line appears and fades;
-   - the ring pulse fires as the hole closes.
-3. `Esc` mid-swallow and `m` mid-swallow both restore the page fully.
-4. Audio on, then press: volume ducks and returns to 0.5. Audio off, then press: stays
-   silent.
-5. Reduced motion forced: the crossfade path runs, no travel, no scroll lock.
-6. WebGL2 disabled: no trigger renders, no console errors, page otherwise normal.
-7. No `[SignalPlate]` errors in the console, and the masthead plate is unchanged — same
-   sky, same cursor absorption, same theme flip.
+   - the ride climbs smoothly to the top and does not stutter — the `scroll-behavior`
+     suspension is the thing being tested;
+   - the swallow runs at the stated timings, the drain sweeps down the document, and the hole
+     visibly swells while the sky drains;
+   - the plate and the audio control are *not* eaten; everything else is, including the mode
+     toggle;
+   - the hold shows the hole alone in a void, and the line appears and fades;
+   - the ring pulse fires as the hole settles;
+   - every element lands exactly where it started, and scroll returns to the dot — compared
+     against a screenshot taken before the press.
+5. `Esc` mid-swallow and `m` mid-swallow both restore the page fully, including scroll position
+   and smooth scroll behaviour afterwards.
+6. Audio on, then press: volume ducks and returns to 0.5. Audio off, then press: stays silent.
+   Abort mid-run: volume still returns.
+7. Reduced motion forced: the crossfade path runs, no travel, and the page does not scroll.
+8. WebGL2 disabled: the plain colophon renders, no trigger, no console errors.
+9. No `[SignalPlate]` errors in the console, and the resting plate is unchanged — same sky,
+   same cursor absorption, same theme flip, same disk.

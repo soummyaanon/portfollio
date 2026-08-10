@@ -887,19 +887,24 @@ void main() {
   float magn = min((uSrc * uSrc + 2.0) / max(uSrc * sqrt(uSrc * uSrc + 4.0), 1e-3), 6.0);
 
   // Everything from here to the disk is the *field* — the sky the hole sits in — and every bit
-  // of it is gated on uField.
+  // of it is gated on uField, which runs from 1 at rest to 0 while the hole is eating the page.
   //
-  // The gate is a skip, not a fade. At uField = 0 the four star shells, the nine galaxies, the
-  // twelve nebula wisps, the two wave integrals, the meteors, the asteroids and the three
-  // pulsars are not evaluated at all, which is what makes this shader affordable at full
-  // viewport size on the event horizon overlay — roughly nine times the plate's pixel count,
-  // and the field is precisely the expensive half. What survives the gate is the subject: the
-  // lens, the shadow, the disk, the photon ring. A hole in a void, which is also the right
-  // picture for a page that has just been eaten.
+  // It drains because the hole is taking the field too. The plate already has a drain: every star
+  // is multiplied by the Schwarzschild factor, so the ones that pass too close go out. This is
+  // that idea at the scale of the whole sky — while the document is being swallowed the starlight
+  // goes with it, and what is left at the bottom of it is the subject alone: the lens, the shadow,
+  // the disk, the photon ring. A hole in a void, which is the right picture for a page that has
+  // just been eaten.
   //
-  // Every branch is on a uniform, so control flow stays uniform across the wavefront and there
-  // is no divergence to pay for. The multiplications by uField are for a partial field, which
-  // nothing asks for yet; they cost a handful of ALU and keep the knob honest.
+  // The gate is a skip rather than a fade, and that is worth something exactly when it fires. At
+  // uField = 0 the four star shells, the nine galaxies, the twelve nebula wisps, the two wave
+  // integrals, the meteors, the asteroids and the three pulsars are not evaluated at all — and
+  // zero is reached at the moment the hole is at its fattest, where rs is three and a half times
+  // its resting value and the disk covers most of the plate. The most expensive frames are the
+  // ones that stop paying for a sky nobody can see.
+  //
+  // Every branch is on a uniform, so control flow stays uniform across the wavefront and there is
+  // no divergence to pay for. The multiplications by uField carry the partial values in between.
   float anomaly = 0.0;
 
   // The incursions, as strain: displacement applied to the sky, envelopes kept for the blur.
@@ -1334,48 +1339,41 @@ function luminance([r, g, b]: readonly [number, number, number]): number {
  * rather than repeated as constants at both ends. The GLSL used to carry `rs` and the seat as
  * literals with copies here and a comment asking whoever edited one to remember the other.
  */
-const PLATE_RS = 0.075
+export const PLATE_RS = 0.075
 const PLATE_SEAT_X = 0
 const PLATE_SEAT_Y = 0.03
 /** √27/2 — the photon capture radius in units of rs. The edge of the black disc, not the horizon. */
 export const CAPTURE_RATIO = 2.598
 
 /**
- * What the event horizon overlay moves, per frame, on the one instance of this component that
- * is not the masthead plate.
+ * What the event horizon takes hold of while it is eating the page.
  *
  * Handed over as a mutable object behind a ref rather than as props, because these change sixty
  * times a second and a prop would mean sixty React renders. It is the same arrangement the
  * component already uses internally for the cursor mark, the strike and the pointer: the render
  * happens once and the animation lives outside it.
+ *
+ * At rest it holds the plate's own values, so the drive is always the authority and there is no
+ * second code path for "nothing is happening".
  */
 export interface HorizonDrive {
-  /** Schwarzschild radius, plate units. The hole's growth is this number moving. */
+  /** Schwarzschild radius, plate units. The hole's swelling is this number moving. */
   rs: number
-  /** Where the hole sits, plate space. */
-  seatX: number
-  seatY: number
-  /** Ambient sky density. At 0 the shader skips the entire field — see uField in the GLSL. */
+  /** Ambient sky density, 1 at rest. The field drains as the hole feeds. */
   field: number
-  /** Bumped to open a ranging ring from the seat. Any change fires one. */
+  /** Bumped to open a ranging ring from the hole. Any change fires one. */
   strike: number
+  /** True while the page is being taken, which retires the cursor stand-in for the duration. */
+  taking: boolean
 }
 
 export function SignalPlate({
   children,
-  variant = 'plate',
   drive,
 }: {
   readonly children?: React.ReactNode
-  /**
-   * `plate` is the masthead chart. `horizon` is the full-viewport overlay: no ambient field, no
-   * cursor stand-in, no audio control, no scroll parallax — a hole in a void, driven from
-   * outside.
-   */
-  readonly variant?: 'plate' | 'horizon'
   readonly drive?: React.RefObject<HorizonDrive | null>
 }) {
-  const horizon = variant === 'horizon'
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const probeRef = useRef<HTMLSpanElement>(null)
   const paperProbeRef = useRef<HTMLSpanElement>(null)
@@ -1923,13 +1921,7 @@ export function SignalPlate({
 
     function resize() {
       if (!gl) return
-      // The horizon covers the viewport rather than a 380-pixel plate, so it is rendered at a
-      // lower ratio and a little under its own size and let the browser scale it up. Nothing in
-      // a nine-second animation of a hole rewards per-pixel sharpness, and this is the whole of
-      // the difference between comfortable and marginal on integrated graphics.
-      const cap = horizon ? 1.5 : 2
-      const scale = horizon ? 0.85 : 1
-      const dpr = Math.min(window.devicePixelRatio || 1, cap) * scale
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
       const next = Math.max(1, Math.round(box.width * dpr))
       const nextHeight = Math.max(1, Math.round(box.height * dpr))
       if (next === width && nextHeight === height) return
@@ -1944,21 +1936,19 @@ export function SignalPlate({
       if (!gl) return
       resize()
 
-      // What the hole is doing this frame. On the plate these are the constants they always
-      // were; on the horizon they are whatever the overlay's clock last wrote.
-      const d = horizon ? drive?.current ?? null : null
+      // What the hole is doing this frame. At rest the drive holds the plate's own values, so
+      // this is one path rather than two.
+      const d = drive?.current ?? null
       const rs = d ? d.rs : PLATE_RS
-      const seatX = d ? d.seatX : PLATE_SEAT_X
-      const seatY = d ? d.seatY : PLATE_SEAT_Y
-      const field = horizon ? d?.field ?? 0 : 1
+      const field = d ? d.field : 1
 
-      // A ranging ring, asked for from outside — the one the hole opens as it closes back into
-      // the dot. It reuses the strike the plate already draws for a click, seated at the hole
-      // rather than at a pointer.
+      // A ranging ring, asked for from outside — the one the hole opens as it settles back to
+      // its own size. It reuses the strike the plate already draws for a click, seated at the
+      // hole rather than at a pointer.
       if (d && d.strike !== lastStrike) {
         lastStrike = d.strike
-        pulse.x = seatX
-        pulse.y = seatY
+        pulse.x = PLATE_SEAT_X
+        pulse.y = PLATE_SEAT_Y
         pulse.at = time
       }
 
@@ -1975,14 +1965,15 @@ export function SignalPlate({
       gl.uniform1f(uTime, time)
       gl.uniform1f(uField, field)
       gl.uniform1f(uRs, rs)
-      gl.uniform2f(uSeat, seatX, seatY)
+      gl.uniform2f(uSeat, PLATE_SEAT_X, PLATE_SEAT_Y)
       gl.uniform2f(uMark, mark.x, mark.y)
       gl.uniform2f(uMarkDir, mark.dirX, mark.dirY)
       gl.uniform1f(uMarkTide, mark.tide)
-      // No cursor stand-in on the horizon. The overlay covers the viewport, and hiding the
-      // visitor's real pointer across the whole screen for nine seconds to draw a substitute
-      // is not a trade worth making.
-      gl.uniform1f(uMarkAlpha, horizon ? 0 : mark.alpha)
+      // The stand-in is retired while the page is being taken. Its whole choreography is measured
+      // against the plate's resting capture radius, and the hole is several times that for those
+      // ten seconds — an arrow being absorbed at a radius the shadow has long since swallowed
+      // reads as a bug, and the hole has bigger prey in frame anyway.
+      gl.uniform1f(uMarkAlpha, d?.taking ? 0 : mark.alpha)
       gl.uniform1f(uMarkSpin, mark.spin)
       for (let i = 0; i < 3; i++) {
         const q = pulsars[i]!
@@ -2015,14 +2006,12 @@ export function SignalPlate({
 
     function loop(now: number) {
       elapsed = (now - start) / 1000
-      if (!horizon) {
-        // The chase is fast enough that the mark feels like the cursor and slow enough that
-        // the hole visibly wins near the shadow.
-        pointer.x += (pointer.targetX - pointer.x) * 0.3
-        pointer.y += (pointer.targetY - pointer.y) * 0.3
-        pointer.hover += (pointer.targetHover - pointer.hover) * 0.12
-        updateMark(elapsed)
-      }
+      // The chase is fast enough that the mark feels like the cursor and slow enough that
+      // the hole visibly wins near the shadow.
+      pointer.x += (pointer.targetX - pointer.x) * 0.3
+      pointer.y += (pointer.targetY - pointer.y) * 0.3
+      pointer.hover += (pointer.targetHover - pointer.hover) * 0.12
+      updateMark(elapsed)
       draw(elapsed)
       frame = requestAnimationFrame(loop)
     }
@@ -2146,24 +2135,20 @@ export function SignalPlate({
       gl.deleteShader(fragment)
       gl.deleteBuffer(buffer)
     }
-    // Both are fixed for the life of an instance — the variant is a literal at every call site
-    // and the drive is a ref — so this still runs exactly once per mount and the WebGL context
-    // is never rebuilt.
-  }, [horizon, drive])
+    // The drive is a ref, so its identity never changes: this still runs exactly once per mount
+    // and the WebGL context is never rebuilt.
+  }, [drive])
 
   return (
     // The tilt is gone with the rest of the cursor theatre, but the perspective stays on the
     // outer box: it is what lets a translateZ on anything seated on the plate read as depth.
     //
-    // The horizon fills whatever fixed box the overlay gives it and drops the plate's measure,
-    // its fixed height and its perspective — nothing is seated on it, so there is no depth to
-    // grant, and a max-width would leave the hole in a column down the middle of the screen.
+    // data-horizon-hole marks this subtree as the attractor rather than prey. The swallow walks
+    // the document and transforms everything it finds; the one thing it must not touch is the
+    // hole doing the swallowing, and the audio control that rides along with it.
     <div
-      className={
-        horizon
-          ? 'relative isolate grid h-full w-full place-items-center'
-          : 'relative isolate mx-auto grid h-[clamp(16rem,30vw,24rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]'
-      }
+      data-horizon-hole
+      className="relative isolate mx-auto grid h-[clamp(16rem,30vw,24rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]"
     >
       {/* Colour probe. The shader reads its ink off this element's resolved `color`,
           which costs nothing and keeps the palette in one place instead of duplicated in
@@ -2193,11 +2178,9 @@ export function SignalPlate({
           ref={canvasRef}
           aria-hidden
           className={`absolute inset-0 h-full w-full ${supported ? '' : 'hidden'} ${
-            !horizon && supported && !prefersReducedMotion ? 'cursor-none' : ''
+            supported && !prefersReducedMotion ? 'cursor-none' : ''
           }`}
-          // The horizon takes neither: it is fixed to the viewport rather than sitting in the
-          // document, so there is no scroll for it to answer, and its own clock owns its fade.
-          style={horizon || prefersReducedMotion ? undefined : { y: parallax, opacity: fade }}
+          style={prefersReducedMotion ? undefined : { y: parallax, opacity: fade }}
         />
 
         {/* Where WebGL2 is unavailable the plate still prints: a field of points with a
@@ -2221,9 +2204,8 @@ export function SignalPlate({
       </div>
 
       {/* Outside the plate's own box on purpose: this control must not inherit the canvas's
-          scroll fade. Only the masthead owns it — a second one on the horizon overlay would be
-          two audio controls on one page, fighting over the same element. */}
-      {!horizon && <AudioToggle />}
+          scroll fade. */}
+      <AudioToggle />
     </div>
   )
 }
