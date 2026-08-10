@@ -9,14 +9,17 @@
  *
  * The laws are the plate's own, not new ones invented for the page:
  *
- *  · the plunge accelerates on u^2.2, the exponent SignalPlate's cursor absorption already uses;
+ *  · the observed infall *freezes* at the ring rather than accelerating through it — the same
+ *    thing the plate already shows twice, in the star stream hanging on the Shapiro term and in
+ *    the doomed pulsars creeping to a halt where they run out of light (see FREEZE below);
  *  · the wind is Keplerian, dθ/dt ∝ r^(−3/2), so the page turns at the rate of the disk lanes
  *    it is falling into rather than at a rate chosen to look about right;
- *  · the tide stretches along the line of infall and squeezes across it by the square root,
- *    which is the rule the plate states for its own uMarkTide;
- *  · things go out on √(1 − r_ring/r), the Schwarzschild factor every other doomed object on
- *    this page fades on, which reaches exactly zero at the photon ring — so nothing is ever
- *    drawn inside the shadow, because a distant observer never does see anything cross.
+ *  · the tide is the 1/r³ law at the coefficient the plate uses on its own cursor, and it
+ *    squeezes across the infall line by the square root of the stretch along it;
+ *  · a shred is eaten leading-edge first (the melt), and the residual fade is the Schwarzschild
+ *    factor every other doomed object on this page goes out on, reaching exactly zero at the
+ *    photon ring — nothing is ever drawn inside the shadow, because a distant observer never
+ *    does see anything cross.
  */
 
 /** Where a shred started, in polar coordinates about the hole. Viewport pixels, y down. */
@@ -78,8 +81,25 @@ const TIDE_K = 20
  * law would ask for more, the shred is through the ring and has no light left anyway.
  */
 const TIDE_CAP = 16
-/** The plunge's acceleration — SignalPlate's own exponent for the same event. */
-const PLUNGE = 2.2
+/**
+ * The freeze: how hard the observed infall flattens as a shred approaches the ring.
+ *
+ * The first profile here was the cursor's own accelerating plunge, u^2.2 — and it was the wrong
+ * precedent, measurably. An accelerating plunge has its top radial speed exactly at arrival, so
+ * a shred from 2000px crossed the entire ~300px melt-and-tide zone at ~2800px/s: every visible
+ * consequence of the mass — the smear, the leading edge going through, the hang at the lip —
+ * was compressed into the last 50–170ms of a 2.2s flight. The instrumented residence times are
+ * in the design doc; a viewer reads that as vanishing, not melting.
+ *
+ * The right precedent was already on the plate, twice. The star stream "hesitates and hangs"
+ * near the shadow on the Shapiro term, and the doomed pulsars creep to a halt exactly where
+ * they run out of light — because that is what a distant observer is actually shown: infall
+ * *freezes* at a horizon, it does not accelerate through it. So the shred's flight is a
+ * smoothstep plunge that lands on a (1−s)³ approach — fast through the empty middle distance,
+ * then asymptotically slow across the melt zone, arriving at the ring with zero radial speed.
+ * Same residence measured after: ~1s of visible melting per shred instead of ~0.1s.
+ */
+const FREEZE = 3
 
 /**
  * The melt: where dissolution starts, in ring radii, and how many steps it is quantised to.
@@ -154,8 +174,13 @@ export function infall(seed: ShredSeed, u: number, ringR: number): InfallFrame {
   const r0 = Math.max(seed.r0, 1e-6)
   const ring = Math.max(ringR, 1e-6)
 
-  const fall = Math.pow(clamp(u, 0, 1), PLUNGE)
-  const r = r0 * (1 - fall)
+  // The flight's own clock eases in and out (smoothstep), and the radius rides (1−s)³ down to
+  // the ring — not to the centre. Together: a gentle launch, a fast fall through the empty
+  // middle distance, and a long asymptotic hang across the melt zone, radial speed reaching
+  // zero exactly at the ring. The freeze note above is the reason this shape is load-bearing.
+  const uc = clamp(u, 0, 1)
+  const s = uc * uc * (3 - 2 * uc)
+  const r = ring + (r0 - ring) * Math.pow(1 - s, FREEZE)
 
   // Keplerian: the angle swept goes as the integral of r^(−3/2), so the wind is nothing out
   // at the start and runs away at the end. Floored at six percent of the starting radius —
@@ -173,8 +198,15 @@ export function infall(seed: ShredSeed, u: number, ringR: number): InfallFrame {
   // The melt. Nothing until the shred is inside a couple of ring radii, then the leading edge
   // starts going through and the shred is eaten from the front. Quantised so that acting on it
   // costs eight repaints over the whole crossing rather than one per frame.
+  //
+  // Floored, not rounded — and against the freeze above, the difference is a third of the show.
+  // Rounding promoted the last step early: melt hit 1 while the shred still hung at ~1.09 ring
+  // radii, so the whole tail end of the hang played out fully eaten and invisible. Floored, the
+  // final bite lands only at the ring itself (the epsilon absorbs float dust in raw at r = ring,
+  // where the arithmetic gives exactly 1), and the last eighth of the shred survives the hang as
+  // a dimming tail — the alpha below runs to zero on the same radius, so nothing ever pops off.
   const raw = (MELT_FROM * ring - r) / Math.max(MELT_FROM * ring - ring, 1e-6)
-  const melt = Math.round(clamp(raw, 0, 1) * MELT_STEPS) / MELT_STEPS
+  const melt = Math.min(Math.floor(clamp(raw, 0, 1) * MELT_STEPS + 1e-9) / MELT_STEPS, 1)
 
   // The overall fade is the same factor as every other thing this hole has taken, and it is
   // deliberately the *slower* of the two now: the melt does the work of making a shred vanish,

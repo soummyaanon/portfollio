@@ -245,15 +245,30 @@ dropped: a long document still swallows completely, just in bigger pieces toward
 ### The path
 
 ```
-r(t)     = r0 · (1 − u^2.2)                  accelerates inward
-θ(t)     = θ0 + WIND · ((r0/r)^1.5 − 1)      Keplerian r^−3/2, capped at 2 turns
+s        = u²(3 − 2u)                        the flight's own clock, eased at both ends
+r(u)     = rq + (r0 − rq)·(1 − s)³           plunge, then FREEZE at the ring
+θ(u)     = θ0 + WIND · ((r0/r)^1.5 − 1)      Keplerian r^−3/2, capped
 stretch  = 1 + 20 · (rq/r)³                  the tide, capped at 16×
 across   = 1 / √stretch                      squeeze across it
-melt     = (2.4·rq − r) / (1.4·rq)           quantised to 8 steps
+melt     = (2.4·rq − r) / (1.4·rq)           floored to 8 steps; the last lands at the ring
 opacity  = (1 − rq/r)^(1/4)                  rq = the photon ring, 2.598·rs
 ```
 
 Composed as `translate(…) rotate(θ) scale(stretch, across) rotate(−θ)`, plus a mask.
+
+**The freeze is load-bearing, and it replaced a measured mistake.** The first profile was the
+cursor's own accelerating plunge, `r = r0·(1 − u^2.2)` — which has its top radial speed exactly
+at arrival, so a shred from 2000px crossed the entire ~300px melt-and-tide zone at ~2800px/s.
+Instrumented residence times: the visible melt lasted **53–172ms** of a 2.2s flight across
+realistic distances. A viewer reads that as vanishing, not melting — this was reported as "not
+seeing the melting at all", and the numbers agreed. The right precedent was already on the
+plate twice: the star stream hangs on the Shapiro term, and the doomed pulsars creep to a halt
+where they run out of light, because a distant observer sees infall *freeze* at a horizon, not
+accelerate through it. On the freeze profile the same instrumentation reads **0.70–0.91s of
+visible melting and ~0.85s of visible tide per shred** — a shred now falls fast through the
+empty middle distance and then hangs at the lip, smearing and dissolving, with radial speed
+reaching zero exactly at the ring. The flight ends *at* the ring, not at the centre; the melt's
+final step and the alpha's zero land on the same radius.
 
 Every exponent is the plate's own. `r^−3/2` in `θ(t)` is the Keplerian shear law the disk
 lanes already use, so the page winds at the rate of the lanes it is falling into rather than
