@@ -148,6 +148,14 @@ interface Shred {
   readonly willChange: string
   readonly pointerEvents: string
   readonly maskImage: string
+  /**
+   * The transform the element already wears from its stylesheet, as a resolved matrix — the
+   * dock centres itself with translateX(-50%), and an inline transform *replaces* class
+   * transforms rather than composing with them. Written as a suffix on every frame's transform
+   * so the element's own positioning survives the flight; empty for the usual untransformed
+   * shred.
+   */
+  readonly base: string
 }
 
 export function EventHorizonProvider({
@@ -271,6 +279,10 @@ export function EventHorizonProvider({
       willChange: el.style.willChange,
       pointerEvents: el.style.pointerEvents,
       maskImage: el.style.maskImage,
+      base: (() => {
+        const t = getComputedStyle(el).transform
+        return t && t !== 'none' ? t : ''
+      })(),
     })
 
     // Reduced motion: no travel, no spin, no scrolling, no scroll lock. The hole swells where it
@@ -424,7 +436,9 @@ export function EventHorizonProvider({
             }
           : shred.seed
         const frame = infall(seed, us[i]!, ringPx)
-        shred.el.style.transform = transformOf(frame)
+        shred.el.style.transform = shred.base
+          ? `${transformOf(frame)} ${shred.base}`
+          : transformOf(frame)
         shred.el.style.opacity = String(frame.alpha)
         if (frame.melt !== melted[i]) {
           melted[i] = frame.melt
