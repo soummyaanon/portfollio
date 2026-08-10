@@ -245,30 +245,66 @@ dropped: a long document still swallows completely, just in bigger pieces toward
 ### The path
 
 ```
-r(t)     = r0 · (1 − easeIn(t))              accelerates inward
-θ(t)     = θ0 + WIND · ((r0/r)^1.5 − 1)      Keplerian r^−3/2, capped
-stretch  = 1 + TIDE · (1 − r/r0)²            along the infall line
+r(t)     = r0 · (1 − u^2.2)                  accelerates inward
+θ(t)     = θ0 + WIND · ((r0/r)^1.5 − 1)      Keplerian r^−3/2, capped at 2 turns
+stretch  = 1 + 20 · (rq/r)³                  the tide, capped at 16×
 across   = 1 / √stretch                      squeeze across it
-opacity  → 0 across the photon ring at 2.598·rs
+melt     = (2.4·rq − r) / (1.4·rq)           quantised to 8 steps
+opacity  = (1 − rq/r)^(1/4)                  rq = the photon ring, 2.598·rs
 ```
 
-Composed as `translate(…) rotate(θ) scale(stretch, across) rotate(−θ)`.
+Composed as `translate(…) rotate(θ) scale(stretch, across) rotate(−θ)`, plus a mask.
 
-The exponent in `θ(t)` is the same `r^−3/2` shear law the disk lanes already use, so the
-page winds at the rate of the lanes it is falling into rather than at a rate chosen to look
-about right. `across = 1/√stretch` is the rule the plate's `uMarkTide` comment already
-states for the cursor. Things go out at the photon ring, not at the centre, because a
-distant observer never does watch anything cross a horizon.
+Every exponent is the plate's own. `r^−3/2` in `θ(t)` is the Keplerian shear law the disk
+lanes already use, so the page winds at the rate of the lanes it is falling into rather than
+at a rate chosen to look about right. `across = 1/√stretch` is the rule the plate states for
+its cursor.
+
+**The tide is `1/r³` and measured against the hole, not against distance travelled.** A tidal
+force is the *difference* in gravity across a body, so it is nothing at all at a distance and
+runs away violently at the end — and `20` is the same coefficient `SignalPlate` uses to stretch
+the cursor it absorbs. An earlier pass used `1 + 2.4·(1 − r/r0)²`, which was a chosen shape
+rather than a law and had two faults: it topped out at 3.4×, so the page spaghettified five
+times *less* than a mouse pointer does on the same page; and being a function of the fraction
+travelled, it deformed things from the moment they set off, which reads as the page wobbling
+rather than as something being drawn out by a mass. On the cube law a shred holds its shape
+almost the whole way in and then smears.
+
+**The melt is what makes it swallowed rather than merely gone.** A shred is eaten leading-edge
+first: a `mask-image` gradient runs along its infall line, and as `melt` climbs the transparent
+stop sweeps across the element, leaving a thinning tail behind the part that has already gone
+through. The overall opacity is deliberately the slower of the two — fourth-root rather than
+square-root — so it hangs on while the melt does the work instead of dimming the tail out from
+under it. Things still finish at the photon ring rather than at the centre, because a distant
+observer never does watch anything cross a horizon.
 
 Return runs the same functions with time reversed, a shorter flight, and the wave order
 inverted.
 
-### Transform and opacity only
+### Transform and opacity, plus one stepped paint
 
-No `filter: blur()`, no `box-shadow`, no `background` animation — nothing that forces paint
-or a new raster. A hundred and sixty nodes moving on the compositor is free; a hundred and
-sixty blurred nodes is a slideshow on a laptop. The softness that sells the effect comes from
-the plate's own analytic glow, which is being drawn either way.
+No `filter: blur()`, no `box-shadow`, no `background` animation. A hundred and sixty nodes
+moving on the compositor is free; a hundred and sixty blurred nodes is a slideshow on a laptop.
+Softness comes from the plate's own analytic glow, which is being drawn either way.
+
+The mask is the single exception, and it is the one thing here that costs paint — so it is
+**quantised to 8 steps** rather than written per frame. A shred repaints eight times across its
+whole crossing instead of sixty times a second, which is why `melt` is rounded in the physics
+module rather than at the call site: the quantisation is part of the model, not an optimisation
+bolted onto it. Total budget for the run is 160 × 8 ≈ 1280 repaints of small elements spread
+over ten seconds, against 160 × 600 if it were continuous.
+
+Two details that would otherwise bite:
+
+- The gradient's stops start at `−38%` so that step zero is a **fully opaque** element. Written
+  the naive way (`transparent 0%, black 38%`) a shred would pop from intact to a third eaten the
+  instant it was first masked.
+- Both `mask-image` and `-webkit-mask-image` are written. Safari only shipped the unprefixed
+  property in 15.4, and the failure mode of omitting the prefix is that the melt silently does
+  nothing on an older iPhone while every other part of the effect works.
+
+Shreds that never come near the hole carry no mask property at all — an empty value removes it
+rather than setting `none`, because a mask is a paint even when it masks nothing.
 
 `will-change: transform, opacity` is set on shreds at press and removed when the run ends,
 because a permanent `will-change` on that many nodes is a permanent memory cost for an effect
@@ -370,6 +406,10 @@ should; there is no overlay to sit behind, so nothing needs a z-index it did not
      suspension is the thing being tested;
    - the swallow runs at the stated timings, the drain sweeps down the document, and the hole
      visibly swells while the sky drains;
+   - **the melt reads as melting**: shreds hold their shape until they are close, then smear into
+     filaments and are eaten leading-edge first rather than fading as whole rectangles. The
+     8-step quantisation must not read as a visible flicker — if it does, the step count goes up
+     and the repaint budget with it;
    - the plate and the audio control are *not* eaten; everything else is, including the mode
      toggle;
    - the hold shows the hole alone in a void, and the line appears and fades;

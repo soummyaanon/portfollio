@@ -8,6 +8,7 @@ import {
   easeOutCubic,
   infall,
   localTime,
+  maskOf,
   progress,
   radiusOf,
   seedOf,
@@ -93,6 +94,28 @@ const HOLE = '[data-horizon-hole]'
  */
 const OUTSIDE_ROOT = '[data-horizon-eat]'
 
+/**
+ * Set or clear a shred's mask, prefix included.
+ *
+ * Safari carried `mask-image` behind `-webkit-` for years and the unprefixed property only
+ * landed in 15.4, so both are written — the cost is one extra string assignment on a path that
+ * runs eight times per shred, and the alternative is that the melt silently does nothing on an
+ * older iPhone while every other part of the effect works.
+ *
+ * An empty value removes the properties rather than setting them to `none`: a mask is a paint
+ * even when it masks nothing, and the elements that never come near the hole should never carry
+ * one at all.
+ */
+function setMask(el: HTMLElement, value: string) {
+  if (value) {
+    el.style.maskImage = value
+    el.style.setProperty('-webkit-mask-image', value)
+  } else {
+    el.style.removeProperty('mask-image')
+    el.style.removeProperty('-webkit-mask-image')
+  }
+}
+
 interface EventHorizonApi {
   /** Take the page. Ignored if a run is already going or the effect is unavailable. */
   readonly fire: () => void
@@ -124,6 +147,7 @@ interface Shred {
   readonly opacity: string
   readonly willChange: string
   readonly pointerEvents: string
+  readonly maskImage: string
 }
 
 export function EventHorizonProvider({
@@ -179,6 +203,7 @@ export function EventHorizonProvider({
       shred.el.style.willChange = shred.willChange
       shred.el.style.pointerEvents = shred.pointerEvents
       shred.el.style.transition = ''
+      setMask(shred.el, shred.maskImage)
     }
     shredsRef.current = []
 
@@ -245,6 +270,7 @@ export function EventHorizonProvider({
       opacity: el.style.opacity,
       willChange: el.style.willChange,
       pointerEvents: el.style.pointerEvents,
+      maskImage: el.style.maskImage,
     })
 
     // Reduced motion: no travel, no spin, no scrolling, no scroll lock. The hole swells where it
@@ -342,6 +368,11 @@ export function EventHorizonProvider({
     const startedAt = performance.now()
     let rang = false
 
+    // The melt step each shred is currently wearing. The mask is the one property here that
+    // costs a repaint, so it is written only when its quantised step actually moves — eight
+    // times across a shred's whole crossing instead of sixty a second.
+    const melted = new Float32Array(shreds.length)
+
     const tick = (now: number) => {
       const t = (now - startedAt) / 1000
 
@@ -395,6 +426,10 @@ export function EventHorizonProvider({
         const frame = infall(seed, us[i]!, ringPx)
         shred.el.style.transform = transformOf(frame)
         shred.el.style.opacity = String(frame.alpha)
+        if (frame.melt !== melted[i]) {
+          melted[i] = frame.melt
+          setMask(shred.el, maskOf(seed.a0, frame.melt))
+        }
       }
 
       if (lineRef.current) {

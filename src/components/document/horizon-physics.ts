@@ -40,6 +40,11 @@ export interface InfallFrame {
   /** Scale across it. */
   readonly across: number
   readonly alpha: number
+  /**
+   * How much of the shred has gone through, 0..1 — the melt. Quantised, because acting on it
+   * means repainting the element and a repaint per frame per shred is not affordable.
+   */
+  readonly melt: number
 }
 
 /**
@@ -50,10 +55,45 @@ export interface InfallFrame {
 const WIND = 0.085
 /** Two turns, and no shred may exceed it however deep the term goes. */
 const WIND_CAP = 6.0
-/** Peak stretch along the infall line, reached as the shred arrives. */
-const TIDE = 2.4
+/**
+ * The tide, taken off the law rather than off a curve — and it is the same law, with the same
+ * coefficient, that SignalPlate already uses to stretch the cursor it absorbs.
+ *
+ * A tidal force is the *difference* in gravity across a body, so it goes as 1/r³. That is the
+ * entire character of the effect: nothing at all at a distance, and running away violently in
+ * the last stretch. An earlier pass here used `1 + 2.4·(1 − r/r0)²`, which is a shape someone
+ * chose rather than a law, and it had two faults. It topped out at 3.4× — the plate stretches
+ * the *cursor* by up to 31×, so the page was spaghettifying five times less than a mouse
+ * pointer. And being a function of the fraction travelled rather than of distance, it began
+ * deforming things the moment they set off, which reads as the page wobbling rather than as
+ * something being drawn out by a mass.
+ *
+ * On the cube law a shred travels its own shape almost all the way in and then smears.
+ */
+const TIDE_K = 20
+/**
+ * The ceiling. The plate allows its cursor 40×, but a cursor is 0.095 plate units long and a
+ * paragraph is 600 pixels wide — the same multiple on a shred is a filament wider than any
+ * texture worth rastering. 16× is violent and stays inside sane layer sizes; by the time the
+ * law would ask for more, the shred is through the ring and has no light left anyway.
+ */
+const TIDE_CAP = 16
 /** The plunge's acceleration — SignalPlate's own exponent for the same event. */
 const PLUNGE = 2.2
+
+/**
+ * The melt: where dissolution starts, in ring radii, and how many steps it is quantised to.
+ *
+ * A shred does not fade out as a whole — it is *eaten*, leading edge first, so what is left is
+ * the tail that has not gone through yet. That is the difference between an element vanishing
+ * and an element being swallowed, and it is the only part of this effect that costs paint, which
+ * is why it is stepped: eight repaints across a shred's whole crossing rather than sixty a
+ * second.
+ */
+const MELT_FROM = 2.4
+const MELT_STEPS = 8
+/** How soft the eaten edge is, as a percentage of the shred's own length along the infall line. */
+const MELT_SOFT = 38
 
 /**
  * Distance and bearing from the hole to a point.
@@ -123,15 +163,24 @@ export function infall(seed: ShredSeed, u: number, ringR: number): InfallFrame {
   const q = r0 / Math.max(r, r0 * 0.06)
   const theta = seed.a0 + Math.min(WIND * (Math.pow(q, 1.5) - 1), WIND_CAP)
 
-  // Spaghettification. Zero at rest, peaking as it arrives; across is the square root, so a
-  // shred gets longer and thinner rather than simply larger.
-  const stretch = 1 + TIDE * Math.pow(1 - r / r0, 2)
+  // Spaghettification, on the cube law and measured against the hole's own size rather than
+  // against how far the shred has come. Across is the square root of along, so a shred gets
+  // longer and thinner instead of simply larger — the rule the plate states for its own cursor.
+  const tide = ring / Math.max(r, ring * 0.42)
+  const stretch = Math.min(1 + TIDE_K * tide * tide * tide, TIDE_CAP)
   const across = 1 / Math.sqrt(stretch)
 
-  // The one fade on the page, and it is the same factor as every other thing this hole has
-  // taken. It reaches zero at the ring, and r reaches zero at u = 1, so a consumed shred is
-  // always fully gone whatever the hole's size is doing.
-  const alpha = Math.sqrt(Math.max(1 - ring / Math.max(r, ring), 0))
+  // The melt. Nothing until the shred is inside a couple of ring radii, then the leading edge
+  // starts going through and the shred is eaten from the front. Quantised so that acting on it
+  // costs eight repaints over the whole crossing rather than one per frame.
+  const raw = (MELT_FROM * ring - r) / Math.max(MELT_FROM * ring - ring, 1e-6)
+  const melt = Math.round(clamp(raw, 0, 1) * MELT_STEPS) / MELT_STEPS
+
+  // The overall fade is the same factor as every other thing this hole has taken, and it is
+  // deliberately the *slower* of the two now: the melt does the work of making a shred vanish,
+  // and this only makes sure nothing is ever left drawn inside the shadow. Square-rooted once
+  // more so it hangs on while the melt eats, rather than dimming the tail out from under it.
+  const alpha = Math.sqrt(Math.sqrt(Math.max(1 - ring / Math.max(r, ring), 0)))
 
   return {
     dx: Math.cos(theta) * r - Math.cos(seed.a0) * r0,
@@ -140,7 +189,30 @@ export function infall(seed: ShredSeed, u: number, ringR: number): InfallFrame {
     stretch,
     across,
     alpha,
+    melt,
   }
+}
+
+/**
+ * The mask that eats a shred, as a CSS gradient across its own box.
+ *
+ * The gradient line runs *away* from the hole, so its first stop is the leading edge — the part
+ * that goes through first. As `melt` climbs, the transparent stop sweeps along the element and
+ * the shred is consumed head first, leaving a tail that thins and stretches behind it.
+ *
+ * The stops start off the near end at `−MELT_SOFT` so that `melt = 0` is a fully opaque element
+ * rather than one that is already a third eaten, and they run past 100% so that `melt = 1` is
+ * fully gone. Returns an empty string when there is nothing to mask, which is the caller's cue
+ * to remove the property rather than set an inert one — a mask is a paint, even a no-op one.
+ *
+ * CSS gradient angles are clockwise from "up"; the bearing here is the usual atan2 from +x with
+ * y pointing down the screen. Hence the +90.
+ */
+export function maskOf(bearing: number, melt: number): string {
+  if (melt <= 0) return ''
+  const angle = (bearing * 180) / Math.PI + 90
+  const eaten = melt * (100 + MELT_SOFT)
+  return `linear-gradient(${angle.toFixed(1)}deg, transparent ${(eaten - MELT_SOFT).toFixed(1)}%, #000 ${eaten.toFixed(1)}%)`
 }
 
 /**
