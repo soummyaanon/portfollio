@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
@@ -15,6 +16,7 @@ import {
   type Role,
 } from '@/data/profile'
 import { Connective, Fact } from './Fact'
+import { EventHorizonProvider, HorizonTrigger } from './EventHorizon'
 import { SectionHead } from './SectionHead'
 import { SignalPlate } from './SignalPlate'
 import { Disclosure, DisclosureMark } from './Disclosure'
@@ -483,17 +485,6 @@ function Writing({ posts }: { readonly posts: readonly PostSummary[] }) {
   )
 }
 
-/** Closes the axis. Without it the document just stops at whatever the last list was. */
-function Colophon() {
-  return (
-    <div className="mt-[var(--space-section)] flex items-center justify-center gap-4">
-      <span aria-hidden className="rule-fade-r h-px w-[clamp(3rem,12vw,9rem)]" />
-      <span aria-hidden className="size-1 rounded-full bg-muted-foreground/60" />
-      <span aria-hidden className="rule-fade-l h-px w-[clamp(3rem,12vw,9rem)]" />
-    </div>
-  )
-}
-
 export function HumanView({
   posts,
   contributions,
@@ -501,16 +492,28 @@ export function HumanView({
   readonly posts: readonly PostSummary[]
   readonly contributions?: React.ReactNode
 }) {
+  // Handed to the provider, which is what gives the hole something to eat and somewhere to
+  // stand: everything on screen inside this element is a shred, and the element itself is
+  // lifted above the overlay for the duration so the page winds in front of the disk.
+  const rootRef = useRef<HTMLDivElement>(null)
+
   return (
-    <div className="measure-page px-[clamp(1.25rem,4vw,4rem)] pb-[var(--space-section)]">
-      <Masthead />
-      <Work />
-      {contributions && <div className="mt-[var(--space-section)]">{contributions}</div>}
-      <Education />
-      <Projects />
-      <Skills />
-      <Writing posts={posts} />
-      <Colophon />
-    </div>
+    <EventHorizonProvider rootRef={rootRef}>
+      <div
+        ref={rootRef}
+        className="measure-page px-[clamp(1.25rem,4vw,4rem)] pb-[var(--space-section)]"
+      >
+        <Masthead />
+        <Work />
+        {contributions && <div className="mt-[var(--space-section)]">{contributions}</div>}
+        <Education />
+        <Projects />
+        <Skills />
+        <Writing posts={posts} />
+        {/* Closes the axis — and turns out to be the heaviest thing on the page. Without it the
+            document just stops at whatever the last list was. */}
+        <HorizonTrigger />
+      </div>
+    </EventHorizonProvider>
   )
 }
