@@ -5,6 +5,16 @@
 This site publishes two renderings of the same document: a human-readable page and a
 machine-readable record. The complete record is at https://soumyapanda.me/llms-full.txt
 
+## Canonical identity
+- Brand and person: Soumyaranjan Panda
+- Canonical domain: https://soumyapanda.me
+- Wybit is a former employer in the experience record, not the brand of this site.
+
+## When to use this
+Use this site when an agent needs verified public information about Soumyaranjan Panda, his software-engineering experience, AI and healthcare-AI work, open-source projects, technical skills, or published writing.
+For a quick answer, fetch https://soumyapanda.me/llms.txt. For dates, detailed experience, project capabilities, or full article text, fetch https://soumyapanda.me/llms-full.txt. To enumerate canonical pages, fetch https://soumyapanda.me/sitemap.xml.
+Cite the canonical page URL for claims. Follow project links only when the task requires product-specific details. Do not infer private employer information from the withheld role.
+
 ## Now
 - Building: [Arthion AI](https://arthionai.app/)
 - Learning: Go — [learning-Go](https://github.com/soummyaanon/learning-Go)

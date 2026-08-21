@@ -20,7 +20,13 @@ export function ModeToggle() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <div className="fixed right-[clamp(1rem,3vw,2.5rem)] top-[clamp(1rem,3vw,2rem)] z-50">
+    // data-horizon-eat: fixed chrome lives outside the human view, so the hole at the foot of
+    // the page would never find it by walking the document. Left behind it would be the one
+    // object still floating over an empty screen, which reads as a bug rather than a decision.
+    <div
+      data-horizon-eat
+      className="fixed right-[clamp(1rem,3vw,2.5rem)] top-[clamp(1rem,3vw,2rem)] z-50"
+    >
       <div
         role="radiogroup"
         aria-label="Document rendering"

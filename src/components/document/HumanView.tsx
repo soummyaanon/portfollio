@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
@@ -15,8 +16,9 @@ import {
   type Role,
 } from '@/data/profile'
 import { Connective, Fact } from './Fact'
+import { EventHorizonProvider, HorizonTrigger } from './EventHorizon'
 import { SectionHead } from './SectionHead'
-import { SignalPlate } from './SignalPlate'
+import { PLATE_RS, SignalPlate, type HorizonDrive } from './SignalPlate'
 import { Disclosure, DisclosureMark } from './Disclosure'
 import { ToolMark } from './ToolMark'
 import { orgVeilClass } from './withheld'
@@ -42,7 +44,7 @@ function pad(value: number) {
   return String(value).padStart(2, '0')
 }
 
-function Masthead() {
+function Masthead({ drive }: { readonly drive: React.RefObject<HorizonDrive> }) {
   return (
     // Top padding clears the fixed mode toggle, which owns the top-right corner. It is pulled
     // in tighter than the plate below it is tall: the plate grew, and it grew upward, because
@@ -51,8 +53,12 @@ function Masthead() {
     <header className="pt-[clamp(3rem,4.5vw,4.25rem)] text-center">
       {/* The catalogued object at the centre of the plate is now the black hole itself, not a
           portrait: the chart is drawn around the one thing on it that bends everything else,
-          and the name below is what the plate is evidence for. */}
-      <SignalPlate />
+          and the name below is what the plate is evidence for.
+
+          It is also the attractor for the swallow at the foot of the page, which is why it is
+          handed the drive: press the dot down there and this is the hole the document climbs
+          into. Nothing else on the page needs to know that. */}
+      <SignalPlate drive={drive} />
 
       {/* Two lines, tight leading, optical tracking pulled in — at this size the default
           spacing reads loose. The only element on the site allowed to reach display size.
@@ -63,6 +69,7 @@ function Masthead() {
           <span className="block">
             <Fact id="person.given">{person.givenName}</Fact>
           </span>
+          {' '}
           <span className="block">
             <Fact id="person.family">{person.familyName}</Fact>
           </span>
@@ -483,17 +490,6 @@ function Writing({ posts }: { readonly posts: readonly PostSummary[] }) {
   )
 }
 
-/** Closes the axis. Without it the document just stops at whatever the last list was. */
-function Colophon() {
-  return (
-    <div className="mt-[var(--space-section)] flex items-center justify-center gap-4">
-      <span aria-hidden className="rule-fade-r h-px w-[clamp(3rem,12vw,9rem)]" />
-      <span aria-hidden className="size-1 rounded-full bg-muted-foreground/60" />
-      <span aria-hidden className="rule-fade-l h-px w-[clamp(3rem,12vw,9rem)]" />
-    </div>
-  )
-}
-
 export function HumanView({
   posts,
   contributions,
@@ -501,16 +497,33 @@ export function HumanView({
   readonly posts: readonly PostSummary[]
   readonly contributions?: React.ReactNode
 }) {
+  // Handed to the provider, which is what gives the hole something to eat: everything inside this
+  // element is a shred, except the plate's own subtree.
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  // The one piece of shared state between the foot of the page and the top of it. Held here
+  // because this is the nearest thing that owns both, and it is a ref rather than state because
+  // the swallow writes to it sixty times a second. At rest it is the plate's own geometry, so
+  // the plate reads it unconditionally and there is no second path for "nothing is happening".
+  const driveRef = useRef<HorizonDrive>({ rs: PLATE_RS, field: 1, strike: 0, taking: false })
+
   return (
-    <div className="measure-page px-[clamp(1.25rem,4vw,4rem)] pb-[var(--space-section)]">
-      <Masthead />
-      <Work />
-      {contributions && <div className="mt-[var(--space-section)]">{contributions}</div>}
-      <Education />
-      <Projects />
-      <Skills />
-      <Writing posts={posts} />
-      <Colophon />
-    </div>
+    <EventHorizonProvider rootRef={rootRef} driveRef={driveRef}>
+      <div
+        ref={rootRef}
+        className="measure-page px-[clamp(1.25rem,4vw,4rem)] pb-[var(--space-section)]"
+      >
+        <Masthead drive={driveRef} />
+        <Work />
+        {contributions && <div className="mt-[var(--space-section)]">{contributions}</div>}
+        <Education />
+        <Projects />
+        <Skills />
+        <Writing posts={posts} />
+        {/* Closes the axis — and turns out to be the heaviest thing on the page. Without it the
+            document just stops at whatever the last list was. */}
+        <HorizonTrigger />
+      </div>
+    </EventHorizonProvider>
   )
 }

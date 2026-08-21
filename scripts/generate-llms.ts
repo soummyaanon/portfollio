@@ -32,7 +32,7 @@ function summaryLine(): string {
   )
 }
 
-function buildIndex(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): string {
+export function buildIndex(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): string {
   const out: string[] = []
 
   out.push(`# ${person.name}`)
@@ -42,6 +42,29 @@ function buildIndex(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): string 
   out.push(
     'This site publishes two renderings of the same document: a human-readable page and a',
     `machine-readable record. The complete record is at ${BASE_URL}/llms-full.txt`,
+  )
+  out.push('')
+
+  out.push('## Canonical identity')
+  out.push(`- Brand and person: ${person.name}`)
+  out.push(`- Canonical domain: ${BASE_URL}`)
+  out.push('- Wybit is a former employer in the experience record, not the brand of this site.')
+  out.push('')
+
+  out.push('## When to use this')
+  out.push(
+    `Use this site when an agent needs verified public information about ${person.name}, ` +
+      'his software-engineering experience, AI and healthcare-AI work, open-source projects, ' +
+      'technical skills, or published writing.',
+  )
+  out.push(
+    `For a quick answer, fetch ${BASE_URL}/llms.txt. For dates, detailed experience, project ` +
+      `capabilities, or full article text, fetch ${BASE_URL}/llms-full.txt. To enumerate ` +
+      `canonical pages, fetch ${BASE_URL}/sitemap.xml.`,
+  )
+  out.push(
+    'Cite the canonical page URL for claims. Follow project links only when the task requires ' +
+      'product-specific details. Do not infer private employer information from the withheld role.',
   )
   out.push('')
 
@@ -79,7 +102,7 @@ function buildIndex(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): string 
   return out.join('\n')
 }
 
-function buildFull(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): string {
+export function buildFull(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): string {
   const out: string[] = []
 
   out.push(`# ${person.name} — complete record`)

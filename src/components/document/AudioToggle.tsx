@@ -31,7 +31,7 @@ export function AudioToggle() {
   const wantsSound = useRef(false)
   const [state, setState] = useState<State>('off')
 
-  const rampTo = useCallback((target: number, done?: () => void) => {
+  const rampTo = useCallback((target: number, done?: () => void, ms = RAMP_MS) => {
     const audio = audioRef.current
     if (!audio) return
     cancelAnimationFrame(frameRef.current)
@@ -39,7 +39,7 @@ export function AudioToggle() {
     const started = performance.now()
 
     const step = (now: number) => {
-      const t = Math.min(1, (now - started) / RAMP_MS)
+      const t = Math.min(1, (now - started) / ms)
       audio.volume = Math.max(0, Math.min(1, from + (target - from) * t))
       if (t < 1) frameRef.current = requestAnimationFrame(step)
       else done?.()
@@ -82,6 +82,30 @@ export function AudioToggle() {
       wantsSound.current = false
       setState('unavailable')
     }
+  }, [rampTo])
+
+  /**
+   * The hole takes the sound too.
+   *
+   * Heard off the window rather than wired up through a context or lifted state, and that is the
+   * point: this control knows nothing about the event horizon, and the event horizon knows
+   * nothing about this control. A decorative coupling should not be able to make an audio
+   * control's correctness depend on a visual gag — the worst this can do is move a volume.
+   *
+   * Only ever ducks what is already playing. Nothing here starts sound, because nothing may:
+   * a browser would refuse it without a gesture, and a page that begins playing music at a
+   * black hole is a page nobody forgives.
+   */
+  useEffect(() => {
+    function onDuck(event: Event) {
+      if (!wantsSound.current) return
+      const detail = (event as CustomEvent<{ to?: string; ms?: number }>).detail
+      const target = detail?.to === 'duck' ? LEVEL * 0.2 : LEVEL
+      rampTo(target, undefined, detail?.ms ?? RAMP_MS)
+    }
+
+    window.addEventListener('horizon:duck', onDuck)
+    return () => window.removeEventListener('horizon:duck', onDuck)
   }, [rampTo])
 
   useEffect(

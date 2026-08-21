@@ -506,7 +506,10 @@ const NavigationDock = () => {
   }
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+    // data-horizon-eat: fixed chrome lives outside the human view, so the black hole at the
+    // top of the page would never find this dock by walking the document. Left unmarked it was
+    // the one thing still floating over the void while everything else was eaten.
+    <div data-horizon-eat className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
       <Dock
         direction="middle"
         iconSize={DEFAULT_SIZE}

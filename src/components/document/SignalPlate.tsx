@@ -82,6 +82,9 @@ uniform float uShadow;   // 1 when the ink is darker than the paper, 0 when it i
 uniform vec4  uPsr[3];    // three pulsars: xy = where it is, z = the flyby gate, w = beam axis angle
 uniform vec3  uPsrLit[3]; // x = the lighthouse flash, 0..1; y = Doppler beaming; z = √(Ω/Ω₀), the spread
 uniform vec4  uCam;      // the camera: xy = cos/sin of azimuth, z = sin(elevation), w = cos(elevation)
+uniform float uField;    // ambient sky density — at 0 the whole field is skipped, not just faded
+uniform float uRs;       // the Schwarzschild radius, plate units — everything else follows from it
+uniform vec2  uSeat;     // where the hole sits, plate space
 
 out vec4 fragColor;
 
@@ -777,7 +780,10 @@ void main() {
   // whole page has no business waving. Everything else travels around it: the star layers,
   // the nebulas, and the occasional meteor.
   float span = (uSize.x / uSize.y) * 2.0 + 1.4;
-  vec2 holeAt = vec2(0.0, 0.03);
+  // The seat is handed in rather than fixed here. On the plate it is the constant it always
+  // was; on the event horizon overlay it travels, because a hole that grows out of the dot
+  // closing the document has to start where that dot is and then take the middle of the screen.
+  vec2 holeAt = uSeat;
 
   // One stream, and it is one number.
   //
@@ -813,9 +819,18 @@ void main() {
   // it is set just outside the capture radius, so the strong-lensing region hugs the shadow
   // the way it does when the source sky sits far behind the lens, and the far side of the
   // disk folds up against the ring instead of floating above it.
-  float rs = 0.075;
+  // Handed in for the same reason the seat is: the overlay's hole grows, and the growth is
+  // this one number moving. It was a constant here with a copy on the CPU and a comment asking
+  // whoever edited one to remember the other; there is one source for it now.
+  float rs = uRs;
   float holeR = 2.598 * rs;
-  float einstein = 0.25;
+  // Held at a fixed ratio to the capture radius rather than as an absolute, which it was while
+  // rs was a constant and the two happened to agree. They stop agreeing the moment the hole
+  // grows: at the horizon overlay's final size a literal 0.25 would put the entire strong-lensing
+  // region *inside* the black disc, so the far side of the disk would have nothing to fold up
+  // against and the ring would come apart. 1.283 is 0.25 / (2.598 · 0.075) — the plate renders
+  // exactly what it rendered before, and every other size now renders the same picture scaled.
+  float einstein = holeR * 1.283;
 
   // Time, bent. Two separate relativistic effects, and they show up in different ways:
   //
@@ -871,30 +886,55 @@ void main() {
   float uSrc = length(sky - holeAt) / einstein;
   float magn = min((uSrc * uSrc + 2.0) / max(uSrc * sqrt(uSrc * uSrc + 4.0), 1e-3), 6.0);
 
+  // Everything from here to the disk is the *field* — the sky the hole sits in — and every bit
+  // of it is gated on uField, which runs from 1 at rest to 0 while the hole is eating the page.
+  //
+  // It drains because the hole is taking the field too. The plate already has a drain: every star
+  // is multiplied by the Schwarzschild factor, so the ones that pass too close go out. This is
+  // that idea at the scale of the whole sky — while the document is being swallowed the starlight
+  // goes with it, and what is left at the bottom of it is the subject alone: the lens, the shadow,
+  // the disk, the photon ring. A hole in a void, which is the right picture for a page that has
+  // just been eaten.
+  //
+  // The gate is a skip rather than a fade, and that is worth something exactly when it fires. At
+  // uField = 0 the four star shells, the nine galaxies, the twelve nebula wisps, the two wave
+  // integrals, the meteors, the asteroids and the three pulsars are not evaluated at all — and
+  // zero is reached at the moment the hole is at its fattest, where rs is three and a half times
+  // its resting value and the disk covers most of the plate. The most expensive frames are the
+  // ones that stop paying for a sky nobody can see.
+  //
+  // Every branch is on a uniform, so control flow stays uniform across the wavefront and there is
+  // no divergence to pay for. The multiplications by uField carry the partial values in between.
+  float anomaly = 0.0;
+
   // The incursions, as strain: displacement applied to the sky, envelopes kept for the blur.
-  float breathe1 = smoothstep(0.30, 0.95, sin(uTime * 0.047) * 0.5 + 0.5);
-  float breathe2 = smoothstep(0.38, 0.98, cos(uTime * 0.031) * 0.5 + 0.5) * 0.7;
-  vec3 wave1 = gwave(sky, vec2(sin(uTime * 0.061) * 1.30, cos(uTime * 0.043) * 0.50), uTime, 1.05, 3.1, breathe1, uTime * 0.021);
-  vec3 wave2 = gwave(sky, vec2(cos(uTime * 0.037) * 1.05, sin(uTime * 0.029) * 0.58), uTime, 0.83, 2.6, breathe2, 1.7 - uTime * 0.017);
-  // The strain is held out of the lens's neighbourhood. Near the mass, spacetime is the
-  // hole's, and a passing ripple is a rounding error on it — and on the plate, a wobbling
-  // shadow reads as a broken shadow. The waves own the field; the hole owns its ground.
-  float calm = smoothstep(0.30, 0.85, length(p - holeAt));
-  sky += (wave1.xy + wave2.xy) * calm;
-  float anomaly = clamp(wave1.z + wave2.z, 0.0, 1.0) * calm;
+  if (uField > 0.0) {
+    float breathe1 = smoothstep(0.30, 0.95, sin(uTime * 0.047) * 0.5 + 0.5);
+    float breathe2 = smoothstep(0.38, 0.98, cos(uTime * 0.031) * 0.5 + 0.5) * 0.7;
+    vec3 wave1 = gwave(sky, vec2(sin(uTime * 0.061) * 1.30, cos(uTime * 0.043) * 0.50), uTime, 1.05, 3.1, breathe1, uTime * 0.021);
+    vec3 wave2 = gwave(sky, vec2(cos(uTime * 0.037) * 1.05, sin(uTime * 0.029) * 0.58), uTime, 0.83, 2.6, breathe2, 1.7 - uTime * 0.017);
+    // The strain is held out of the lens's neighbourhood. Near the mass, spacetime is the
+    // hole's, and a passing ripple is a rounding error on it — and on the plate, a wobbling
+    // shadow reads as a broken shadow. The waves own the field; the hole owns its ground.
+    float calm = smoothstep(0.30, 0.85, length(p - holeAt));
+    sky += (wave1.xy + wave2.xy) * calm * uField;
+    anomaly = clamp(wave1.z + wave2.z, 0.0, 1.0) * calm * uField;
+  }
 
   // The flow, pulled toward the mass. Applied to the streaming field only — the stars, the dust and
   // the nebulas — and deliberately not to the galaxies, which sit at fixed world positions and are
   // not part of this current, nor to the pulsar, whose infall is integrated properly on the CPU and
   // would be counted twice.
-  vec2 flow = flowPull(sky, holeAt, 0.018);
+  vec2 flow = uField > 0.0 ? flowPull(sky, holeAt, 0.018) : sky;
 
   // The graticule: meridians and parallels, each bowed a little by the other's coordinate, so
   // the grid carries the suggestion of a projected sphere before anything bends it. It is the
   // paper, not the subject — but it is also the only thing on the plate whose *shape* is known
   // in advance, which is what makes it the instrument that shows the lensing.
   vec2 q = vec2(sky.x * (1.0 + 0.055 * sky.y * sky.y), sky.y + 0.045 * sky.x * sky.x);
-  float graticule = max(contour(q.x * 1.35, 3.0), contour(q.y * 1.35, 3.0)) * 0.075;
+  float graticule = uField > 0.0
+    ? max(contour(q.x * 1.35, 3.0), contour(q.y * 1.35, 3.0)) * 0.075 * uField
+    : 0.0;
 
   // A dust lane, drifting with the deep sky. Two octaves of value noise inside a soft diagonal
   // band, at a few percent — enough that the field is not evenly empty, never enough to read
@@ -902,9 +942,12 @@ void main() {
   // The dust rides the stream too, on the farthest shell of all — which is why it barely moves.
   // It was the one thing on the plate reading its own clock rather than the sky's; now it carries
   // the same delay as everything else out there, because it is out there.
-  vec2 dustAt = flow * vec2(0.9, 2.1) - vec2(tSky * (streamV / SHELL_DUST), 0.0);
-  float dust = (noise(dustAt * 1.7) * 0.65 + noise(dustAt * 3.9) * 0.35);
-  dust *= smoothstep(0.95, 0.10, abs(sky.y * 1.6 - sky.x * 0.28)) * mix(0.030, 0.016, uShadow);
+  float dust = 0.0;
+  if (uField > 0.0) {
+    vec2 dustAt = flow * vec2(0.9, 2.1) - vec2(tSky * (streamV / SHELL_DUST), 0.0);
+    dust = (noise(dustAt * 1.7) * 0.65 + noise(dustAt * 3.9) * 0.35);
+    dust *= smoothstep(0.95, 0.10, abs(sky.y * 1.6 - sky.x * 0.28)) * mix(0.030, 0.016, uShadow) * uField;
+  }
 
   // Small nebulas, where the wormhole used to be. Three wisps riding two of the sky's depth
   // layers, wrapping on the same span as everything else that travels — so they cross, leave,
@@ -924,19 +967,24 @@ void main() {
   // only reason they were ever put there was to keep them in view, and the twinning above removed
   // that reason: on a shell whose wrap period is five minutes, one of a twinned pair is still always
   // on the plate. So they go where they belong and stay visible anyway.
-  vec2 nebA = flow + vec2(mod(tSky * (streamV / SHELL_VEIL) + span * 0.31, span) - span * 0.5, 0.0);
-  vec2 nebB = flow + vec2(mod(tSky * (streamV / SHELL_DUST) + span * 0.77, span) - span * 0.5, 0.0);
+  float nebula = 0.0;
+  float nebHa = 0.0;
+  float nebO3 = 0.0;
+  float nebRef = 0.0;
+  if (uField > 0.0) {
+    vec2 nebA = flow + vec2(mod(tSky * (streamV / SHELL_VEIL) + span * 0.31, span) - span * 0.5, 0.0);
+    vec2 nebB = flow + vec2(mod(tSky * (streamV / SHELL_DUST) + span * 0.77, span) - span * 0.5, 0.0);
   // Twinned like the coloured ones, for the same reason: these shells are slow enough that a single
   // centre would be off-plate for minutes at a time.
-  float nebula = wisp2(nebA, vec2(-0.72, 0.47), 0.17, span)
-               + wisp2(nebA, vec2(0.95, -0.50), 0.21, span)
-               + wisp2(nebB, vec2(0.18, 0.62), 0.13, span)
-               // Three more, smaller — filling the space the asterism left without putting another
-               // drawn figure there.
-               + wisp2(nebA, vec2(-1.10, -0.42), 0.085, span)
-               + wisp2(nebB, vec2(1.08, 0.34), 0.070, span)
-               + wisp2(nebB, vec2(-0.30, -0.66), 0.095, span);
-  nebula *= mix(0.085, 0.045, uShadow);
+    nebula = wisp2(nebA, vec2(-0.72, 0.47), 0.17, span)
+           + wisp2(nebA, vec2(0.95, -0.50), 0.21, span)
+           + wisp2(nebB, vec2(0.18, 0.62), 0.13, span)
+           // Three more, smaller — filling the space the asterism left without putting another
+           // drawn figure there.
+           + wisp2(nebA, vec2(-1.10, -0.42), 0.085, span)
+           + wisp2(nebB, vec2(1.08, 0.34), 0.070, span)
+           + wisp2(nebB, vec2(-0.30, -0.66), 0.095, span);
+    nebula *= mix(0.085, 0.045, uShadow) * uField;
 
   // Colour, out in the far field — and it passes the plate's own rule rather than bending it.
   //
@@ -957,20 +1005,20 @@ void main() {
   // them is off-plate for minutes at a stretch — and each is a twinned pair, so one is always in
   // view. Kept to |x| under about 1.15 as well: the plate's edge mask passes only a quarter to a
   // half of the ink out past that, which is the same trap the galaxies fell into.
-  float nebHa = wisp2(nebA, vec2(-1.02, 0.54), 0.160, span)
-              + wisp2(nebB, vec2(-0.56, -0.72), 0.115, span);
-  float nebO3 = wisp2(nebB, vec2(0.88, 0.30), 0.125, span)
-              + wisp2(nebA, vec2(1.06, -0.44), 0.105, span);
-  float nebRef = wisp2(nebA, vec2(0.34, -0.66), 0.140, span)
-               + wisp2(nebB, vec2(-1.14, 0.20), 0.120, span);
+    nebHa = wisp2(nebA, vec2(-1.02, 0.54), 0.160, span)
+          + wisp2(nebB, vec2(-0.56, -0.72), 0.115, span);
+    nebO3 = wisp2(nebB, vec2(0.88, 0.30), 0.125, span)
+          + wisp2(nebA, vec2(1.06, -0.44), 0.105, span);
+    nebRef = wisp2(nebA, vec2(0.34, -0.66), 0.140, span)
+           + wisp2(nebB, vec2(-1.14, 0.20), 0.120, span);
   // And a real amplitude. Colour only reads where the tinted thing is most of the ink in its pixel,
   // so a wash at a few percent comes out as grey with an opinion; this is faint but actually hued.
-  float nebTint = mix(0.70, 0.40, uShadow);
-  nebHa *= nebTint;
-  nebO3 *= nebTint;
-  nebRef *= nebTint;
-  float nebLitAll = nebHa + nebO3 + nebRef;
-  nebula = max(nebula, nebLitAll);
+    float nebTint = mix(0.70, 0.40, uShadow) * uField;
+    nebHa *= nebTint;
+    nebO3 *= nebTint;
+    nebRef *= nebTint;
+    nebula = max(nebula, nebHa + nebO3 + nebRef);
+  }
 
   // The galaxies, far out in the field where there is room for them — the hole keeps the
   // centre, and these are scenery at eight to thirty units. Extended sources, so like the
@@ -988,7 +1036,7 @@ void main() {
   // behind, the lens shears it into arcs, closes it toward an Einstein ring at alignment, and then
   // the capture radius takes the light and the galaxy is gone from the plate. Nothing is torn apart.
   // The event that genuinely tears something apart and swallows it needs a star, not a galaxy.
-  float galaxies = galaxyField(sky) * dil * mix(0.90, 0.50, uShadow);
+  float galaxies = uField > 0.0 ? galaxyField(sky) * dil * mix(0.90, 0.50, uShadow) * uField : 0.0;
 
   // The ranging sweep: a hairline circle opening from wherever the plate was last struck, fast
   // at first and easing to a stop. The one thing here that happens because someone asked.
@@ -1006,19 +1054,24 @@ void main() {
   // carried heavier on a light ground, where a mid-grey dot is a far weaker mark than a pale
   // one on near-black at the same alpha. Inside an incursion the cores swell, which is the
   // blur — stars going out of focus because the space they are being seen through is not flat.
-  float weight = mix(1.0, 1.10, uShadow);
-  float glow = mix(0.20, 0.055, uShadow);
-  float swell = 1.0 + anomaly * 0.55;
-  // Each shell's distance appears twice in its own call and nowhere else — once as the rate it
-  // drifts at, once as the density it is drawn at. That repetition is the point.
-  float deep = catalogue(flow - vec2(tSky * (streamV / SHELL_DEEP), 0.0), SHELL_DEEP, 0.20, uTime, 0.55 * weight, px, swell, glow, dil);
-  float mid = catalogue(flow - vec2(tSky * (streamV / SHELL_MID), 0.0), SHELL_MID, 0.17, uTime, 0.85 * weight, px, swell, glow, dil);
-  float near = catalogue(flow - vec2(tSky * (streamV / SHELL_NEAR), 0.0), SHELL_NEAR, 0.14, uTime, 1.00 * weight, px, swell, glow, dil);
-  // A fourth layer, behind the deep one: star dust. Denser, fainter, smaller and slower than
-  // everything in front of it — the veil that keeps the gaps between catalogued stars from
-  // reading as empty paper.
-  float veil = catalogue(flow - vec2(tSky * (streamV / SHELL_VEIL), 0.0), SHELL_VEIL, 0.30, uTime, 0.30 * weight, px, swell, glow * 0.4, dil);
-  float stars = max(max(near, veil), max(mid, deep));
+  // Four catalogue calls, and the most expensive thing on the plate — each walks a
+  // neighbourhood of cells. All four are behind the field gate.
+  float stars = 0.0;
+  if (uField > 0.0) {
+    float weight = mix(1.0, 1.10, uShadow) * uField;
+    float glow = mix(0.20, 0.055, uShadow);
+    float swell = 1.0 + anomaly * 0.55;
+    // Each shell's distance appears twice in its own call and nowhere else — once as the rate it
+    // drifts at, once as the density it is drawn at. That repetition is the point.
+    float deep = catalogue(flow - vec2(tSky * (streamV / SHELL_DEEP), 0.0), SHELL_DEEP, 0.20, uTime, 0.55 * weight, px, swell, glow, dil);
+    float mid = catalogue(flow - vec2(tSky * (streamV / SHELL_MID), 0.0), SHELL_MID, 0.17, uTime, 0.85 * weight, px, swell, glow, dil);
+    float near = catalogue(flow - vec2(tSky * (streamV / SHELL_NEAR), 0.0), SHELL_NEAR, 0.14, uTime, 1.00 * weight, px, swell, glow, dil);
+    // A fourth layer, behind the deep one: star dust. Denser, fainter, smaller and slower than
+    // everything in front of it — the veil that keeps the gaps between catalogued stars from
+    // reading as empty paper.
+    float veil = catalogue(flow - vec2(tSky * (streamV / SHELL_VEIL), 0.0), SHELL_VEIL, 0.30, uTime, 0.30 * weight, px, swell, glow * 0.4, dil);
+    stars = max(max(near, veil), max(mid, deep));
+  }
 
   // The accretion disk — the proper view of the hole, in the same single ink. The annulus
   // lives in the source plane and is seen here through the lens above, which is what folds
@@ -1034,10 +1087,13 @@ void main() {
   // plate usually has one or two in view and they never arrive together. Combined with max rather
   // than a sum: they are separate objects and a rare overlap should not double the ink.
   float psr = 0.0;
-  for (int i = 0; i < 3; i++) {
-    vec2 pp = pulsar(sky, uPsr[i].xy, uPsr[i].w, uPsrLit[i].x, uPsrLit[i].z, px)
-      * uPsr[i].z * uPsrLit[i].y;
-    psr = max(psr, pp.x * magn + pp.y);
+  if (uField > 0.0) {
+    for (int i = 0; i < 3; i++) {
+      vec2 pp = pulsar(sky, uPsr[i].xy, uPsr[i].w, uPsrLit[i].x, uPsrLit[i].z, px)
+        * uPsr[i].z * uPsrLit[i].y;
+      psr = max(psr, pp.x * magn + pp.y);
+    }
+    psr *= uField;
   }
 
 
@@ -1072,17 +1128,21 @@ void main() {
   // Meteors are point-like too, so they carry the magnification: one crossing behind the
   // hole flares as it goes, which is worth the wait when it happens. They are drawn against the
   // lensed sky like everything else out there, so they are drained on the same terms.
-  field = max(field, (meteor(sky, uTime, 3.1, px) + meteor(sky, uTime, 7.9, px)
-    + meteor(sky, uTime, 5.3, px)) * 0.6 * magn * dil);
+  if (uField > 0.0) {
+    field = max(field, (meteor(sky, uTime, 3.1, px) + meteor(sky, uTime, 7.9, px)
+      + meteor(sky, uTime, 5.3, px)) * 0.6 * magn * dil * uField);
+  }
 
   // Four asteroids on mutually indifferent periods, each on its own long chord. Point sources, so
   // they take the lens magnification like the stars and the meteors, and they are drained on the
   // same terms — one that wanders in close is stretched by the tide and then extinguished.
-  float rocks = asteroid(sky, holeAt, uTime, 1.7, px);
-  rocks = max(rocks, asteroid(sky, holeAt, uTime, 4.3, px));
-  rocks = max(rocks, asteroid(sky, holeAt, uTime, 6.1, px));
-  rocks = max(rocks, asteroid(sky, holeAt, uTime, 9.7, px));
-  field = max(field, rocks * 0.52 * magn * dil);
+  if (uField > 0.0) {
+    float rocks = asteroid(sky, holeAt, uTime, 1.7, px);
+    rocks = max(rocks, asteroid(sky, holeAt, uTime, 4.3, px));
+    rocks = max(rocks, asteroid(sky, holeAt, uTime, 6.1, px));
+    rocks = max(rocks, asteroid(sky, holeAt, uTime, 9.7, px));
+    field = max(field, rocks * 0.52 * magn * dil * uField);
+  }
   field = max(field, sweep * 0.30);
   field = max(field, psr);
 
@@ -1274,7 +1334,46 @@ function luminance([r, g, b]: readonly [number, number, number]): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
-export function SignalPlate({ children }: { readonly children?: React.ReactNode }) {
+/**
+ * The plate's own geometry: one free parameter and a seat, handed to the shader as uniforms
+ * rather than repeated as constants at both ends. The GLSL used to carry `rs` and the seat as
+ * literals with copies here and a comment asking whoever edited one to remember the other.
+ */
+export const PLATE_RS = 0.075
+const PLATE_SEAT_X = 0
+const PLATE_SEAT_Y = 0.03
+/** √27/2 — the photon capture radius in units of rs. The edge of the black disc, not the horizon. */
+export const CAPTURE_RATIO = 2.598
+
+/**
+ * What the event horizon takes hold of while it is eating the page.
+ *
+ * Handed over as a mutable object behind a ref rather than as props, because these change sixty
+ * times a second and a prop would mean sixty React renders. It is the same arrangement the
+ * component already uses internally for the cursor mark, the strike and the pointer: the render
+ * happens once and the animation lives outside it.
+ *
+ * At rest it holds the plate's own values, so the drive is always the authority and there is no
+ * second code path for "nothing is happening".
+ */
+export interface HorizonDrive {
+  /** Schwarzschild radius, plate units. The hole's swelling is this number moving. */
+  rs: number
+  /** Ambient sky density, 1 at rest. The field drains as the hole feeds. */
+  field: number
+  /** Bumped to open a ranging ring from the hole. Any change fires one. */
+  strike: number
+  /** True while the page is being taken, which retires the cursor stand-in for the duration. */
+  taking: boolean
+}
+
+export function SignalPlate({
+  children,
+  drive,
+}: {
+  readonly children?: React.ReactNode
+  readonly drive?: React.RefObject<HorizonDrive | null>
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const probeRef = useRef<HTMLSpanElement>(null)
   const paperProbeRef = useRef<HTMLSpanElement>(null)
@@ -1353,6 +1452,9 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     const uPsr = gl.getUniformLocation(program, 'uPsr')
     const uPsrLit = gl.getUniformLocation(program, 'uPsrLit')
     const uCam = gl.getUniformLocation(program, 'uCam')
+    const uField = gl.getUniformLocation(program, 'uField')
+    const uRs = gl.getUniformLocation(program, 'uRs')
+    const uSeat = gl.getUniformLocation(program, 'uSeat')
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 
@@ -1368,17 +1470,22 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     // clicked, rather than having been clicked at the origin at time zero.
     const pulse = { x: 0, y: 0, at: -1000 }
 
+    // The last strike counter seen on the drive, so a bump fires exactly one ring.
+    let lastStrike = 0
+
     // The cursor's position in plate space, for the absorption mark. The rendered values
     // chase the targets rather than jumping, so a fast hand drags the mark instead of
     // teleporting it — which near the mass reads as the hand losing the tug of war. Parked
     // far off-plate so the mark's first appearance is a fade-in, not a jump from origin.
     const pointer = { x: 0, y: -3, targetX: 0, targetY: -3, hover: 0, targetHover: 0 }
 
-    // Mirrors of the shader's geometry — the hole's seat and its capture radius — so the
-    // CPU can choreograph what the GPU draws. Change rs in the GLSL and change it here.
-    const HOLE_X = 0
-    const HOLE_Y = 0.03
-    const HOLE_R = 2.598 * 0.075
+    // The hole's seat and its capture radius, so the CPU can choreograph what the GPU draws.
+    // Read off the same constants the shader is handed, so there is nothing left to keep in
+    // step by hand. Both are the plate's values: the cursor mark and the pulsar flyby that use
+    // them are field objects, and the field is switched off entirely on the horizon variant.
+    const HOLE_X = PLATE_SEAT_X
+    const HOLE_Y = PLATE_SEAT_Y
+    const HOLE_R = CAPTURE_RATIO * PLATE_RS
 
     /**
      * The mark's life as a state machine, because the absorption is now an event with a
@@ -1544,7 +1651,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
      * redrawing it while paused, a theme flip, a reduced-motion still frame. The path is a
      * pure function of the clock, so all of those land on it correctly by construction.
      */
-    const PSR_RS = 0.075                    // mirrors rs in the GLSL — change both together
+    const PSR_RS = PLATE_RS                 // the same one source as the shader's own rs
     const PSR_GM = PSR_RS / 2               // geometric units: c = 1, lengths in plate units
     const PSR_R0 = 2.6                      // handed to the integrator well off the plate
     const PSR_V0 = 0.3                      // c, comfortably above escape at r0 — unbound
@@ -1828,18 +1935,45 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     function draw(time: number) {
       if (!gl) return
       resize()
+
+      // What the hole is doing this frame. At rest the drive holds the plate's own values, so
+      // this is one path rather than two.
+      const d = drive?.current ?? null
+      const rs = d ? d.rs : PLATE_RS
+      const field = d ? d.field : 1
+
+      // A ranging ring, asked for from outside — the one the hole opens as it settles back to
+      // its own size. It reuses the strike the plate already draws for a click, seated at the
+      // hole rather than at a pointer.
+      if (d && d.strike !== lastStrike) {
+        lastStrike = d.strike
+        pulse.x = PLATE_SEAT_X
+        pulse.y = PLATE_SEAT_Y
+        pulse.at = time
+      }
+
       // Solved here rather than in the loop, so every path that renders a frame — the loop, a
       // resize while paused, a theme flip, the reduced-motion still — gets a pulsar that agrees
-      // with the clock that frame was drawn for.
-      updatePulsar(time, 0)
-      updatePulsar(time, 1)
-      updatePulsar(time, 2)
+      // with the clock that frame was drawn for. Skipped outright with the field: this is some
+      // fourteen hundred integration steps per star per frame, and there is no star to draw.
+      if (field > 0) {
+        updatePulsar(time, 0)
+        updatePulsar(time, 1)
+        updatePulsar(time, 2)
+      }
       gl.uniform2f(uSize, width, height)
       gl.uniform1f(uTime, time)
+      gl.uniform1f(uField, field)
+      gl.uniform1f(uRs, rs)
+      gl.uniform2f(uSeat, PLATE_SEAT_X, PLATE_SEAT_Y)
       gl.uniform2f(uMark, mark.x, mark.y)
       gl.uniform2f(uMarkDir, mark.dirX, mark.dirY)
       gl.uniform1f(uMarkTide, mark.tide)
-      gl.uniform1f(uMarkAlpha, mark.alpha)
+      // The stand-in is retired while the page is being taken. Its whole choreography is measured
+      // against the plate's resting capture radius, and the hole is several times that for those
+      // ten seconds — an arrow being absorbed at a radius the shadow has long since swallowed
+      // reads as a bug, and the hole has bigger prey in frame anyway.
+      gl.uniform1f(uMarkAlpha, d?.taking ? 0 : mark.alpha)
       gl.uniform1f(uMarkSpin, mark.spin)
       for (let i = 0; i < 3; i++) {
         const q = pulsars[i]!
@@ -2001,12 +2135,21 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       gl.deleteShader(fragment)
       gl.deleteBuffer(buffer)
     }
-  }, [])
+    // The drive is a ref, so its identity never changes: this still runs exactly once per mount
+    // and the WebGL context is never rebuilt.
+  }, [drive])
 
   return (
     // The tilt is gone with the rest of the cursor theatre, but the perspective stays on the
     // outer box: it is what lets a translateZ on anything seated on the plate read as depth.
-    <div className="relative isolate mx-auto grid h-[clamp(16rem,30vw,24rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]">
+    //
+    // data-horizon-hole marks this subtree as the attractor rather than prey. The swallow walks
+    // the document and transforms everything it finds; the one thing it must not touch is the
+    // hole doing the swallowing, and the audio control that rides along with it.
+    <div
+      data-horizon-hole
+      className="relative isolate mx-auto grid h-[clamp(16rem,30vw,24rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]"
+    >
       {/* Colour probe. The shader reads its ink off this element's resolved `color`,
           which costs nothing and keeps the palette in one place instead of duplicated in
           GLSL — including across a light/dark flip, where this simply resolves differently. */}

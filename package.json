@@ -7,6 +7,9 @@
     "build": "npm run generate && next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "test": "npm run generate-llms && vitest run",
+    "test:watch": "vitest",
+    "verify:output": "tsx scripts/verify-output.ts",
     "generate": "npm run generate-github && npm run generate-sitemap && npm run generate-llms",
     "generate-github": "npx tsx scripts/generate-github.ts",
     "generate-sitemap": "npx tsx scripts/generate-sitemap.ts",
@@ -52,7 +55,9 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "tailwindcss": "^4",
+    "tsx": "^4.23.12",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }
