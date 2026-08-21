@@ -76,6 +76,8 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+      - name: Test agent-facing behavior
+        run: ${{ steps.detect-package-manager.outputs.manager }} test
       # Runs the package `build` script rather than `next build` directly, so the build-time
       # generators run in CI too. Previously they did not, which meant sitemap.xml was only
       # ever refreshed when someone happened to build locally.
@@ -88,6 +90,8 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify generated public endpoints
+        run: ${{ steps.detect-package-manager.outputs.manager }} run verify:output
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -69,6 +69,7 @@ function Masthead({ drive }: { readonly drive: React.RefObject<HorizonDrive> }) 
           <span className="block">
             <Fact id="person.given">{person.givenName}</Fact>
           </span>
+          {' '}
           <span className="block">
             <Fact id="person.family">{person.familyName}</Fact>
           </span>
