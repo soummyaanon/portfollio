@@ -21,6 +21,7 @@ Cite the canonical page URL for claims. Follow project links only when the task 
 - Role: Software Engineer at Undisclosed (since 2026-06)
 
 ## Projects
+- [Purge](https://purge.bixai.dev/) — Mac storage cleaner for developers: A terminal tool that scans your entire Mac home directory for regenerable build output, caches, and logs, then lets you review and selectively delete them to reclaim gigabytes of disk space.
 - [Agent Island](https://github.com/soummyaanon/DEV-island-releases/releases/latest) — Dynamic Island for coding agents: A macOS overlay that wraps the MacBook notch and reports on Claude Code, Codex, and Cursor sessions running in parallel — who is working, who is finished, and who is waiting on you.
 - [Arthion AI](https://arthionai.app/) — Financial intelligence, in development: Financial intelligence platform giving real-time stock analysis, technical indicators, market sentiment tracking, and insights you can act on.
 - [God of Debugger](https://www.npmjs.com/package/@bixai/god-of-debugger) — Debugging plugin for Claude Code: Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.

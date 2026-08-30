@@ -226,6 +226,23 @@ export const education: readonly Education[] = [
 
 export const projects: readonly Project[] = [
   {
+    id: 'purge',
+    name: 'Purge',
+    tagline: 'Mac storage cleaner for developers',
+    status: 'live',
+    url: 'https://purge.bixai.dev/',
+    linkLabel: 'Visit site',
+    summary:
+      'A terminal tool that scans your entire Mac home directory for regenerable build output, caches, and logs, then lets you review and selectively delete them to reclaim gigabytes of disk space.',
+    capabilities: [
+      'Scans the whole home directory for junk files in one pass',
+      'Review interface — only checked items are deleted',
+      'Runs entirely in the terminal, installed via npm',
+      'Handles macOS permission restrictions with a fallback path',
+      'No dependencies, no telemetry',
+    ],
+  },
+  {
     // Source repo is private; the releases repo is public and is what the link points at.
     id: 'agent-island',
     name: 'Agent Island',
