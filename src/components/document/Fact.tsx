@@ -2,6 +2,8 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 
+import { useDocumentMode } from './DocumentMode'
+
 /**
  * Exponential ease-out. Real objects decelerate; they do not bounce.
  * Matches --ease-out-quint in globals.css.
@@ -66,6 +68,7 @@ export function Connective({
   readonly className?: string
 }) {
   const reduceMotion = useReducedMotion()
+  const { swapped } = useDocumentMode()
 
   if (reduceMotion) {
     return <span className={className}>{children}</span>
@@ -73,7 +76,10 @@ export function Connective({
 
   return (
     <motion.span
-      initial={{ opacity: 0 }}
+      // Fade only when a swap mounted this, never on first load. Prerendered at opacity 0,
+      // the hero sentence stayed invisible until hydration — the LCP element waited ~4.6s
+      // on mobile for JS, and a no-JS reader saw only the bold words of each sentence.
+      initial={swapped ? { opacity: 0 } : false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4, delay: MORPH_DURATION * 0.45 + delay, ease: 'linear' }}
       className={className}

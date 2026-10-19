@@ -2,6 +2,7 @@
 title: "The Agentic Automation Playbook: Patterns That Actually Hold Up"
 date: "2026-06-12"
 excerpt: "An agent that can do a task once is a magic trick. An automation you trust to do it a hundred times, unattended, is a contract. This playbook is the set of plays that get you from the trick to the contract — the loop, the scope, the tools, the verify step, the escape hatch."
+description: "Agentic automation you can trust unattended: the loop, the scope, the tools, the verify step and the escape hatch that turn an agent demo into a contract."
 slug: "agentic-automation-playbook"
 tags: ["ai", "agents", "automation", "patterns", "playbook"]
 ---

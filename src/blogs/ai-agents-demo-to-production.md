@@ -2,6 +2,7 @@
 title: "Your AI Agent Works in the Demo. Here's What Breaks in Production"
 date: "2026-06-08"
 excerpt: "An agent that nails the demo can still fall apart in production, and it is rarely the model's fault. Three things decide whether it survives real users: workflows, APIs, and governance. Here is why each one matters."
+description: "Why AI agents that nail the demo fall apart in production, and why it is rarely the model: the workflows, APIs and governance that decide whether they survive."
 slug: "ai-agents-demo-to-production"
 tags: ["ai", "agents", "agentic-ai", "api", "governance"]
 ---

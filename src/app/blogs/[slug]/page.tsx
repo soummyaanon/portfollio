@@ -35,13 +35,15 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   try {
     const post = await getBlogPostBySlug(slug)
     const canonicalUrl = absoluteUrl(`/blogs/${slug}/`)
+    const description = post.description ?? post.excerpt
 
     return {
-      // The root layout supplies the `%s — Soumyaranjan Panda` template, so the raw title
-      // is all that belongs here. `keywords` is gone: search engines ignore it, and it
-      // reads as stuffing to the extractors that do not.
-      title: post.title,
-      description: post.excerpt,
+      // `absolute` opts out of the layout's `%s — Soumyaranjan Panda` template. Post titles
+      // already run 50–66 characters; the suffix pushed every one past 74 and Google cut it
+      // mid-word. The author is in the byline, the schema, and og:site_name. `keywords` is
+      // gone: search engines ignore it, and it reads as stuffing to the extractors that do not.
+      title: { absolute: post.title },
+      description,
       authors: [{ name: person.name }],
       alternates: {
         canonical: canonicalUrl,
@@ -50,7 +52,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         siteName: person.name,
         locale: 'en_US',
         title: post.title,
-        description: post.excerpt,
+        description,
         type: 'article',
         url: canonicalUrl,
         publishedTime: post.date,
@@ -67,7 +69,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       twitter: {
         card: 'summary_large_image',
         title: post.title,
-        description: post.excerpt,
+        description,
         images: ['/og.png'],
       },
     }
@@ -111,7 +113,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
           {/* Back to blogs link */}
           <div className="mb-12">
             <Link
-              href="/blogs"
+              href="/blogs/"
               className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors text-xs"
             >
               <ArrowLeft className="w-3 h-3 mr-2" />
@@ -155,7 +157,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
               {/* Back link */}
               <div className="pt-4 border-t border-border/50">
                 <Link
-                  href="/blogs"
+                  href="/blogs/"
                   className="text-primary hover:text-primary/80 transition-colors font-semibold text-xs"
                 >
                   ← Read more posts

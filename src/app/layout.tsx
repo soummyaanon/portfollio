@@ -72,8 +72,9 @@ export const metadata: Metadata = {
     ...roles.filter((role) => !role.withheld).map((role) => role.org),
   ],
   icons: {
-    icon: '/favicon-2025.png?v=1',
-    shortcut: '/favicon-2025.png?v=1',
+    icon: '/favicon-2025.png?v=2',
+    shortcut: '/favicon-2025.png?v=2',
+    apple: '/favicon-2025.png?v=2',
   },
   applicationName: person.name,
   openGraph: OPEN_GRAPH_DEFAULTS,
