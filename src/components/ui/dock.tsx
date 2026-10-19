@@ -10,7 +10,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { MotionProps } from "motion/react"
-import { Home, FileText, Github, Linkedin, Mail } from "lucide-react"
+import { Home, FileText, FolderOpen, Github, Linkedin, Mail } from "lucide-react"
 import { FaXTwitter } from "react-icons/fa6"
 import { AnimatedThemeToggler } from "./animated-theme-toggler"
 
@@ -211,6 +211,10 @@ export interface DockIconProps
   children?: React.ReactNode
   props?: PropsWithChildren
   tooltip?: string
+  /** Renders a real link instead of a button. Crawlers follow `href`, never `onClick`. */
+  href?: string
+  /** Opens in a new tab, and marks the link `rel="me"` as one of the author's profiles. */
+  external?: boolean
 }
 
 export interface DockSeparatorProps {
@@ -230,6 +234,8 @@ const DockIcon = ({
   className,
   children,
   tooltip,
+  href,
+  external,
   ...props
 }: DockIconProps) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -358,10 +364,26 @@ const DockIcon = ({
     </motion.div>
   )
 
-  // Two branches rather than a computed tag, because the props are typed against a div and
-  // a button's handlers are not the same type. Casting once here is cheaper than making the
-  // whole prop surface generic over the element.
-  const iconElement = isInteractive ? (
+  // Separate branches rather than a computed tag, because the props are typed against a div
+  // and a button's handlers are not the same type. Casting once here is cheaper than making
+  // the whole prop surface generic over the element.
+  //
+  // Navigation is a link, not a button that sets window.location: the dock is the only
+  // site-wide navigation, and as buttons it gave crawlers no path to /blogs/ or /projects/
+  // at all — those pages were reachable only through the sitemap.
+  const iconElement = href ? (
+    <motion.a
+      ref={ref as unknown as React.Ref<HTMLAnchorElement>}
+      {...(props as unknown as React.ComponentProps<typeof motion.a>)}
+      href={href}
+      {...(external ? { target: "_blank", rel: "me noopener noreferrer" } : {})}
+      aria-label={tooltip}
+      style={shellStyle}
+      className={shellClass}
+    >
+      {inner}
+    </motion.a>
+  ) : isInteractive ? (
     <motion.button
       ref={ref as unknown as React.Ref<HTMLButtonElement>}
       {...(props as unknown as React.ComponentProps<typeof motion.button>)}
@@ -478,26 +500,6 @@ const NavigationDock = () => {
     // Could add cleanup here
   }
 
-  const scrollToTop = () => {
-    window.location.href = '/'
-  }
-
-  const navigateToBlogs = () => {
-    window.location.href = '/blogs'
-  }
-
-  const navigateToGitHub = () => {
-    window.open('https://github.com/soummyaanon', '_blank')
-  }
-
-  const navigateToLinkedIn = () => {
-    window.open('https://www.linkedin.com/in/soumyapanda12/', '_blank')
-  }
-
-  const navigateToTwitter = () => {
-    window.open('https://x.com/SoumyapX', '_blank')
-  }
-
   const navigateToEmail = () => {
     const email = 'soumyaranjanpanda910@gmail.com'
     const subject = encodeURIComponent('Project Inquiry')
@@ -515,11 +517,14 @@ const NavigationDock = () => {
         iconSize={DEFAULT_SIZE}
         baseIconSize={dockSizeSpring}
       >
-        <DockIcon tooltip="Home" onClick={scrollToTop}>
+        <DockIcon tooltip="Home" href="/">
           <Icons.home className="size-6" strokeWidth={1} />
         </DockIcon>
-        <DockIcon tooltip="Blogs" onClick={navigateToBlogs}>
+        <DockIcon tooltip="Blogs" href="/blogs/">
           <Icons.blogs className="size-6" strokeWidth={1} />
+        </DockIcon>
+        <DockIcon tooltip="Projects" href="/projects/">
+          <Icons.projects className="size-6" strokeWidth={1} />
         </DockIcon>
         <DockSeparator
           currentSize={dockSize}
@@ -527,13 +532,13 @@ const NavigationDock = () => {
           onResize={handleResize}
           onResizeEnd={handleResizeEnd}
         />
-        <DockIcon tooltip="GitHub" onClick={navigateToGitHub}>
+        <DockIcon tooltip="GitHub" href="https://github.com/soummyaanon" external>
           <Icons.gitHub className="size-6" strokeWidth={1} />
         </DockIcon>
-        <DockIcon tooltip="LinkedIn" onClick={navigateToLinkedIn}>
+        <DockIcon tooltip="LinkedIn" href="https://www.linkedin.com/in/soumyapanda12/" external>
           <Icons.linkedin className="size-6" strokeWidth={1} />
         </DockIcon>
-        <DockIcon tooltip="X" onClick={navigateToTwitter}>
+        <DockIcon tooltip="X" href="https://x.com/SoumyapX" external>
           <Icons.x className="size-6" strokeWidth={1} />
         </DockIcon>
         <DockIcon tooltip="Email" onClick={navigateToEmail}>
@@ -560,6 +565,7 @@ NavigationDock.displayName = "NavigationDock"
 const Icons = {
   home: Home,
   blogs: FileText,
+  projects: FolderOpen,
   gitHub: Github,
   linkedin: Linkedin,
   x: FaXTwitter,
