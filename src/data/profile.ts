@@ -285,7 +285,7 @@ export const projects: readonly Project[] = [
       'News and sentiment analysis',
       'AI-generated stock recommendations',
     ],
-    image: '/arthion.png',
+    image: '/arthion.webp',
     logo: '/arthion-logo.ico',
   },
   {
@@ -321,7 +321,7 @@ export const projects: readonly Project[] = [
       'Encryption at rest',
       'AI integration for writing',
     ],
-    image: '/marcko-og.png',
+    image: '/marcko-og.webp',
   },
   {
     id: 'bixai-starter',
@@ -354,7 +354,7 @@ export const projects: readonly Project[] = [
       'Real-time collaboration',
       'Custom styling and theming',
     ],
-    image: '/aarekhit.png',
+    image: '/aarekhit.webp',
     logo: '/aarekhit-logo.png',
   },
   {
@@ -371,7 +371,7 @@ export const projects: readonly Project[] = [
       'Smart organisation for structured notes',
       'Cross-platform synchronisation',
     ],
-    image: '/notex.png',
+    image: '/notex.webp',
     logo: '/notex1.png',
   },
   {
@@ -389,7 +389,7 @@ export const projects: readonly Project[] = [
       'Bookmarks and annotation',
       'Text-to-speech',
     ],
-    image: '/readny.png',
+    image: '/readny.webp',
   },
 ]
 
