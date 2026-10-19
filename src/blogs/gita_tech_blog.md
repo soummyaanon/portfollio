@@ -2,6 +2,7 @@
 title: "The Bhagavad Gita My viewpoint as a Software Engineer"
 date: "2025-10-07"
 excerpt: "In an era of endless notifications, AI disruptions, and digital burnout, a 5,000-year-old conversation on a battlefield holds surprisingly relevant answers for navigating our hyperconnected, technology-driven world."
+description: "What a 5,000-year-old conversation in the Bhagavad Gita teaches a software engineer about endless notifications, AI disruption and digital burnout."
 slug: "gita_tech_blog"
 tags: ["philosophy", "technology", "mindfulness", "productivity", "digital-life"]
 ---

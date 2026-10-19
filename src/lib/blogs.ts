@@ -10,6 +10,11 @@ export interface BlogPost {
   title: string
   date: string
   excerpt: string
+  /**
+   * Optional meta description. Excerpts are written for the page and often run past 200
+   * characters; search results cut off around 155, so this carries the short version.
+   */
+  description?: string
   slug: string
   tags?: string[]
   content: string
@@ -47,6 +52,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
         title: data.title,
         date: data.date,
         excerpt: data.excerpt,
+        description: data.description,
         slug: data.slug,
         tags: data.tags || [],
         content: content,
@@ -89,6 +95,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost> {
         title: data.title,
         date: data.date,
         excerpt: data.excerpt,
+        description: data.description,
         slug: data.slug,
         tags: data.tags || [],
         content: content,

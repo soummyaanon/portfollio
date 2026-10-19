@@ -2,6 +2,7 @@
 title: "Y Combinator Open Sourced the Agent It Runs Its Own Company On"
 date: "2026-08-01"
 excerpt: "YC released QM, the agent they use internally for accounting, legal, events, and engineering — and used to build itself. I read the whole codebase. The scope model, the twelve tools, the security posture, and the most honest SECURITY.md I have read in an open source repo."
+description: "I read all of QM, the agent Y Combinator runs its own company on: its scope model, twelve tools, security posture and an unusually honest SECURITY.md."
 slug: "inside-yc-qm"
 tags: ["ai", "agents", "open-source", "security", "architecture"]
 ---
