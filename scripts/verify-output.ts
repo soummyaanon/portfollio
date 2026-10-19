@@ -1,6 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { person } from '../src/data/profile'
+
 const outputRoot = path.join(process.cwd(), 'out')
 
 function read(relativePath: string): string {
@@ -42,14 +44,29 @@ for (const recoveryTarget of ['/sitemap.xml', '/llms.txt', '/llms-full.txt']) {
 }
 
 const sitemap = read('sitemap.xml')
-const sitemapUrls = [...sitemap.matchAll(/<loc>https:\/\/soumyapanda\.me(.*?)<\/loc>/g)]
-  .map((match) => match[1])
+const locs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1])
+const offSite = locs.filter((loc) => !loc.startsWith(`${person.site}/`))
+assert(offSite.length === 0, `Sitemap URLs must use ${person.site}: ${offSite.join(', ')}`)
+const sitemapUrls = locs.map((loc) => loc.slice(person.site.length))
+assert(sitemapUrls.length > 0, 'Sitemap must list at least one page')
 for (const pathname of sitemapUrls) {
   const relativePath = pathname === '/' ? 'index.html' : `${pathname.replace(/^\/|\/$/g, '')}/index.html`
   read(relativePath)
 }
 
-for (const machineFile of ['robots.txt', 'llms.txt', 'llms-full.txt']) {
+// Canonicals are what consolidate www and *.vercel.app onto one host; a stale one points
+// every alias at the wrong domain.
+for (const pathname of sitemapUrls) {
+  const relativePath = pathname === '/' ? 'index.html' : `${pathname.replace(/^\/|\/$/g, '')}/index.html`
+  const canonical = read(relativePath).match(/<link rel="canonical" href="([^"]+)"/)?.[1]
+  assert(canonical === `${person.site}${pathname}`, `${pathname} canonical is ${canonical}`)
+}
+
+assert(
+  read('robots.txt').includes(`Sitemap: ${person.site}/sitemap.xml`),
+  'robots.txt must point at the canonical sitemap',
+)
+for (const machineFile of ['llms.txt', 'llms-full.txt']) {
   read(machineFile)
 }
 

@@ -1,11 +1,12 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { Instrument_Sans, Space_Mono } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 
 import { ThemeProvider } from './components/ThemeProvider'
 import { NavigationDock } from '@/components/ui/dock'
 import { PostHogProvider } from '../components/PostHogProvider'
-import { SITE_URL } from '@/lib/seo'
+import { OPEN_GRAPH_DEFAULTS, SITE_URL } from '@/lib/seo'
 import { person, roles, skills } from '@/data/profile'
 
 /**
@@ -74,19 +75,8 @@ export const metadata: Metadata = {
     icon: '/favicon-2025.png?v=1',
     shortcut: '/favicon-2025.png?v=1',
   },
-  openGraph: {
-    type: 'website',
-    siteName: person.name,
-    locale: 'en_US',
-    images: [
-      {
-        url: '/og.png',
-        width: 1200,
-        height: 630,
-        alt: `${person.name} — ${person.title}`,
-      },
-    ],
-  },
+  applicationName: person.name,
+  openGraph: OPEN_GRAPH_DEFAULTS,
   twitter: {
     card: 'summary_large_image',
     creator: '@SoumyapX',
@@ -122,6 +112,7 @@ export default function RootLayout({
           {children}
           <NavigationDock />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )

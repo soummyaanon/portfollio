@@ -8,6 +8,7 @@ import {
   absoluteUrl,
   graph,
   itemListSchema,
+  OPEN_GRAPH_DEFAULTS,
   organisationSchemas,
   personSchema,
   profilePageSchema,
@@ -26,7 +27,14 @@ export const metadata: Metadata = {
   // Declared per route. The root layout deliberately sets no canonical, because one set
   // there resolves to the same URL everywhere and marks every page a duplicate of this one.
   alternates: { canonical: '/' },
-  openGraph: { url: '/', description: DESCRIPTION },
+  openGraph: {
+    ...OPEN_GRAPH_DEFAULTS,
+    type: 'profile',
+    firstName: person.givenName,
+    lastName: person.familyName,
+    url: '/',
+    description: DESCRIPTION,
+  },
 }
 
 /**

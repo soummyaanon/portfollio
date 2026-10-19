@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.soumyapanda.dev" }],
+      "destination": "https://soumyapanda.dev/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "mainportfollio.vercel.app" }],
+      "destination": "https://soumyapanda.dev/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "soumyapanda.me" }],
+      "destination": "https://soumyapanda.dev/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.soumyapanda.me" }],
+      "destination": "https://soumyapanda.dev/:path*",
+      "permanent": true
+    }
+  ]
+}

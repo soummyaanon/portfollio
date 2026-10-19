@@ -9,10 +9,11 @@ import {
   collectionPageSchema,
   graph,
   itemListSchema,
+  OPEN_GRAPH_DEFAULTS,
   projectSchema,
   SITE_URL,
 } from '@/lib/seo'
-import { projects } from '@/data/profile'
+import { person, projects } from '@/data/profile'
 
 const DESCRIPTION =
   'Every project in full: an agent overlay for macOS, a debugging plugin for Claude Code, a financial intelligence platform, and the tools around them.'
@@ -23,7 +24,13 @@ export const metadata: Metadata = {
   title: 'Projects',
   description: DESCRIPTION,
   alternates: { canonical: '/projects/' },
-  openGraph: { url: '/projects/', title: 'Projects', description: DESCRIPTION },
+  openGraph: {
+    ...OPEN_GRAPH_DEFAULTS,
+    url: '/projects/',
+    // The title template only applies to <title>, so the name is added here by hand.
+    title: `Projects — ${person.name}`,
+    description: DESCRIPTION,
+  },
 }
 
 export default function ProjectsPage() {

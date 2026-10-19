@@ -22,7 +22,7 @@ import {
 } from '../src/data/profile'
 import { getAllBlogPosts } from '../src/lib/blogs'
 
-const BASE_URL = 'https://soumyapanda.me'
+const BASE_URL = person.site
 
 function summaryLine(): string {
   return (

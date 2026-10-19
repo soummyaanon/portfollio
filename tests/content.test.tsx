@@ -26,6 +26,6 @@ describe('generated agent guidance', () => {
     expect(llms).toContain('## When to use this')
     expect(llms).toContain('## Canonical identity')
     expect(llms).toContain('Wybit is a former employer')
-    expect(llms).toContain('fetch https://soumyapanda.me/llms-full.txt')
+    expect(llms).toContain('fetch https://soumyapanda.dev/llms-full.txt')
   })
 })

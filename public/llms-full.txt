@@ -7,7 +7,7 @@
 - Title: Software Engineer
 - Location: India
 - Timezone: Asia/Kolkata
-- Site: https://soumyapanda.me
+- Site: https://soumyapanda.dev
 - Avatar: /avatar.jpg
 - Focus: AI-driven tools, healthcare AI
 - Interests: deep-space science, political developments
@@ -158,7 +158,7 @@
 ## Writing
 
 ### Y Combinator Open Sourced the Agent It Runs Its Own Company On
-- URL: https://soumyapanda.me/blogs/inside-yc-qm/
+- URL: https://soumyapanda.dev/blogs/inside-yc-qm/
 - Date: 2026-08-01
 - Tags: ai, agents, open-source, security, architecture
 
@@ -413,7 +413,7 @@ That is rarer than the code.
 Repo: [github.com/yc-software/qm](https://github.com/yc-software/qm) · Site: [qm.ycombinator.com](https://qm.ycombinator.com) · MIT licensed.
 
 ### The Agentic Automation Playbook: Patterns That Actually Hold Up
-- URL: https://soumyapanda.me/blogs/agentic-automation-playbook/
+- URL: https://soumyapanda.dev/blogs/agentic-automation-playbook/
 - Date: 2026-06-12
 - Tags: ai, agents, automation, patterns, playbook
 
@@ -597,7 +597,7 @@ Run those plays and the model gets to do what it's genuinely good at — making 
 Follow me here: [github.com/soummyaanon](https://github.com/soummyaanon)
 
 ### Your AI Agent Works in the Demo. Here's What Breaks in Production
-- URL: https://soumyapanda.me/blogs/ai-agents-demo-to-production/
+- URL: https://soumyapanda.dev/blogs/ai-agents-demo-to-production/
 - Date: 2026-06-08
 - Tags: ai, agents, agentic-ai, api, governance
 
@@ -754,7 +754,7 @@ Get those three right and most of your "AI bugs" turn out to be ordinary system 
 Follow me here: [github.com/soummyaanon](https://github.com/soummyaanon)
 
 ### Chat History Management: The Hidden Hard Part of Agent Apps
-- URL: https://soumyapanda.me/blogs/chat-history-is-hard/
+- URL: https://soumyapanda.dev/blogs/chat-history-is-hard/
 - Date: 2026-01-16
 - Tags: ai, agents, chat, architecture, state-management
 
@@ -915,7 +915,7 @@ if (
 If your agent feels flaky, it is probably a history problem. Solve the lifecycle first, keep the model call simple, and most of the "AI bugs" disappear. The agent is only as good as the memory you can reliably store and restore.
 
 ### Modern React & shadcn/ui Collections: The Ultimate Curated List
-- URL: https://soumyapanda.me/blogs/modern-react-shadcn-ui-collections/
+- URL: https://soumyapanda.dev/blogs/modern-react-shadcn-ui-collections/
 - Date: 2026-01-03
 - Tags: react, shadcn, tailwind, ui-components, web-design
 
@@ -1079,7 +1079,7 @@ Follow Me here: [https://github.com/soummyaanon](https://github.com/soummyaanon)
 Happy building! 🚀
 
 ### The Bhagavad Gita My viewpoint as a Software Engineer
-- URL: https://soumyapanda.me/blogs/gita_tech_blog/
+- URL: https://soumyapanda.dev/blogs/gita_tech_blog/
 - Date: 2025-10-07
 - Tags: philosophy, technology, mindfulness, productivity, digital-life
 

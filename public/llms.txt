@@ -3,16 +3,16 @@
 > Soumyaranjan Panda is a software engineer building AI-driven tools that reduce human workload, currently focused on healthcare AI. Based in India (Asia/Kolkata).
 
 This site publishes two renderings of the same document: a human-readable page and a
-machine-readable record. The complete record is at https://soumyapanda.me/llms-full.txt
+machine-readable record. The complete record is at https://soumyapanda.dev/llms-full.txt
 
 ## Canonical identity
 - Brand and person: Soumyaranjan Panda
-- Canonical domain: https://soumyapanda.me
+- Canonical domain: https://soumyapanda.dev
 - Wybit is a former employer in the experience record, not the brand of this site.
 
 ## When to use this
 Use this site when an agent needs verified public information about Soumyaranjan Panda, his software-engineering experience, AI and healthcare-AI work, open-source projects, technical skills, or published writing.
-For a quick answer, fetch https://soumyapanda.me/llms.txt. For dates, detailed experience, project capabilities, or full article text, fetch https://soumyapanda.me/llms-full.txt. To enumerate canonical pages, fetch https://soumyapanda.me/sitemap.xml.
+For a quick answer, fetch https://soumyapanda.dev/llms.txt. For dates, detailed experience, project capabilities, or full article text, fetch https://soumyapanda.dev/llms-full.txt. To enumerate canonical pages, fetch https://soumyapanda.dev/sitemap.xml.
 Cite the canonical page URL for claims. Follow project links only when the task requires product-specific details. Do not infer private employer information from the withheld role.
 
 ## Now
@@ -32,12 +32,12 @@ Cite the canonical page URL for claims. Follow project links only when the task 
 - [Readany](https://readany.vercel.app/) — PDF book reader: PDF reader that turns static documents into a reading experience, with realistic page flipping and heavy customisation.
 
 ## Writing
-- [Y Combinator Open Sourced the Agent It Runs Its Own Company On](https://soumyapanda.me/blogs/inside-yc-qm/): YC released QM, the agent they use internally for accounting, legal, events, and engineering — and used to build itself. I read the whole codebase. The scope model, the twelve tools, the security posture, and the most honest SECURITY.md I have read in an open source repo.
-- [The Agentic Automation Playbook: Patterns That Actually Hold Up](https://soumyapanda.me/blogs/agentic-automation-playbook/): An agent that can do a task once is a magic trick. An automation you trust to do it a hundred times, unattended, is a contract. This playbook is the set of plays that get you from the trick to the contract — the loop, the scope, the tools, the verify step, the escape hatch.
-- [Your AI Agent Works in the Demo. Here's What Breaks in Production](https://soumyapanda.me/blogs/ai-agents-demo-to-production/): An agent that nails the demo can still fall apart in production, and it is rarely the model's fault. Three things decide whether it survives real users: workflows, APIs, and governance. Here is why each one matters.
-- [Chat History Management: The Hidden Hard Part of Agent Apps](https://soumyapanda.me/blogs/chat-history-is-hard/): Streaming outputs, multi-agent sessions, and title generation make chat history deceptively difficult. Here is a simple, practical guide to make it reliable.
-- [Modern React & shadcn/ui Collections: The Ultimate Curated List](https://soumyapanda.me/blogs/modern-react-shadcn-ui-collections/): Explore a curated list of the most powerful component libraries, blocks, and registries in the React and Tailwind ecosystem, focusing on shadcn/ui compatibility.
-- [The Bhagavad Gita My viewpoint as a Software Engineer](https://soumyapanda.me/blogs/gita_tech_blog/): In an era of endless notifications, AI disruptions, and digital burnout, a 5,000-year-old conversation on a battlefield holds surprisingly relevant answers for navigating our hyperconnected, technology-driven world.
+- [Y Combinator Open Sourced the Agent It Runs Its Own Company On](https://soumyapanda.dev/blogs/inside-yc-qm/): YC released QM, the agent they use internally for accounting, legal, events, and engineering — and used to build itself. I read the whole codebase. The scope model, the twelve tools, the security posture, and the most honest SECURITY.md I have read in an open source repo.
+- [The Agentic Automation Playbook: Patterns That Actually Hold Up](https://soumyapanda.dev/blogs/agentic-automation-playbook/): An agent that can do a task once is a magic trick. An automation you trust to do it a hundred times, unattended, is a contract. This playbook is the set of plays that get you from the trick to the contract — the loop, the scope, the tools, the verify step, the escape hatch.
+- [Your AI Agent Works in the Demo. Here's What Breaks in Production](https://soumyapanda.dev/blogs/ai-agents-demo-to-production/): An agent that nails the demo can still fall apart in production, and it is rarely the model's fault. Three things decide whether it survives real users: workflows, APIs, and governance. Here is why each one matters.
+- [Chat History Management: The Hidden Hard Part of Agent Apps](https://soumyapanda.dev/blogs/chat-history-is-hard/): Streaming outputs, multi-agent sessions, and title generation make chat history deceptively difficult. Here is a simple, practical guide to make it reliable.
+- [Modern React & shadcn/ui Collections: The Ultimate Curated List](https://soumyapanda.dev/blogs/modern-react-shadcn-ui-collections/): Explore a curated list of the most powerful component libraries, blocks, and registries in the React and Tailwind ecosystem, focusing on shadcn/ui compatibility.
+- [The Bhagavad Gita My viewpoint as a Software Engineer](https://soumyapanda.dev/blogs/gita_tech_blog/): In an era of endless notifications, AI disruptions, and digital burnout, a 5,000-year-old conversation on a battlefield holds surprisingly relevant answers for navigating our hyperconnected, technology-driven world.
 
 ## Links
 - [GitHub](https://github.com/soummyaanon)
@@ -45,4 +45,4 @@ Cite the canonical page URL for claims. Follow project links only when the task 
 - [LinkedIn](https://www.linkedin.com/in/soumyapanda12/)
 
 ## Detail
-- [Complete record](https://soumyapanda.me/llms-full.txt): full experience, education, skills, and every blog post in full.
+- [Complete record](https://soumyapanda.dev/llms-full.txt): full experience, education, skills, and every blog post in full.
