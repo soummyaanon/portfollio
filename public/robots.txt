@@ -33,6 +33,6 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://soumyapanda.me/sitemap.xml
+Sitemap: https://soumyapanda.dev/sitemap.xml
 
-# Structured summary for language models: https://soumyapanda.me/llms.txt
+# Structured summary for language models: https://soumyapanda.dev/llms.txt

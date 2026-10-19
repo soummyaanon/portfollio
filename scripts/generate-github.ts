@@ -58,7 +58,7 @@ function token(): string | undefined {
 function restHeaders(): Record<string, string> {
   const base: Record<string, string> = {
     Accept: 'application/vnd.github.v3+json',
-    'User-Agent': 'soumyapanda.me-build',
+    'User-Agent': 'soumyapanda.dev-build',
   }
   const t = token()
   if (t) base.Authorization = `Bearer ${t}`
@@ -113,7 +113,7 @@ async function fetchContributions(year: number): Promise<YearContributions> {
   const url = `https://github.com/users/${OWNER}/contributions?from=${year}-01-01&to=${year}-12-31`
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'soumyapanda.me-build',
+      'User-Agent': 'soumyapanda.dev-build',
       Accept: 'text/html',
     },
   })

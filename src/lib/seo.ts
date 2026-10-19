@@ -9,7 +9,9 @@
 
 import { education, person, projects, roles, skills } from '@/data/profile'
 
-export const SITE_URL = 'https://soumyapanda.me'
+import type { Metadata } from 'next'
+
+export const SITE_URL = person.site
 
 /** `trailingSlash: true` in next.config.ts, so internal URLs must end in a slash. */
 export function absoluteUrl(path = '/'): string {
@@ -17,6 +19,27 @@ export function absoluteUrl(path = '/'): string {
   const withSlash = normalised.endsWith('/') ? normalised : `${normalised}/`
   return `${SITE_URL}${withSlash === '//' ? '/' : withSlash}`
 }
+
+/**
+ * Open Graph fields every route needs. Next merges `metadata` shallowly, so a page that
+ * sets `openGraph` at all replaces the layout's object wholesale — the homepage, /blogs and
+ * /projects were shipping no og:image, og:type or og:site_name, and link previews on
+ * LinkedIn, Slack and the like rendered without a card. Spread this into every
+ * `openGraph` instead of relying on inheritance.
+ */
+export const OPEN_GRAPH_DEFAULTS = {
+  type: 'website',
+  siteName: person.name,
+  locale: 'en_US',
+  images: [
+    {
+      url: '/og.png',
+      width: 1200,
+      height: 630,
+      alt: `${person.name} — ${person.title}`,
+    },
+  ],
+} satisfies Metadata['openGraph']
 
 export const PERSON_ID = `${SITE_URL}/#person`
 export const WEBSITE_ID = `${SITE_URL}/#website`
@@ -89,6 +112,7 @@ export function personSchema(description: string): JsonLd {
     '@type': 'Person',
     '@id': PERSON_ID,
     name: person.name,
+    alternateName: [...person.alternateNames],
     givenName: person.givenName,
     familyName: person.familyName,
     jobTitle: person.title,

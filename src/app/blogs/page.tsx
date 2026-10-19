@@ -9,8 +9,10 @@ import {
   collectionPageSchema,
   graph,
   itemListSchema,
+  OPEN_GRAPH_DEFAULTS,
   SITE_URL,
 } from '@/lib/seo'
+import { person } from '@/data/profile'
 
 const DESCRIPTION =
   'Notes on building AI systems that survive contact with production — agents, workflows, and the parts that are harder than the demo suggests.'
@@ -21,7 +23,13 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   // This route previously shipped no canonical at all.
   alternates: { canonical: '/blogs/' },
-  openGraph: { url: '/blogs/', title: 'Writing', description: DESCRIPTION, type: 'website' },
+  openGraph: {
+    ...OPEN_GRAPH_DEFAULTS,
+    url: '/blogs/',
+    // The title template only applies to <title>, so the name is added here by hand.
+    title: `Writing — ${person.name}`,
+    description: DESCRIPTION,
+  },
 }
 
 export default async function Blogs() {

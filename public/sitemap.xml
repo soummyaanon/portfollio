@@ -1,47 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://soumyapanda.me/</loc>
+    <loc>https://soumyapanda.dev/</loc>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
   </url>
   <url>
-    <loc>https://soumyapanda.me/blogs/</loc>
+    <loc>https://soumyapanda.dev/blogs/</loc>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://soumyapanda.me/projects/</loc>
+    <loc>https://soumyapanda.dev/projects/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://soumyapanda.me/blogs/chat-history-is-hard/</loc>
+    <loc>https://soumyapanda.dev/blogs/inside-yc-qm/</loc>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://soumyapanda.me/blogs/agentic-automation-playbook/</loc>
+    <loc>https://soumyapanda.dev/blogs/agentic-automation-playbook/</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://soumyapanda.me/blogs/ai-agents-demo-to-production/</loc>
+    <loc>https://soumyapanda.dev/blogs/ai-agents-demo-to-production/</loc>
+    <lastmod>2026-06-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://soumyapanda.me/blogs/gita_tech_blog/</loc>
+    <loc>https://soumyapanda.dev/blogs/chat-history-is-hard/</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://soumyapanda.me/blogs/inside-yc-qm/</loc>
+    <loc>https://soumyapanda.dev/blogs/modern-react-shadcn-ui-collections/</loc>
+    <lastmod>2026-01-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://soumyapanda.me/blogs/modern-react-shadcn-ui-collections/</loc>
+    <loc>https://soumyapanda.dev/blogs/gita_tech_blog/</loc>
+    <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

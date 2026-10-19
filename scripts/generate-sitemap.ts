@@ -1,8 +1,9 @@
 import fs from 'fs'
 import path from 'path'
-import { getAllBlogSlugs } from '../src/lib/blogs'
+import { person } from '../src/data/profile'
+import { getAllBlogPosts } from '../src/lib/blogs'
 
-const BASE_URL = 'https://soumyapanda.me'
+const BASE_URL = person.site
 
 interface SitemapUrl {
   loc: string
@@ -57,13 +58,20 @@ async function generateSitemap() {
       },
     ]
 
-    // Get all blog slugs
-    const blogSlugs = await getAllBlogSlugs()
-    
-    // Add each blog post to sitemap
-    blogSlugs.forEach((slug) => {
+    const posts = await getAllBlogPosts()
+
+    // Google ignores changefreq and priority but does use lastmod, so each post carries
+    // its own date and the listing pages carry the newest one.
+    const newest = posts[0]?.date
+    if (newest) {
+      urls[0].lastmod = newest
+      urls[1].lastmod = newest
+    }
+
+    posts.forEach((post) => {
       urls.push({
-        loc: `${BASE_URL}/blogs/${slug}/`,
+        loc: `${BASE_URL}/blogs/${post.slug}/`,
+        lastmod: post.date,
         changefreq: 'monthly',
         priority: 0.7,
       })
@@ -86,7 +94,8 @@ async function generateSitemap() {
     console.log(`   Total URLs: ${urls.length}`)
     console.log(`   - Homepage: 1`)
     console.log(`   - Blog listing: 1`)
-    console.log(`   - Blog posts: ${blogSlugs.length}`)
+    console.log(`   - Projects: 1`)
+    console.log(`   - Blog posts: ${posts.length}`)
   } catch (error) {
     console.error('❌ Error generating sitemap:', error)
     process.exit(1)

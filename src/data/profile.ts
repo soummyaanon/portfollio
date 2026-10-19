@@ -21,11 +21,19 @@ export interface Link {
 export interface Person {
   readonly id: string
   readonly name: string
+  /** Shorter forms people actually search for, e.g. the one the domain is named after. */
+  readonly alternateNames: readonly string[]
   readonly givenName: string
   readonly familyName: string
   readonly title: string
   readonly location: string
   readonly timezone: string
+  /**
+   * The one canonical origin, no trailing slash. Every absolute URL the site emits —
+   * canonicals, Open Graph, JSON-LD, sitemap, robots, llms.txt — is built from this, so
+   * moving domains is a one-line change. Other hosts (www, *.vercel.app) redirect here
+   * via vercel.json rather than serving duplicate copies.
+   */
   readonly site: string
   readonly avatar: string
   readonly focus: readonly string[]
@@ -104,12 +112,13 @@ export interface SkillGroup {
 export const person: Person = {
   id: 'person',
   name: 'Soumyaranjan Panda',
+  alternateNames: ['Soumya Panda'],
   givenName: 'Soumyaranjan',
   familyName: 'Panda',
   title: 'Software Engineer',
   location: 'India',
   timezone: 'Asia/Kolkata',
-  site: 'https://soumyapanda.me',
+  site: 'https://soumyapanda.dev',
   // Served from this origin, and a path rather than a URL so it is one string to change.
   //
   // It used to point at github.com/<user>.png, which is a 302 to avatars.githubusercontent.com

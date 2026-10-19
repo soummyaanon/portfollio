@@ -6,7 +6,7 @@ import { ShareButtons } from '@/components/ShareButtons'
 import { BlogContent } from '@/components/blog-content'
 import type { Metadata } from 'next'
 import { JsonLd } from '@/components/JsonLd'
-import { blogPostingSchema, breadcrumbSchema, graph } from '@/lib/seo'
+import { absoluteUrl, blogPostingSchema, breadcrumbSchema, graph } from '@/lib/seo'
 import { person } from '@/data/profile'
 
 interface BlogPostPageProps {
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
   try {
     const post = await getBlogPostBySlug(slug)
-    const canonicalUrl = `https://soumyapanda.me/blogs/${slug}/`
+    const canonicalUrl = absoluteUrl(`/blogs/${slug}/`)
 
     return {
       // The root layout supplies the `%s — Soumyaranjan Panda` template, so the raw title
@@ -47,11 +47,14 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         canonical: canonicalUrl,
       },
       openGraph: {
+        siteName: person.name,
+        locale: 'en_US',
         title: post.title,
         description: post.excerpt,
         type: 'article',
         url: canonicalUrl,
         publishedTime: post.date,
+        modifiedTime: post.date,
         authors: [person.name],
         tags: post.tags,
         images: [{
