@@ -1,0 +1,32 @@
+# Rebuilds production once a day so the GitHub activity grid stays current. The calendar is
+# fetched at build time (scripts/generate-github.ts), so between deploys it would otherwise
+# freeze on the day of the last push.
+#
+# It calls a Vercel deploy hook rather than committing refreshed data: no bot commits in the
+# history, and nothing for Vercel to decide about who authored them. The hook URL lives in the
+# repository secret VERCEL_DEPLOY_HOOK (Vercel → Project → Settings → Git → Deploy Hooks, branch
+# master). Without it the job warns and does nothing.
+name: Refresh GitHub activity
+
+on:
+  schedule:
+    # 00:30 UTC, 06:00 in India: after the previous day's contributions have settled.
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask Vercel for a fresh production build
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK is not set, so there is nothing to trigger."
+            exit 0
+          fi
+          curl --fail --silent --show-error --request POST "$HOOK" > /dev/null
+          echo "Rebuild requested."
