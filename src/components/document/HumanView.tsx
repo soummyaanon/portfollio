@@ -245,37 +245,38 @@ function Education() {
     <section className="mt-[var(--space-section)]">
       <SectionHead index="03" label="Education" />
 
-      <ol className="measure-column mt-[var(--space-group)]">
+      {/* One line per entry, in the Work section's voice: a small emblem, the institution, the
+          credential in a lighter voice beside it and the years on the right; the focus sits
+          quietly underneath. */}
+      <ol className="measure-column mt-[var(--space-group)] divide-y divide-border/60">
         {education.map((entry) => (
-          <li key={entry.id} className="py-[var(--space-group)]">
-            {/* The emblem gets its own column and opts out of baseline alignment, so the
-                dates still sit on the institution's baseline the way they do in Work. */}
-            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-3">
-              {entry.logo ? (
-                <div className="size-10 shrink-0 self-start overflow-hidden rounded-full ring-1 ring-border grayscale-[0.35]">
-                  <Image src={entry.logo} alt={`${entry.institution} emblem`} width={80} height={80} className="h-full w-full object-cover" />
-                </div>
-              ) : (
-                <span aria-hidden />
-              )}
-              <span className="min-w-0">
-                <h3 className="font-display text-title leading-[1.1] text-foreground">
-                  <Fact id={`education.${entry.id}.institution`}>{entry.institution}</Fact>
-                </h3>
-                <p className="mt-1 text-fine text-muted-foreground">
-                  <Fact id={`education.${entry.id}.credential`}>{entry.credential}</Fact>
-                  <Connective>{`, ${entry.field}`}</Connective>
-                </p>
-                <p className="mt-[var(--space-hairline)] text-caption text-muted-foreground/70">
-                  {entry.focus.join(' · ')}
-                </p>
-              </span>
+          <li key={entry.id} className="py-4">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-6">
+              <div className="flex min-w-0 items-baseline gap-3">
+                {entry.logo && (
+                  <span className="mt-px size-[1.375rem] shrink-0 self-start overflow-hidden rounded-full ring-1 ring-border grayscale">
+                    <Image src={entry.logo} alt={`${entry.institution} emblem`} width={44} height={44} className="h-full w-full object-cover" />
+                  </span>
+                )}
+                <span className="flex min-w-0 flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+                  <h3 className="font-display text-body font-semibold leading-snug text-foreground">
+                    <Fact id={`education.${entry.id}.institution`}>{entry.institution}</Fact>
+                  </h3>
+                  <p className="text-fine font-light text-muted-foreground">
+                    <Fact id={`education.${entry.id}.credential`}>{entry.credential}</Fact>
+                    <Connective>{`, ${entry.field}`}</Connective>
+                  </p>
+                </span>
+              </div>
 
-              <p className="ml-3 field-label text-right tracking-[0.08em] text-muted-foreground">
+              <p className="field-label text-right tracking-[0.08em] text-muted-foreground">
                 {/* Years only: it is a two-year programme, and the months add nothing to that. */}
                 {entry.from.slice(0, 4)} — {entry.until.slice(0, 4)}
               </p>
             </div>
+            <p className={`mt-1.5 text-caption font-light text-muted-foreground/70 ${entry.logo ? 'pl-[calc(1.375rem+0.75rem)]' : ''}`}>
+              {entry.focus.join(' · ')}
+            </p>
           </li>
         ))}
       </ol>
