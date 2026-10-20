@@ -1151,49 +1151,32 @@ void main() {
 
   float ink = max(field, ring);
 
-  // Colour, on the two objects that have one — and on nothing else. The plate was single-ink
-  // by rule and mostly still is: the dust, the catalogue, the
-  // nebulas, the meteors and the sweep all remain the page's own foreground colour, because
-  // an atlas plate is printed in one ink and a chart that colours everything is a poster. The
-  // hole and the pulsar are the exceptions, and they are exceptions on the same grounds — both
-  // are emitting, and what they emit has a temperature, and a temperature is a colour.
+  // Greys only, like the rest of the site. The objects that used to carry colour keep their
+  // tonal structure instead: the disk is still a blackbody read off its own brightness, with
+  // temperature carried as lightness, so the cool outer annulus runs a mid grey and the hot
+  // inner rim and the photon ring run up to white. The pulsar and the three nebulas each keep a
+  // grey of their own, a step apart, so they still read as different things.
   //
-  // The disk is a blackbody read off the brightness it already computed: the cool outer
-  // annulus runs amber, the hot inner rim and the photon ring run up to white-gold. That
-  // ramp is not a stylisation of the temperature gradient, it is the temperature gradient —
-  // the disk is hotter where it is brighter, for the same reason in both cases. The pulsar
-  // gets cyan: a neutron star's surface sits near a million kelvin, far off the blue end of
-  // anything else on the plate.
-  //
-  // Both ends deepen and saturate on paper. A pale amber on white is not a colour, it is a
-  // smudge — the same reason the halos and the glow already switch down in the light theme.
-  // uShadow is 1 on *paper* — it means the ink is darker than the page — so the second
-  // argument of each of these mixes is the light theme's value, not the dark one. Written the
-  // other way round first, which put the near-white hot end on white paper and turned the
-  // whole disk into a pale peach smudge, and handed the dark theme the burnt end meant for
-  // print. The rule is the same one the halos and the glow already follow, in both directions:
-  // on a dark ground the colour can be bright, on paper it has to be deep to be a colour at all.
-  vec3 emberCool = mix(vec3(0.96, 0.44, 0.07), vec3(0.66, 0.26, 0.02), uShadow);
-  vec3 emberHot = mix(vec3(1.00, 0.90, 0.72), vec3(0.92, 0.62, 0.14), uShadow);
+  // uShadow is 1 on *paper* (ink darker than the page), so the second argument of each mix is
+  // the light theme's value: there the hot end is the deep one, as ink on white has to be.
+  vec3 emberCool = vec3(mix(0.62, 0.34, uShadow));
+  vec3 emberHot = vec3(mix(1.00, 0.10, uShadow));
   vec3 emberRGB = mix(emberCool, emberHot, smoothstep(0.16, 0.80, disk));
-  vec3 psrRGB = mix(vec3(0.65, 0.94, 1.00), vec3(0.03, 0.45, 0.58), uShadow);
-  // The three nebula lines, deepened on paper by the same rule as everything else: a pale wash on
-  // white is not a colour, it is a stain.
-  vec3 nebHaRGB = mix(vec3(1.00, 0.30, 0.36), vec3(0.60, 0.05, 0.13), uShadow);
-  vec3 nebO3RGB = mix(vec3(0.34, 0.96, 0.84), vec3(0.02, 0.44, 0.38), uShadow);
-  vec3 nebRefRGB = mix(vec3(0.50, 0.64, 1.00), vec3(0.09, 0.19, 0.62), uShadow);
+  vec3 psrRGB = vec3(mix(0.96, 0.16, uShadow));
+  vec3 nebHaRGB = vec3(mix(0.70, 0.36, uShadow));
+  vec3 nebO3RGB = vec3(mix(0.80, 0.30, uShadow));
+  vec3 nebRefRGB = vec3(mix(0.64, 0.40, uShadow));
 
   // Weighted by each source's own contribution, and the shadow's cut applied to the two that
-  // sit behind it, so the tint follows the ink rather than floating free of it: where the disk
-  // is what you are looking at the pixel is amber, where a catalogue star crosses it the ink
-  // takes its share back, and inside the shadow — where there is no ink at all — there is no
-  // colour either. Read before the mask and the grain, which scale ink and hue alike and so
-  // cancel out of the ratio.
+  // sit behind it, so the grey follows the ink rather than floating free of it: where the disk
+  // is what you are looking at the pixel takes the disk's grey, where a catalogue star crosses
+  // it the ink takes its share back, and inside the shadow there is no ink at all. Read before
+  // the mask and the grain, which scale ink and hue alike and so cancel out of the ratio.
   float diskLit = disk * cut;
   float psrLit = psr * cut;
-  // The coloured nebulas join the same weighting the disk and the pulsar use, so where one of them
-  // is the brightest thing in a pixel the pixel takes its line colour, and where a catalogue star
-  // crosses it the ink takes its share back.
+  // The nebulas join the same weighting the disk and the pulsar use, so where one of them is the
+  // brightest thing in a pixel the pixel takes its grey, and where a catalogue star crosses it
+  // the ink takes its share back.
   float nebHaLit = nebHa * cut;
   float nebO3Lit = nebO3 * cut;
   float nebRefLit = nebRef * cut;
@@ -1254,7 +1237,7 @@ void main() {
   // against the page. Multiplied, zero stays zero and the plate has no visible extent.
   ink *= 1.0 + (hash(gl_FragCoord.xy) - 0.5) * 0.13;
 
-  // The plate in its page ink plus the two objects allowed their own colour, and the cursor
+  // The plate in its page ink and greys, and the cursor
   // in its two, composited source-over. Divided back out of premultiplied form, because the
   // context was asked for straight alpha.
   float baseA = clamp(ink, 0.0, 1.0) * uOpacity;
