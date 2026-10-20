@@ -37,7 +37,7 @@ export default async function Blogs() {
   const blogPosts = await getAllBlogPosts()
 
   return (
-    <main className="bench measure-page pb-[var(--space-section)] pt-[clamp(2.5rem,6vw,5rem)]">
+    <main className="bench measure-page pb-[var(--space-foot)] pt-[clamp(2.5rem,6vw,5rem)]">
       <BenchRails />
       <JsonLd
         json={graph(

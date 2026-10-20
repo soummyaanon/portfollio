@@ -96,7 +96,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
     })
 
     return (
-      <main className="bench measure-page min-h-screen bg-background">
+      <main className="bench measure-page min-h-screen bg-background pb-[var(--space-foot)]">
         <BenchRails />
         {/* Built from src/lib/seo.ts so the author and publisher resolve by @id to the one
             Person declared on the homepage, rather than restating a second, unlinked copy

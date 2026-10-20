@@ -43,6 +43,9 @@
   --space-tight: 0.75rem;
   --space-group: clamp(1.25rem, 1rem + 1vw, 2rem);
   --space-section: clamp(3rem, 2rem + 3.6vw, 5.75rem);
+  /* The foot of every page: a section's space plus the fixed dock's height and its offset, so
+     the last thing on the page can always scroll clear of the dock floating over it. */
+  --space-foot: calc(var(--space-section) + 6.5rem);
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --color-sidebar-ring: var(--sidebar-ring);

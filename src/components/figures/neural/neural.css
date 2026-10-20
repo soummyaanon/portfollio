@@ -43,6 +43,11 @@
 .nn-eye:hover,
 .nn-eye:focus-visible { color: var(--foreground); }
 .nn-eye:focus-visible { outline: 1px solid var(--border); outline-offset: 2px; }
+/* No hover on a touch screen to bring it up, so it is larger and brighter there from the start. */
+@media (hover: none) {
+  .nn-eye { color: var(--foreground); }
+  .nn-eye svg { width: 60px; height: 35px; }
+}
 .nn-eye-lid { transform-box: fill-box; transform-origin: center; animation: nn-eye-blink 5.2s infinite; }
 .nn-eye-wander { animation: nn-eye-wander 9s ease-in-out infinite; }
 .nn-eye[data-following] .nn-eye-wander { animation: none; }

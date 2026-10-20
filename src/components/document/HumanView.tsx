@@ -515,7 +515,7 @@ export function HumanView({
   readonly workbench?: readonly WorkbenchSlide[]
 }) {
   return (
-    <div className="bench measure-page pb-[var(--space-section)]">
+    <div className="bench measure-page pb-[var(--space-foot)]">
       <BenchRails />
       <Masthead />
       <Work />
