@@ -1,6 +1,6 @@
 # Build and verify only. Production is served by Vercel (soumyapanda.dev), which builds and
-# deploys on its own; this workflow used to also publish ./out to GitHub Pages under
-# soumyapanda.me, which put a second copy of the site on another domain.
+# deploys on its own; this workflow used to also publish ./out to GitHub Pages, which put a
+# second copy of the site on another domain.
 name: CI
 
 on:

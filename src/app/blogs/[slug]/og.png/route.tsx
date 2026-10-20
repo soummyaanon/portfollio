@@ -11,11 +11,13 @@ import { getAllBlogSlugs, getBlogPostBySlug } from '@/lib/blogs'
  * the bench rails with their rulers, the date in the label voice, the title in Figtree, a
  * two-line excerpt and the byline under a rail-to-rail line. Shared links to different posts
  * now look different, instead of every one carrying the homepage card.
+ *
+ * A route rather than the opengraph-image convention, so the exported file is `og.png`: with
+ * an extension it skips the trailing-slash redirect and is served as image/png, which social
+ * cards insist on.
  */
 
-export const alt = 'Article preview'
-export const size = { width: 1200, height: 630 }
-export const contentType = 'image/png'
+const size = { width: 1200, height: 630 }
 export const dynamic = 'force-static'
 
 export async function generateStaticParams() {
@@ -63,7 +65,7 @@ function Rail({ side }: { readonly side: 'left' | 'right' }) {
   )
 }
 
-export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const post = await getBlogPostBySlug(slug)
   const [light, bold, mono] = await Promise.all([font('Figtree-Light.ttf'), font('Figtree-Bold.ttf'), font('SpaceMono-Regular.ttf')])

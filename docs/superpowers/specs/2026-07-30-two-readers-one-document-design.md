@@ -30,7 +30,7 @@ by the same refactor.
 Found while surveying, all load-bearing for the design:
 
 1. **Conflicting canonicals.** `layout.tsx:270` hardcodes `<link rel="canonical"
-   href="https://soumyapanda.me" />` into `<head>` for every route. Blog posts *also* set a correct
+   href>` pointing at the old domain into `<head>` for every route. Blog posts *also* set a correct
    canonical via `generateMetadata` (`blogs/[slug]/page.tsx:42`), so each post ships two conflicting
    canonical tags; every other route declares itself a duplicate of the homepage.
 2. **The machine view never reaches a crawler.** `page.tsx:40` mounts `MachineView` only when

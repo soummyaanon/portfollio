@@ -60,12 +60,14 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         modifiedTime: post.date,
         authors: [person.name],
         tags: post.tags,
-        // The image is this route's own opengraph-image.tsx, drawn per post at build time.
+        // Drawn per post at build time by og.png/route.tsx beside this page.
+        images: [{ url: `/blogs/${slug}/og.png`, width: 1200, height: 630, alt: post.title }],
       },
       twitter: {
         card: 'summary_large_image',
         title: post.title,
         description,
+        images: [`/blogs/${slug}/og.png`],
       },
     }
   } catch {
