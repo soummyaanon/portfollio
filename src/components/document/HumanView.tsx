@@ -104,7 +104,7 @@ function Masthead() {
           they switch to the display grotesque at full contrast and tight tracking while the
           sentence around them sits at 70%. Same job an accent colour was doing, done with
           the only two variables left — weight and contrast. */}
-      <p className="measure-prose mt-[clamp(2rem,4vw,3rem)] text-balance text-lead leading-[1.45] text-foreground/70">
+      <p className="measure-prose mt-[clamp(2rem,4vw,3rem)] text-balance text-lead font-light leading-[1.45] text-foreground/70">
         <Connective>I’m a builder making </Connective>
         {person.focus.map((item, at) => (
           <Fragment key={item}>
