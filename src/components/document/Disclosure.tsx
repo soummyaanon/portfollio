@@ -66,7 +66,7 @@ export function DisclosureMark({ open }: { readonly open: boolean }) {
   return (
     <span
       aria-hidden
-      className="relative mt-[0.6em] block size-2.5 shrink-0 text-muted-foreground/60 transition-colors group-hover:text-signal"
+      className="relative block size-2.5 shrink-0 self-center text-muted-foreground/60 transition-colors group-hover:text-signal"
     >
       <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-current" />
       <span

@@ -193,9 +193,8 @@
   --signal: oklch(0 0 0);
   --signal-ink: oklch(0 0 0);
 
-  /* The one hue left on the site, and it appears in exactly one place: blooming behind the
-     employer that is being withheld. Everything else is black, white, or a grey between. */
-  --withheld-green: oklch(0.7400 0.1900 150);
+  /* The pale bloom behind the employer that is being withheld. Grey, like everything else. */
+  --withheld-tint: oklch(0.5500 0 0);
   /* Contribution levels: a straight lightness ramp, running to the stops at both ends. */
   --chart-1: oklch(0.9300 0 0);
   --chart-2: oklch(0.7800 0 0);
@@ -256,8 +255,8 @@
 
   --signal: oklch(1 0 0);
   --signal-ink: oklch(0.8600 0 0);
-  /* Lifted and thinned for a dark ground, the way a lit colour behaves in a dark room. */
-  --withheld-green: oklch(0.8200 0.2000 150);
+  /* Lifted for a dark ground. */
+  --withheld-tint: oklch(0.7000 0 0);
   --chart-1: oklch(0.2000 0 0);
   --chart-2: oklch(0.3400 0 0);
   --chart-3: oklch(0.5200 0 0);
@@ -821,7 +820,7 @@ body {
  * in the markup either and there is nothing here to expose. What this rule adds is the fact
  * that something is being withheld: the glyphs are veiled past legibility, so the row reads
  * as a name held back rather than as a company called "Undisclosed". Two blooms sit behind
- * the smudge, black and green, each blurred far past its own edges.
+ * the smudge, one dark and one pale, each blurred far past its own edges.
  *
  * The blur sits on the element, so it takes the pseudo-elements with it — they are already
  * formless, a little more costs nothing — and it is also what makes `z-index: -1` land behind
@@ -867,13 +866,13 @@ body {
 
 .wordmark-veil::after {
   right: -3%;
-  background: var(--withheld-green);
+  background: var(--withheld-tint);
   opacity: 0.42;
 }
 
 /* On paper the black half is ink diluted. On a dark ground there is nothing left to darken
    with at that lightness, so it drops to true black — which against a 0.162 background still
-   reads as a well — and the green lifts in lightness and thins in opacity, the way a lit
+   reads as a well — and the pale bloom lifts in lightness and thins in opacity, the way a lit
    colour actually behaves in a dark room. Both directions leave the text's contrast against
    its ground better than it was, never worse. */
 .dark .wordmark-veil::before {
@@ -882,7 +881,7 @@ body {
 }
 
 .dark .wordmark-veil::after {
-  /* `--withheld-green` already lifts for the dark theme; only the opacity is this rule's own. */
+  /* `--withheld-tint` already lifts for the dark theme; only the opacity is this rule's own. */
   opacity: 0.30;
 }
 

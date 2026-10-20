@@ -139,25 +139,29 @@ function separator(at: number, length: number) {
   return length > 2 ? ', and ' : ' and '
 }
 
-/** Who, what, when — the three facts every role has. */
+/**
+ * Who, what, when — the three facts every role has, on one line: the employer, the title in a
+ * lighter voice beside it, and the dates against the right edge. The title wraps under the
+ * name when the line is too short for both.
+ */
 function RoleHeading({ role, open }: { readonly role: Role; readonly open?: boolean }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-6 gap-y-1">
-      <div className="flex items-start gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-6">
+      <div className="flex min-w-0 items-baseline gap-3">
         {/* The affordance is drawn only when there is something behind it. A row with no
             write-up yet keeps the same indent so the column of names stays straight. */}
         {open === undefined ? (
-          <span aria-hidden className="mt-[0.6em] block size-2.5 shrink-0" />
+          <span aria-hidden className="block size-2.5 shrink-0" />
         ) : (
           <DisclosureMark open={open} />
         )}
-        <span className="min-w-0">
-          <h3 className="font-display text-title leading-[1.1] text-foreground">
+        <span className="flex min-w-0 flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+          <h3 className="font-display text-body font-semibold leading-snug text-foreground">
             <Fact id={`role.${role.id}.org`} className={orgVeilClass(role)}>
               {role.org}
             </Fact>
           </h3>
-          <p className="mt-1 text-fine text-muted-foreground">
+          <p className="text-fine font-light text-muted-foreground">
             <Fact id={`role.${role.id}.title`}>{role.title}</Fact>
           </p>
         </span>
@@ -184,20 +188,17 @@ function RoleRow({ role }: { readonly role: Role }) {
 
   if (!detail) {
     return (
-      <div className="py-[var(--space-group)]">
+      <div className="py-4">
         <RoleHeading role={role} />
       </div>
     )
   }
 
   return (
-    <Disclosure
-      className="py-[var(--space-group)]"
-      summary={(open) => <RoleHeading role={role} open={open} />}
-    >
-      <div className="pl-[calc(0.625rem+0.75rem)] pt-[var(--space-group)]">
+    <Disclosure className="py-4" summary={(open) => <RoleHeading role={role} open={open} />}>
+      <div className="pb-1 pl-[calc(0.625rem+0.75rem)] pt-3">
         {role.summary && (
-          <p className="max-w-[62ch] text-body leading-[1.55] text-foreground/85">
+          <p className="max-w-[62ch] text-fine font-light leading-[1.6] text-foreground/80">
             {role.summary}
           </p>
         )}
@@ -222,9 +223,9 @@ function Work() {
     <section className="mt-[var(--space-section)]">
       <SectionHead index="01" label="Work" note={pad(roles.length)} />
 
-      <ol className="measure-column mt-[var(--space-group)]">
+      <ol className="measure-column mt-[var(--space-group)] divide-y divide-border/60">
         {roles.map((role) => (
-          <li key={role.id} className="border-b border-border">
+          <li key={role.id}>
             <RoleRow role={role} />
           </li>
         ))}
