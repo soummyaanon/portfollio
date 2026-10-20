@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 
 import { AudioToggle } from './AudioToggle'
-import { PLATE_RS, PLATE_SEAT_X, PLATE_SEAT_Y } from './plate-geometry'
+import { KEPLER, PLATE_RS, PLATE_SEAT_X, PLATE_SEAT_Y } from './plate-geometry'
 import { EnduranceOrbit } from '@/components/figures/endurance/EnduranceOrbit'
 
 /**
@@ -67,6 +67,7 @@ uniform float uColour;   // 0 greys, 1 the objects' own colours; eased in while 
 uniform float uShadow;   // 1 when the ink is darker than the paper, 0 when it is lighter
 uniform vec4  uCam;      // the camera: xy = cos/sin of azimuth, z = sin(elevation), w = cos(elevation)
 uniform float uField;    // ambient sky density — at 0 the whole field is skipped, not just faded
+uniform float uKepler;   // Kepler's law on the page's one clock: ω(r) = uKepler / r^1.5
 uniform float uRs;       // the Schwarzschild radius, plate units — everything else follows from it
 uniform vec2  uSeat;     // where the hole sits, plate space
 
@@ -216,17 +217,16 @@ vec3 gwave(vec2 p, vec2 c, float t, float w, float k, float breathe, float psi) 
  * The disk is a thin annulus from the innermost stable orbit at 3 rs out to 9 rs, seen at
  * ~83° of inclination — the camera riding just above the disk plane, which is where the
  * film put it. Its light is Keplerian speed √(rs/2r), Doppler beaming, and gravitational
- * redshift. The beaming runs at the 2.5th power, short of the full cube: the film evened it
- * out entirely because Thorne's full asymmetry left half the disk missing, and this sits
- * between the two, so the approaching limb clearly leads as it does in every real image of
- * an accretion flow and the receding one is still there. A hot rim just outside the ISCO
+ * redshift. The beaming is muted, as the film's Gargantua has it: Thorne's full asymmetry left
+ * half the disk missing, and Nolan had it evened out, so the approaching limb leads only a
+ * little. A hot rim just outside the ISCO
  * carries the brightness the film put there, and the whole thing runs through a soft-knee
  * tonemap, 1 − e^(−x), so the inner band saturates into an even blaze instead of clipping
  * into a flat wedge — blown out the way film stock blows out, not the way a clamp does.
  *
- * The texture is silk, not smoke: two octaves of noise stretched long along the flow and
- * fine across it, at low contrast, carried on annular bands that each turn at their own
- * Keplerian rate — banded because a continuous shear winds any pattern below pixel scale
+ * The texture is silk, not smoke, as the film's disk is: two octaves of noise stretched long
+ * along the flow and fine across it, at low contrast, carried on annular bands that each turn
+ * at their own Keplerian rate, on the same clock as the Endurance's orbit — banded because a continuous shear winds any pattern below pixel scale
  * within minutes, and the finer octave shearing 35% faster than the lanes it rides is the
  * turbulence. The streaks live in the disk's midtones; the blaze at the rim is allowed to
  * swallow them exactly as an overexposed frame would.
@@ -269,10 +269,11 @@ float diskLight(vec2 d, float rs, float t, float shadow) {
   // the one thing azimuth is supposed to cost this disk — nothing — would become a visible
   // smear of the entire texture.
   float phi = atan(dplane.y, dplane.x) + atan(uCam.y, uCam.x);
-  // The rotation is the point of the disk, so it is allowed to be seen: the inner lanes lap
-  // the hole in a few seconds and the outer ones in tens, on the same r^(-3/2) law.
+  // Each band turns at Kepler's rate on the page's one clock, the clock the Endurance orbits
+  // on: the inner lanes lap the hole in about fourteen seconds and the outer ones in about
+  // seventy, the same r^(-3/2) law that carries the ship round in two minutes further out.
   float bandR = max((floor(rd * 32.0) + 0.5) / 32.0, diskIn);
-  float whirl = 0.34 / pow(bandR, 1.5);
+  float whirl = uKepler / pow(bandR, 1.5);
   float coarse = noise(vec2(rd * 40.0, (phi - whirl * t) * 2.6));
   float fine = noise(vec2(rd * 110.0, (phi - whirl * t * 1.35) * 7.0) + 7.3);
   // Each octave fades out as its radial period closes on a pixel. At hero size the fine one
@@ -281,15 +282,12 @@ float diskLight(vec2 d, float rs, float t, float shadow) {
   // to be wherever it can be resolved and its mean everywhere else.
   float coarseW = smoothstep(0.9, 0.35, fwidth(rd * 40.0));
   float fineW = smoothstep(0.9, 0.35, fwidth(rd * 110.0));
-  // Contrast pitched so the streaks live in the tonemap's midtones across most of the
-  // disk — silk was tried and the rotation vanished into it; a whirl nobody can see is
-  // not a whirl.
-  float lanes = 0.42 + 0.42 * mix(0.5, coarse, coarseW) + 0.26 * mix(0.5, fine, fineW);
+  // Contrast held low, as on the film's disk: fine silky streaks that show the flow turning
+  // without breaking the even blaze into lanes.
+  float lanes = 0.6 + 0.28 * mix(0.5, coarse, coarseW) + 0.12 * mix(0.5, fine, fineW);
   float beta = sqrt(rs / (2.0 * rdc));
-  // Beaming at the 2.5th power, between the film's muted 1.5 and the full cube: the
-  // approaching limb now clearly outshines the receding one, as every real image of an
-  // accretion flow shows, without the receding half going out altogether.
-  float dopp = pow(1.0 / (1.0 - beta * sinI * (dplane.x / rdc)), 2.5);
+  // Beaming at the 1.2th power, the film's evened-out look rather than the full cube.
+  float dopp = pow(1.0 / (1.0 - beta * sinI * (dplane.x / rdc)), 1.2);
   // The Doppler flip. Inside the fold the lens is showing the counter-image of the
   // opposite limb, so the raw beaming changes sides right at the ring — a dim sliver
   // hugging the shadow on the bright side, which is precisely what read as the wing
@@ -297,7 +295,7 @@ float diskLight(vec2 d, float rs, float t, float shadow) {
   // once, so its beaming is blended flat, and the wings fade smoothly into an evenly
   // lit ring instead of docking against their own dimmed reflection.
   float foldMix = smoothstep(diskIn * 1.1, diskIn * 0.5, rd0);
-  float doppEff = mix(min(dopp, 5.0), 1.15, foldMix);
+  float doppEff = mix(min(dopp, 3.0), 1.15, foldMix);
   float gfac = sqrt(max(1.0 - rs / rdc, 0.0));
   float rim = 1.0 + 1.0 * smoothstep(diskIn * 1.9, diskIn * 1.02, rd);
   float body = pow(rs / rdc, 1.7) * 17.0
@@ -308,7 +306,7 @@ float diskLight(vec2 d, float rs, float t, float shadow) {
   float hr = length(hp);
   float haze = smoothstep(diskIn * 0.85, diskIn * 1.15, hr)
     * smoothstep(diskOut * 1.5, diskIn * 1.1, hr)
-    * (0.25 + 0.75 * min(dopp, 5.0) / 5.0)
+    * (0.25 + 0.75 * min(dopp, 3.0) / 3.0)
     * mix(0.15, 0.03, shadow);
   return max(film * mix(0.92, 0.62, shadow), haze);
 }
@@ -636,9 +634,9 @@ void main() {
   float ring = smoothstep(hair * 1.5 + px, hair * 1.5 - px, abs(holeD - holeR * 1.10)) * 0.52;
   ring += smoothstep(hair + px, hair - px, abs(holeD - holeR * 1.040)) * 0.17;
   ring += smoothstep(hair * 0.75 + px, hair * 0.75 - px, abs(holeD - holeR * 1.012)) * 0.06;
-  // The ring is beamed like the disk it is made of: brighter on the approaching (+x) side,
-  // fading round to the receding one rather than lit evenly all the way round.
-  ring *= 0.62 + 0.62 * smoothstep(-1.0, 1.0, (p.x - holeAt.x) / max(holeD, 1e-4));
+  // The ring is beamed like the disk it is made of, and as gently: a touch brighter on the
+  // approaching (+x) side, nearly even all the way round as the film's ring is.
+  ring *= 0.88 + 0.24 * smoothstep(-1.0, 1.0, (p.x - holeAt.x) / max(holeD, 1e-4));
   // A breath of light outside the rings, where the lensed sky piles up. Nearly switched off
   // on paper: the identical mark that reads as light on a dark ground reads as a thumbprint
   // on a white one.
@@ -834,6 +832,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     const uCam = gl.getUniformLocation(program, 'uCam')
     const uField = gl.getUniformLocation(program, 'uField')
     const uRs = gl.getUniformLocation(program, 'uRs')
+    const uKepler = gl.getUniformLocation(program, 'uKepler')
     const uSeat = gl.getUniformLocation(program, 'uSeat')
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -902,6 +901,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       gl.uniform1f(uTime, time)
       gl.uniform1f(uField, 1)
       gl.uniform1f(uRs, PLATE_RS)
+      gl.uniform1f(uKepler, KEPLER)
       gl.uniform2f(uSeat, PLATE_SEAT_X, PLATE_SEAT_Y)
       gl.uniform4f(uCam, Math.cos(cam.az), Math.sin(cam.az), Math.sin(cam.elev), Math.cos(cam.elev))
       // Every probe is read every frame rather than cached, which is what lets a theme

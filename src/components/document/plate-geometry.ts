@@ -12,3 +12,18 @@ export const PLATE_SEAT_X = 0
 export const PLATE_SEAT_Y = 0.03
 /** √27/2 — the photon capture radius in units of rs. The edge of the black disc, not the horizon. */
 export const CAPTURE_RATIO = 2.598
+
+/**
+ * The Endurance's orbit about the hole, and the one clock everything around the hole keeps:
+ * an ellipse from 0.74 to 1.16 plate units, taking `period` screen seconds for the Newtonian
+ * orbit of the same size.
+ */
+export const ENDURANCE_ORBIT = { a: 0.95, e: 0.22, period: 120 } as const
+
+/**
+ * Kepler's law on that clock: a circular orbit at radius r turns at KEPLER / r^1.5 radians per
+ * screen second. The disk's gas and the ship's orbit are the same physics at different radii,
+ * so the inner edge of the disk laps the hole in about 14 s, its outer edge in about 72 s and
+ * the ship, further out, in about 120 s.
+ */
+export const KEPLER = ((2 * Math.PI) / ENDURANCE_ORBIT.period) * ENDURANCE_ORBIT.a ** 1.5

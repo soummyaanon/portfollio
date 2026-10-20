@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-import { CAPTURE_RATIO, PLATE_RS, PLATE_SEAT_X, PLATE_SEAT_Y } from '@/components/document/plate-geometry'
+import { CAPTURE_RATIO, ENDURANCE_ORBIT, PLATE_RS, PLATE_SEAT_X, PLATE_SEAT_Y } from '@/components/document/plate-geometry'
 
 import { createOrbit } from './orbit'
 import { createShip } from './ship'
@@ -34,15 +34,13 @@ export interface OrbitScene {
 }
 
 export const ORBIT = {
-  /** The ellipse, in plate units: periapsis 0.74 just outside the disk, apoapsis 1.16. */
-  a: 0.95,
-  e: 0.22,
+  /** The ellipse, in plate units, and its clock: shared with the disk's own rotation. */
+  ...ENDURANCE_ORBIT,
   /** Where the first periapsis falls round the orbit, radians: to the front right. */
   periapsisAt: 0.35,
   /** How far the orbit plane opens from edge-on, as the vertical squash of the ellipse. */
   open: 0.2,
-  /** Seconds per orbit (for the Newtonian orbit of the same size), and per turn of the ship. */
-  period: 120,
+  /** Seconds per turn of the ship about its own axis. */
   spin: 30,
   /**
    * The ship's ring radius on screen, in plate units: about a quarter of the shadow's width,
