@@ -50,82 +50,87 @@ function Masthead() {
     // in tighter than the plate below it is tall: the plate grew, and it grew upward, because
     // sky is the one thing on this page that is worth more of the fold than the margin above
     // it was. The toggle still clears — the plate's mask has no ink within a rem of its edge.
-    <header className="pt-[clamp(3rem,4.5vw,4.25rem)] text-center">
+    <header className="pt-[clamp(3rem,4.5vw,4.25rem)]">
       {/* The catalogued object at the centre of the plate is now the black hole itself, not a
           portrait: the chart is drawn around the one thing on it that bends everything else,
           and the name below is what the plate is evidence for. */}
       <SignalPlate />
 
-      {/* Two lines, tight leading, optical tracking pulled in — at this size the default
+      {/* The byline sits on the same left edge as every section below it, so the page reads
+          down one line from the name to the last row; only the sky above stays centred.
+
+          Two lines, tight leading, optical tracking pulled in — at this size the default
           spacing reads loose. The only element on the site allowed to reach display size.
-          The portrait rides beside the name now rather than at the centre of the plate:
-          the sky above belongs to the hole, and the face belongs with the byline. */}
-      <div className="flex items-center justify-center gap-[clamp(1rem,2.5vw,1.75rem)]">
-        <h1 className="font-display text-display leading-[0.82] tracking-[-0.035em] text-foreground">
-          <span className="block">
-            <Fact id="person.given">{person.givenName}</Fact>
-          </span>
-          {' '}
-          <span className="block">
-            <Fact id="person.family">{person.familyName}</Fact>
-          </span>
-        </h1>
-        <div className="elevate size-[clamp(3.25rem,5.5vw,4.5rem)] shrink-0 overflow-hidden rounded-full bg-card ring-1 ring-border">
-          <Image
-            src={person.avatar}
-            alt={person.name}
-            width={256}
-            height={256}
-            className="h-full w-full object-cover"
-            sizes="(max-width: 640px) 18vw, 5vw"
-            priority
-          />
+          The portrait rides at the far end of the name's line, where the dates sit in the
+          rows below: the sky above belongs to the hole, and the face belongs with the byline. */}
+      <div className="measure-column">
+        <div className="flex items-center justify-between gap-[clamp(1rem,2.5vw,1.75rem)]">
+          <h1 className="font-display text-display leading-[0.82] tracking-[-0.035em] text-foreground">
+            <span className="block">
+              <Fact id="person.given">{person.givenName}</Fact>
+            </span>
+            {' '}
+            <span className="block">
+              <Fact id="person.family">{person.familyName}</Fact>
+            </span>
+          </h1>
+          <div className="elevate size-[clamp(3.25rem,5.5vw,4.5rem)] shrink-0 overflow-hidden rounded-full bg-card ring-1 ring-border">
+            <Image
+              src={person.avatar}
+              alt={person.name}
+              width={256}
+              height={256}
+              className="h-full w-full object-cover"
+              sizes="(max-width: 640px) 18vw, 5vw"
+              priority
+            />
+          </div>
         </div>
+
+        {/* Tracking is dialled back on narrow screens: at 0.28em the three facts run 40 characters
+            wide and wrap, which strands a separator dot at the end of the first line. */}
+        <p className="field-label mt-[clamp(1.25rem,2.5vw,2rem)] flex flex-wrap items-center gap-x-3 gap-y-1 tracking-[0.16em] text-muted-foreground sm:tracking-[0.26em]">
+          <Fact id="person.title">{person.title}</Fact>
+          <Connective>
+            <span aria-hidden className="block h-2.5 w-px bg-border" />
+          </Connective>
+          <Fact id="person.location">{person.location}</Fact>
+          <Connective>
+            <span aria-hidden className="block h-2.5 w-px bg-border" />
+          </Connective>
+          <Fact id="person.timezone">{person.timezone}</Fact>
+        </p>
+
+        {/* The lead is held to the prose measure, so no line runs long enough to be work to
+            read, and set ragged-right from the column's left edge like the rest of the page.
+
+            With no hue to spend, the focus terms are emphasised structurally instead:
+            they switch to the display grotesque at full contrast and tight tracking while the
+            sentence around them sits at 70%. Same job an accent colour was doing, done with
+            the only two variables left — weight and contrast. */}
+        <p className="mt-[clamp(2rem,4vw,3rem)] max-w-[var(--measure-prose)] text-pretty text-lead font-light leading-[1.45] text-foreground/70">
+          <Connective>I’m a builder making </Connective>
+          {person.focus.map((item, at) => (
+            <Fragment key={item}>
+              {at > 0 && <Connective>{separator(at, person.focus.length)}</Connective>}
+              <Fact
+                id={`person.focus.${at}`}
+                className={`text-shimmer font-display font-semibold tracking-[-0.02em] text-foreground ${SHIMMER_DELAY[at] ?? ''}`}
+              >
+                {item}
+              </Fact>
+            </Fragment>
+          ))}
+          <Connective> that make life easier. Off the clock, I follow </Connective>
+          {person.interests.map((item, at) => (
+            <Fragment key={item}>
+              {at > 0 && <Connective>{separator(at, person.interests.length)}</Connective>}
+              <Fact id={`person.interest.${at}`}>{item}</Fact>
+            </Fragment>
+          ))}
+          <Connective>.</Connective>
+        </p>
       </div>
-
-      {/* Tracking is dialled back on narrow screens: at 0.28em the three facts run 40 characters
-          wide and wrap, which strands a separator dot at the end of the first line. */}
-      <p className="field-label mt-[clamp(1.25rem,2.5vw,2rem)] flex flex-wrap items-center justify-center gap-x-3 gap-y-1 tracking-[0.16em] text-muted-foreground sm:tracking-[0.26em]">
-        <Fact id="person.title">{person.title}</Fact>
-        <Connective>
-          <span aria-hidden className="block h-2.5 w-px bg-border" />
-        </Connective>
-        <Fact id="person.location">{person.location}</Fact>
-        <Connective>
-          <span aria-hidden className="block h-2.5 w-px bg-border" />
-        </Connective>
-        <Fact id="person.timezone">{person.timezone}</Fact>
-      </p>
-
-      {/* The lead is the one piece of centred running text, kept to ~44 characters so no
-          line is long enough for the ragged left edge to become work to read.
-
-          With no hue to spend, the focus terms are emphasised structurally instead:
-          they switch to the display grotesque at full contrast and tight tracking while the
-          sentence around them sits at 70%. Same job an accent colour was doing, done with
-          the only two variables left — weight and contrast. */}
-      <p className="measure-prose mt-[clamp(2rem,4vw,3rem)] text-balance text-lead font-light leading-[1.45] text-foreground/70">
-        <Connective>I’m a builder making </Connective>
-        {person.focus.map((item, at) => (
-          <Fragment key={item}>
-            {at > 0 && <Connective>{separator(at, person.focus.length)}</Connective>}
-            <Fact
-              id={`person.focus.${at}`}
-              className={`text-shimmer font-display font-semibold tracking-[-0.02em] text-foreground ${SHIMMER_DELAY[at] ?? ''}`}
-            >
-              {item}
-            </Fact>
-          </Fragment>
-        ))}
-        <Connective> that make life easier. Off the clock, I follow </Connective>
-        {person.interests.map((item, at) => (
-          <Fragment key={item}>
-            {at > 0 && <Connective>{separator(at, person.interests.length)}</Connective>}
-            <Fact id={`person.interest.${at}`}>{item}</Fact>
-          </Fragment>
-        ))}
-        <Connective>.</Connective>
-      </p>
     </header>
   )
 }
