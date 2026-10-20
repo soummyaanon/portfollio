@@ -5,11 +5,13 @@ import * as THREE from 'three'
  * command hub, the ring spinning about its axis for gravity, a Ranger docked at the hub.
  *
  * Built in the ship's own frame with the ring in the x–y plane and its axis along +z, the ring
- * radius at 1. The hub is joined to the ring by a single tunnel from one module's inner face,
- * as the film's ship is, rather than by a wheel of spokes. The modules come in three kinds, four of each, alternating round the ring:
- * crew habitats with windows on the outer face, equipment modules with radiator fins on top,
- * and service modules with a dark band and a thruster block. Everything repeated is one
- * instanced mesh, so the whole ship is a couple of dozen draw calls.
+ * radius at 1 (32 m on the real ship, 64 m across). The hub is joined to the ring by a single
+ * tunnel from one module's inner face, as the film's ship is, rather than by a wheel of spokes.
+ * The modules come in three kinds, four of each, alternating round the ring: crew habitats with
+ * windows on the outer face, equipment modules with foil and a radiator of fins, and service
+ * modules with a dark band and three engine bells each on the rear face — the ship's twelve
+ * hybrid chemical/plasma engines, aimed along its axis. Everything repeated is one instanced
+ * mesh, so the whole ship is a couple of dozen draw calls.
  *
  * The whole ship turns together, hub and docked Ranger included, as it does in the film.
  *
@@ -84,7 +86,12 @@ export function createShip(): Ship {
   const windows = instanced(box(0.05, 0.012, 0.06), glass, 4 * 3)
   const fins = instanced(box(0.006, 0.07, 0.11), grey, 4 * 9)
   const bands = instanced(box(MODULE.tangential * 0.18, MODULE.radial * 1.02, MODULE.axial * 1.02), dark, 4)
-  const thrusters = instanced(new THREE.CylinderGeometry(0.012, 0.022, 0.04, 10), metal, 4 * 4)
+  // The twelve main engines: bells with the throat against the module and the exit facing aft.
+  const BELL = { throat: 0.018, exit: 0.034, length: 0.07 }
+  const engines = instanced(new THREE.CylinderGeometry(BELL.throat, BELL.exit, BELL.length, 16, 1, true), metal, 4 * 3)
+  // A cylinder's axis is +y with its top (the throat) at +y. A quarter turn about x takes +y to
+  // +z, so the throat meets the module above it and the wide exit faces aft, along −z.
+  const aft = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2)
 
   let w = 0
   let g = 0
@@ -128,13 +135,12 @@ export function createShip(): Ship {
         fins.setMatrixAt(ni++, matrix.compose(position, quaternion, scale))
       }
     } else {
-      // Service: a dark band round the middle and a four-nozzle thruster block outside.
+      // Service: a dark band round the middle and three engine bells on the rear face.
       onRing(a, 0, 0)
       bands.setMatrixAt(bi++, matrix.compose(position, quaternion, scale))
-      for (let i = 0; i < 4; i++) {
-        const local = new THREE.Vector3((i % 2 ? 1 : -1) * 0.035, 0, (i < 2 ? 1 : -1) * 0.035)
-        onRing(a, MODULE.radial / 2 + 0.02, 0, local)
-        thrusters.setMatrixAt(ti++, matrix.compose(position, quaternion, scale))
+      for (let i = -1; i <= 1; i++) {
+        onRing(a, 0, -(MODULE.axial / 2 + BELL.length / 2), new THREE.Vector3(i * 0.12, 0, 0))
+        engines.setMatrixAt(ti++, matrix.compose(position, quaternion.clone().multiply(aft), scale))
       }
     }
   })

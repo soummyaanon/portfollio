@@ -40,8 +40,11 @@ export const ORBIT = {
   periapsisAt: 0.35,
   /** How far the orbit plane opens from edge-on, as the vertical squash of the ellipse. */
   open: 0.2,
-  /** Seconds per turn of the ship about its own axis. */
-  spin: 30,
+  /**
+   * Seconds per turn of the ship about its own axis, in real time: the rate that gives one
+   * Earth gravity at the rim of a 64 m ring, 2π√(r/g) with r = 32 m — about 11.4 s.
+   */
+  spin: 2 * Math.PI * Math.sqrt(32 / 9.81),
   /**
    * The ship's ring radius on screen, in plate units: about a quarter of the shadow's width,
    * so the hole plainly dwarfs it. True scale is out of reach — a 64 m ship beside a horizon two
