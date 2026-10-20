@@ -57,3 +57,5 @@ CNAME
 
 # Cursor IDE files
 .cursor/
+# Playwright MCP session logs
+/.playwright-mcp/

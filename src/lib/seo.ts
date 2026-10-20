@@ -33,7 +33,7 @@ export const OPEN_GRAPH_DEFAULTS = {
   locale: 'en_US',
   images: [
     {
-      url: '/og.png',
+      url: '/og.png?v=2',
       width: 1200,
       height: 630,
       alt: `${person.name} — ${person.title}`,

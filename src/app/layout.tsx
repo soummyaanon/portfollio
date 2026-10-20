@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     creator: '@SoumyapX',
-    images: ['/og.png'],
+    images: ['/og.png?v=2'],
   },
 }
 

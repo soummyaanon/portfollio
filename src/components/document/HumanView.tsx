@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useRef } from 'react'
+import { Fragment } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
@@ -15,11 +15,10 @@ import {
   type Role,
 } from '@/data/profile'
 import { Connective, Fact } from './Fact'
-import { EventHorizonProvider, HorizonTrigger } from './EventHorizon'
 import { BenchRails } from './BenchRails'
 import { Workbench, type WorkbenchSlide } from './Workbench'
 import { SectionHead } from './SectionHead'
-import { PLATE_RS, SignalPlate, type HorizonDrive } from './SignalPlate'
+import { SignalPlate } from './SignalPlate'
 import { Disclosure, DisclosureMark } from './Disclosure'
 import { ToolMark } from './ToolMark'
 import { orgVeilClass } from './withheld'
@@ -45,7 +44,7 @@ function pad(value: number) {
   return String(value).padStart(2, '0')
 }
 
-function Masthead({ drive }: { readonly drive: React.RefObject<HorizonDrive> }) {
+function Masthead() {
   return (
     // Top padding clears the fixed mode toggle, which owns the top-right corner. It is pulled
     // in tighter than the plate below it is tall: the plate grew, and it grew upward, because
@@ -54,12 +53,8 @@ function Masthead({ drive }: { readonly drive: React.RefObject<HorizonDrive> }) 
     <header className="pt-[clamp(3rem,4.5vw,4.25rem)] text-center">
       {/* The catalogued object at the centre of the plate is now the black hole itself, not a
           portrait: the chart is drawn around the one thing on it that bends everything else,
-          and the name below is what the plate is evidence for.
-
-          It is also the attractor for the swallow at the foot of the page, which is why it is
-          handed the drive: press the dot down there and this is the hole the document climbs
-          into. Nothing else on the page needs to know that. */}
-      <SignalPlate drive={drive} />
+          and the name below is what the plate is evidence for. */}
+      <SignalPlate />
 
       {/* Two lines, tight leading, optical tracking pulled in — at this size the default
           spacing reads loose. The only element on the site allowed to reach display size.
@@ -507,35 +502,17 @@ export function HumanView({
   readonly contributions?: React.ReactNode
   readonly workbench?: readonly WorkbenchSlide[]
 }) {
-  // Handed to the provider, which is what gives the hole something to eat: everything inside this
-  // element is a shred, except the plate's own subtree.
-  const rootRef = useRef<HTMLDivElement>(null)
-
-  // The one piece of shared state between the foot of the page and the top of it. Held here
-  // because this is the nearest thing that owns both, and it is a ref rather than state because
-  // the swallow writes to it sixty times a second. At rest it is the plate's own geometry, so
-  // the plate reads it unconditionally and there is no second path for "nothing is happening".
-  const driveRef = useRef<HorizonDrive>({ rs: PLATE_RS, field: 1, strike: 0, taking: false })
-
   return (
-    <EventHorizonProvider rootRef={rootRef} driveRef={driveRef}>
-      <div
-        ref={rootRef}
-        className="bench measure-page pb-[var(--space-section)]"
-      >
-        <BenchRails />
-        <Masthead drive={driveRef} />
-        <Work />
-        {contributions && <div className="mt-[var(--space-section)]">{contributions}</div>}
-        <Education />
-        <Projects />
-        <Skills />
-        <Writing posts={posts} />
-        <Workbench slides={workbench} />
-        {/* Closes the axis — and turns out to be the heaviest thing on the page. Without it the
-            document just stops at whatever the last list was. */}
-        <HorizonTrigger />
-      </div>
-    </EventHorizonProvider>
+    <div className="bench measure-page pb-[var(--space-section)]">
+      <BenchRails />
+      <Masthead />
+      <Work />
+      {contributions && <div className="mt-[var(--space-section)]">{contributions}</div>}
+      <Education />
+      <Projects />
+      <Skills />
+      <Writing posts={posts} />
+      <Workbench slides={workbench} />
+    </div>
   )
 }

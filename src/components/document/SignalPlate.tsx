@@ -1345,35 +1345,7 @@ const PLATE_SEAT_Y = 0.03
 /** √27/2 — the photon capture radius in units of rs. The edge of the black disc, not the horizon. */
 export const CAPTURE_RATIO = 2.598
 
-/**
- * What the event horizon takes hold of while it is eating the page.
- *
- * Handed over as a mutable object behind a ref rather than as props, because these change sixty
- * times a second and a prop would mean sixty React renders. It is the same arrangement the
- * component already uses internally for the cursor mark, the strike and the pointer: the render
- * happens once and the animation lives outside it.
- *
- * At rest it holds the plate's own values, so the drive is always the authority and there is no
- * second code path for "nothing is happening".
- */
-export interface HorizonDrive {
-  /** Schwarzschild radius, plate units. The hole's swelling is this number moving. */
-  rs: number
-  /** Ambient sky density, 1 at rest. The field drains as the hole feeds. */
-  field: number
-  /** Bumped to open a ranging ring from the hole. Any change fires one. */
-  strike: number
-  /** True while the page is being taken, which retires the cursor stand-in for the duration. */
-  taking: boolean
-}
-
-export function SignalPlate({
-  children,
-  drive,
-}: {
-  readonly children?: React.ReactNode
-  readonly drive?: React.RefObject<HorizonDrive | null>
-}) {
+export function SignalPlate({ children }: { readonly children?: React.ReactNode }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const probeRef = useRef<HTMLSpanElement>(null)
   const paperProbeRef = useRef<HTMLSpanElement>(null)
@@ -1469,9 +1441,6 @@ export function SignalPlate({
     // strike term is already dead on the first frame — an unclicked plate has never been
     // clicked, rather than having been clicked at the origin at time zero.
     const pulse = { x: 0, y: 0, at: -1000 }
-
-    // The last strike counter seen on the drive, so a bump fires exactly one ring.
-    let lastStrike = 0
 
     // The cursor's position in plate space, for the absorption mark. The rendered values
     // chase the targets rather than jumping, so a fast hand drags the mark instead of
@@ -1936,44 +1905,21 @@ export function SignalPlate({
       if (!gl) return
       resize()
 
-      // What the hole is doing this frame. At rest the drive holds the plate's own values, so
-      // this is one path rather than two.
-      const d = drive?.current ?? null
-      const rs = d ? d.rs : PLATE_RS
-      const field = d ? d.field : 1
-
-      // A ranging ring, asked for from outside — the one the hole opens as it settles back to
-      // its own size. It reuses the strike the plate already draws for a click, seated at the
-      // hole rather than at a pointer.
-      if (d && d.strike !== lastStrike) {
-        lastStrike = d.strike
-        pulse.x = PLATE_SEAT_X
-        pulse.y = PLATE_SEAT_Y
-        pulse.at = time
-      }
-
       // Solved here rather than in the loop, so every path that renders a frame — the loop, a
       // resize while paused, a theme flip, the reduced-motion still — gets a pulsar that agrees
-      // with the clock that frame was drawn for. Skipped outright with the field: this is some
-      // fourteen hundred integration steps per star per frame, and there is no star to draw.
-      if (field > 0) {
-        updatePulsar(time, 0)
-        updatePulsar(time, 1)
-        updatePulsar(time, 2)
-      }
+      // with the clock that frame was drawn for.
+      updatePulsar(time, 0)
+      updatePulsar(time, 1)
+      updatePulsar(time, 2)
       gl.uniform2f(uSize, width, height)
       gl.uniform1f(uTime, time)
-      gl.uniform1f(uField, field)
-      gl.uniform1f(uRs, rs)
+      gl.uniform1f(uField, 1)
+      gl.uniform1f(uRs, PLATE_RS)
       gl.uniform2f(uSeat, PLATE_SEAT_X, PLATE_SEAT_Y)
       gl.uniform2f(uMark, mark.x, mark.y)
       gl.uniform2f(uMarkDir, mark.dirX, mark.dirY)
       gl.uniform1f(uMarkTide, mark.tide)
-      // The stand-in is retired while the page is being taken. Its whole choreography is measured
-      // against the plate's resting capture radius, and the hole is several times that for those
-      // ten seconds — an arrow being absorbed at a radius the shadow has long since swallowed
-      // reads as a bug, and the hole has bigger prey in frame anyway.
-      gl.uniform1f(uMarkAlpha, d?.taking ? 0 : mark.alpha)
+      gl.uniform1f(uMarkAlpha, mark.alpha)
       gl.uniform1f(uMarkSpin, mark.spin)
       for (let i = 0; i < 3; i++) {
         const q = pulsars[i]!
@@ -2135,19 +2081,12 @@ export function SignalPlate({
       gl.deleteShader(fragment)
       gl.deleteBuffer(buffer)
     }
-    // The drive is a ref, so its identity never changes: this still runs exactly once per mount
-    // and the WebGL context is never rebuilt.
-  }, [drive])
+  }, [])
 
   return (
     // The tilt is gone with the rest of the cursor theatre, but the perspective stays on the
     // outer box: it is what lets a translateZ on anything seated on the plate read as depth.
-    //
-    // data-horizon-hole marks this subtree as the attractor rather than prey. The swallow walks
-    // the document and transforms everything it finds; the one thing it must not touch is the
-    // hole doing the swallowing, and the audio control that rides along with it.
     <div
-      data-horizon-hole
       className="relative isolate mx-auto grid h-[clamp(16rem,30vw,24rem)] w-full max-w-[var(--measure-column)] place-items-center [perspective:1100px]"
     >
       {/* Colour probe. The shader reads its ink off this element's resolved `color`,
