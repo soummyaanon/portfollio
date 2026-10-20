@@ -8,7 +8,7 @@ import { AudioToggle } from './AudioToggle'
 /**
  * The one moving thing on the page.
  *
- * A star chart with a mass pinned at its centre. A faint graticule, four depths of stars
+ * A star chart with a mass pinned at its centre. Four depths of stars
  * parallaxed against each other down to a dust-fine veil, a dust lane, small nebulas drifting
  * through, nine galaxies out toward the corners, and now and then a meteor. Click it and a
  * ranging circle opens from the point of contact, lifting the magnitude of every star it crosses.
@@ -22,10 +22,10 @@ import { AudioToggle } from './AudioToggle'
  * basis projects it, so the perspective divide gives the field a genuine front and back. They
  * are kept out toward the corners because the middle of the plate belongs to the mass. Being
  * extended sources they shear through the lens without brightening, the same rule the nebulas
- * and the graticule follow — a galaxy near the hole is stretched, never lit.
+ * and the dust follow — a galaxy near the hole is stretched, never lit.
  *
  * The black hole is built from its physics rather than drawn: the sky behind it is sampled
- * through the point-mass lens equation, so stars and graticule lines arc around it and a
+ * through the point-mass lens equation, so stars and galaxies arc around it and a
  * second inverted image appears inside the Einstein radius without being asked for. Around it
  * an accretion disk lives in the source plane and is seen through that lens, which is what
  * folds its far side into the arc riding over the shadow; its light carries the Doppler
@@ -119,18 +119,6 @@ float noise(vec2 p) {
 }
 
 /**
- * Coverage of the nearest contour of a scalar field, antialiased. "soft" widens the band.
- * The final factor fades a family out entirely once its lines pack closer than they can be
- * resolved — which is what keeps the graticule from turning to moiré where the lens crushes
- * it against the horizon.
- */
-float contour(float f, float soft) {
-  float w = fwidth(f) * soft;
-  float d = abs(fract(f) - 0.5);
-  return (1.0 - smoothstep(0.0, clamp(w, 0.0008, 0.42), d)) * smoothstep(0.45, 0.16, w);
-}
-
-/**
  * The arrow. The classic pointer silhouette — tip at the origin, tail down-right — traced
  * as seven vertices, because the absorbed cursor must be recognisably *the* cursor, not a
  * chart mark standing in for it. The user has to see the thing they own being taken.
@@ -161,7 +149,7 @@ float sdCursor(vec2 p) {
  * Gravitational lensing — the actual point-mass lens equation, traced backwards.
  *
  * Nothing here draws a black hole. This bends the coordinate the sky is *sampled* at, so every
- * star and every graticule line behind the mass arcs around it on its own. Where the earlier
+ * star and every galaxy behind the mass arcs around it on its own. Where the earlier
  * version used an invented softened 1/r pull, this is the real relation: a ray arriving at
  * angle θ from the mass left the source plane at β = θ − θE²/θ, with θE the Einstein radius —
  * the radius at which a source exactly behind the lens is smeared into a full ring. The
@@ -368,11 +356,11 @@ float galaxyLight(vec2 d, vec4 form) {
  * CAM_D times a unit vector by construction, so the unit vector is already in hand.
  *
  * Sampled at the *lensed* coordinate, which is why this is a few lines and not a special case: a
- * galaxy sitting behind the mass is sheared by the same map that already bends the graticule, and
+ * galaxy sitting behind the mass is sheared by the same map that already bends the stars, and
  * one directly behind it closes toward a ring. What it must never do is brighten — lensing
  * conserves surface brightness, so an extended source is stretched and never lit. The point
  * sources on this plate take the magnification; these are handed none of it, which is the rule the
- * nebulas and the graticule already follow.
+ * nebulas and the dust already follow.
  */
 float galaxyField(vec2 sky) {
   float ca = uCam.x, sa = uCam.y, se = uCam.z, ce = uCam.w;
@@ -878,7 +866,7 @@ void main() {
   // Magnification. The lens above moves images; this brightens them. The point-lens total
   // magnification, (u² + 2) / (u √(u² + 4)) with u the source offset in Einstein radii — and
   // it is applied only to point sources further down, because lensing conserves surface
-  // brightness: an extended thing like the graticule bends but never brightens, while an
+  // brightness: an extended thing like a nebula bends but never brightens, while an
   // unresolved star collects all of its magnified flux in the same dot. So a star drifting
   // behind the hole flares, stretches, and at alignment becomes a ring — the plate's
   // recurring event, free with the streaming sky. Clamped where the divergence at u = 0
@@ -927,15 +915,6 @@ void main() {
   // would be counted twice.
   vec2 flow = uField > 0.0 ? flowPull(sky, holeAt, 0.018) : sky;
 
-  // The graticule: meridians and parallels, each bowed a little by the other's coordinate, so
-  // the grid carries the suggestion of a projected sphere before anything bends it. It is the
-  // paper, not the subject — but it is also the only thing on the plate whose *shape* is known
-  // in advance, which is what makes it the instrument that shows the lensing.
-  vec2 q = vec2(sky.x * (1.0 + 0.055 * sky.y * sky.y), sky.y + 0.045 * sky.x * sky.x);
-  float graticule = uField > 0.0
-    ? max(contour(q.x * 1.35, 3.0), contour(q.y * 1.35, 3.0)) * 0.075 * uField
-    : 0.0;
-
   // A dust lane, drifting with the deep sky. Two octaves of value noise inside a soft diagonal
   // band, at a few percent — enough that the field is not evenly empty, never enough to read
   // as a cloud someone painted.
@@ -952,7 +931,7 @@ void main() {
   // Small nebulas, where the wormhole used to be. Three wisps riding two of the sky's depth
   // layers, wrapping on the same span as everything else that travels — so they cross, leave,
   // and come back around, and the parallax between the pair and the loner is one more depth
-  // cue for free. Extended sources, so like the graticule they bend through the lens without
+  // cue for free. Extended sources, so like the dust they bend through the lens without
   // brightening.
   // Nebulas ride the two farthest shells, and the reason is their size rather than a look.
   //
@@ -1022,7 +1001,7 @@ void main() {
 
   // The galaxies, far out in the field where there is room for them — the hole keeps the
   // centre, and these are scenery at eight to thirty units. Extended sources, so like the
-  // nebulas and the graticule they shear through the lens without ever brightening. They stay
+  // nebulas and the dust they shear through the lens without ever brightening. They stay
   // in the page's own ink: a galaxy is starlight in bulk, and the plate reserves colour for the
   // things on it that are emitting at a temperature of their own.
   // The amplitude has to carry the plate's own edge mask, which is severe out where these live:
@@ -1101,7 +1080,7 @@ void main() {
   // The sweep lifts the magnitude of every star it crosses, which is the whole point of it —
   // it is not a ring travelling over the chart, it is the chart being read. The point sources
   // alone carry the lens magnification, for the surface-brightness reason given above.
-  float field = max(graticule, max(dust, max(nebula, galaxies)));
+  float field = max(dust, max(nebula, galaxies));
   field = max(field, disk);
 
   // The drain — the hole taking its share of the stream.
@@ -1173,7 +1152,7 @@ void main() {
   float ink = max(field, ring);
 
   // Colour, on the two objects that have one — and on nothing else. The plate was single-ink
-  // by rule and mostly still is: the graticule, the dust, the catalogue, the
+  // by rule and mostly still is: the dust, the catalogue, the
   // nebulas, the meteors and the sweep all remain the page's own foreground colour, because
   // an atlas plate is printed in one ink and a chart that colours everything is a poster. The
   // hole and the pulsar are the exceptions, and they are exceptions on the same grounds — both
@@ -1279,6 +1258,11 @@ void main() {
   // in its two, composited source-over. Divided back out of premultiplied form, because the
   // context was asked for straight alpha.
   float baseA = clamp(ink, 0.0, 1.0) * uOpacity;
+  // The faint haze sits a few 8-bit steps above nothing, so the grain above is smaller than one
+  // step there and the haze printed in flat terraces. A triangular dither of one step breaks
+  // them up, and it fades in over the first three steps so empty sky stays exactly zero.
+  float dither = hash(gl_FragCoord.xy) + hash(gl_FragCoord.yx + 19.19) - 1.0;
+  baseA = clamp(baseA + dither / 255.0 * smoothstep(0.0, 3.0 / 255.0, baseA), 0.0, 1.0);
   float outA = curA + baseA * (1.0 - curA);
   fragColor = vec4((curRGB * curA + baseInk * baseA * (1.0 - curA)) / max(outA, 1e-4), outA);
 }
