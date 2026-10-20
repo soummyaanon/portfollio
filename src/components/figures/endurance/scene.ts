@@ -46,12 +46,12 @@ export const ORBIT = {
    */
   spin: 2 * Math.PI * Math.sqrt(32 / 9.81),
   /**
-   * The ship's ring radius on screen, in plate units: about a quarter of the shadow's width,
-   * so the hole plainly dwarfs it. True scale is out of reach — a 64 m ship beside a horizon two
-   * astronomical units across would be a ten-billionth of the shadow — so this is the smallest
-   * the ring can be and still read as the ring.
+   * The ship's ring radius on screen, in plate units: about a third of the shadow's width, so the
+   * hole plainly dwarfs it and the ring still reads as the ring. True scale is out of reach — a
+   * 64 m ship beside a horizon two astronomical units across would be a ten-billionth of the
+   * shadow.
    */
-  size: 0.045,
+  size: 0.062,
 } as const
 
 const HOLE_R = CAPTURE_RATIO * PLATE_RS
