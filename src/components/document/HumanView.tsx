@@ -109,7 +109,10 @@ function Masthead() {
         {person.focus.map((item, at) => (
           <Fragment key={item}>
             {at > 0 && <Connective>{separator(at, person.focus.length)}</Connective>}
-            <Fact id={`person.focus.${at}`} className="font-display font-semibold tracking-[-0.02em] text-foreground">
+            <Fact
+              id={`person.focus.${at}`}
+              className={`text-shimmer font-display font-semibold tracking-[-0.02em] text-foreground ${SHIMMER_DELAY[at] ?? ''}`}
+            >
               {item}
             </Fact>
           </Fragment>
@@ -126,6 +129,9 @@ function Masthead() {
     </header>
   )
 }
+
+/** The shimmer reaches each focus term in turn, so the light reads as one pass along the line. */
+const SHIMMER_DELAY = ['[animation-delay:0ms]', '[animation-delay:700ms]', '[animation-delay:1400ms]']
 
 /** What goes before item `at` of a list read as prose: "a and b", "a, b, and c". */
 function separator(at: number, length: number) {

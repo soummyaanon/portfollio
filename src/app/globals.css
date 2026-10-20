@@ -1082,6 +1082,32 @@ body {
   .bench-carriage { left: 2px; right: 2px; height: 2rem; background: var(--background); }
 }
 
+/* ── Hero focus terms: a slow band of light passes along each word ─────────────────────────
+   The words sit a step below white and a white band crosses them left to right, every few
+   seconds, then rests. Greys only. With reduced motion or forced colours they are plain text. */
+.text-shimmer {
+  background-image: linear-gradient(105deg, oklch(0.8 0 0) 0 43%, oklch(1 0 0) 50%, oklch(0.8 0 0) 57% 100%);
+  background-size: 260% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes text-shimmer {
+  0% { background-position: 100% 0; }
+  40%, 100% { background-position: 0% 0; }
+}
+
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .text-shimmer {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
+
 /* ── Workbench: the figure plate at the end of the page ─────────────────────────────────── */
 .workbench .iso-plate {
   padding: 0;
