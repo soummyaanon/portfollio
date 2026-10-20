@@ -29,7 +29,7 @@ export default function GitHubContributions() {
   if (YEARS.length === 0 || year === undefined) {
     return (
       <section>
-        <SectionHead index="02" label="Contributions" />
+        <SectionHead index="02" label="GitHub activity" />
         <p className="measure-prose mt-[var(--space-group)] text-center text-fine text-muted-foreground">
           Calendar data is generated at build time and is not available for this build.
         </p>
@@ -43,11 +43,7 @@ export default function GitHubContributions() {
 
   return (
     <section>
-      <SectionHead
-        index="02"
-        label="Contributions"
-        note={entry ? `${entry.total.toLocaleString()} in ${year}` : undefined}
-      />
+      <SectionHead index="02" label="GitHub activity" />
 
       {/* Centred on the page axis like every other band, and capped at the reading column
           so a 53-week grid does not become the widest thing on the page. */}
