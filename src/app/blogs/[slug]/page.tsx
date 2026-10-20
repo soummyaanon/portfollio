@@ -60,18 +60,12 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         modifiedTime: post.date,
         authors: [person.name],
         tags: post.tags,
-        images: [{
-          url: '/og.png?v=2',
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        }],
+        // The image is this route's own opengraph-image.tsx, drawn per post at build time.
       },
       twitter: {
         card: 'summary_large_image',
         title: post.title,
         description,
-        images: ['/og.png?v=2'],
       },
     }
   } catch {

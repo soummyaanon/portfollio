@@ -25,5 +25,11 @@
       "destination": "https://soumyapanda.dev/:path",
       "permanent": true
     }
+  ],
+  "headers": [
+    {
+      "source": "/blogs/:slug/opengraph-image",
+      "headers": [{ "key": "Content-Type", "value": "image/png" }]
+    }
   ]
 }
