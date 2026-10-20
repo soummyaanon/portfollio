@@ -78,6 +78,7 @@ uniform float uMarkSpin;  // glyph rotation, radians — the swirl of the drain
 uniform vec3  uInk;      // resolved page ink, 0..1
 uniform vec3  uPulse;    // xy = where the plate was last struck, z = seconds since
 uniform float uOpacity;
+uniform float uColour;   // 0 greys, 1 the objects' own colours; eased in while the plate is hovered
 uniform float uShadow;   // 1 when the ink is darker than the paper, 0 when it is lighter
 uniform vec4  uPsr[3];    // three pulsars: xy = where it is, z = the flyby gate, w = beam axis angle
 uniform vec3  uPsrLit[3]; // x = the lighthouse flash, 0..1; y = Doppler beaming; z = √(Ω/Ω₀), the spread
@@ -1165,21 +1166,25 @@ void main() {
 
   float ink = max(field, ring);
 
-  // Greys only, like the rest of the site. The objects that used to carry colour keep their
-  // tonal structure instead: the disk is still a blackbody read off its own brightness, with
+  // Greys at rest, like the rest of the site. The objects that carry colour keep their tonal
+  // structure in grey: the disk is still a blackbody read off its own brightness, with
   // temperature carried as lightness, so the cool outer annulus runs a mid grey and the hot
-  // inner rim and the photon ring run up to white. The pulsar and the three nebulas each keep a
-  // grey of their own, a step apart, so they still read as different things.
+  // inner rim and the photon ring run up to white. The pulsar and the three nebulas each keep
+  // a grey of their own, a step apart, so they still read as different things.
+  //
+  // Hovered, the plate shows the colours those objects really have, uColour easing from one
+  // set to the other: the disk's blackbody ramp from amber to white-gold, the pulsar's cyan,
+  // and the nebulas' hydrogen-alpha red, oxygen-III teal and reflection blue.
   //
   // uShadow is 1 on *paper* (ink darker than the page), so the second argument of each mix is
   // the light theme's value: there the hot end is the deep one, as ink on white has to be.
-  vec3 emberCool = vec3(mix(0.62, 0.34, uShadow));
-  vec3 emberHot = vec3(mix(1.00, 0.10, uShadow));
+  vec3 emberCool = mix(vec3(mix(0.62, 0.34, uShadow)), mix(vec3(0.96, 0.44, 0.07), vec3(0.66, 0.26, 0.02), uShadow), uColour);
+  vec3 emberHot = mix(vec3(mix(1.00, 0.10, uShadow)), mix(vec3(1.00, 0.90, 0.72), vec3(0.92, 0.62, 0.14), uShadow), uColour);
   vec3 emberRGB = mix(emberCool, emberHot, smoothstep(0.16, 0.80, disk));
-  vec3 psrRGB = vec3(mix(0.96, 0.16, uShadow));
-  vec3 nebHaRGB = vec3(mix(0.70, 0.36, uShadow));
-  vec3 nebO3RGB = vec3(mix(0.80, 0.30, uShadow));
-  vec3 nebRefRGB = vec3(mix(0.64, 0.40, uShadow));
+  vec3 psrRGB = mix(vec3(mix(0.96, 0.16, uShadow)), mix(vec3(0.65, 0.94, 1.00), vec3(0.03, 0.45, 0.58), uShadow), uColour);
+  vec3 nebHaRGB = mix(vec3(mix(0.70, 0.36, uShadow)), mix(vec3(1.00, 0.30, 0.36), vec3(0.60, 0.05, 0.13), uShadow), uColour);
+  vec3 nebO3RGB = mix(vec3(mix(0.80, 0.30, uShadow)), mix(vec3(0.34, 0.96, 0.84), vec3(0.02, 0.44, 0.38), uShadow), uColour);
+  vec3 nebRefRGB = mix(vec3(mix(0.64, 0.40, uShadow)), mix(vec3(0.50, 0.64, 1.00), vec3(0.09, 0.19, 0.62), uShadow), uColour);
 
   // Weighted by each source's own contribution, and the shadow's cut applied to the two that
   // sit behind it, so the grey follows the ink rather than floating free of it: where the disk
@@ -1403,6 +1408,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     const uInk = gl.getUniformLocation(program, 'uInk')
     const uPulse = gl.getUniformLocation(program, 'uPulse')
     const uOpacity = gl.getUniformLocation(program, 'uOpacity')
+    const uColour = gl.getUniformLocation(program, 'uColour')
     const uShadow = gl.getUniformLocation(program, 'uShadow')
     const uPsr = gl.getUniformLocation(program, 'uPsr')
     const uPsrLit = gl.getUniformLocation(program, 'uPsrLit')
@@ -1430,6 +1436,9 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     // teleporting it — which near the mass reads as the hand losing the tug of war. Parked
     // far off-plate so the mark's first appearance is a fade-in, not a jump from origin.
     const pointer = { x: 0, y: -3, targetX: 0, targetY: -3, hover: 0, targetHover: 0 }
+    // How much of the objects' own colour shows: a slower fade than the hover, so the colour
+    // blooms in over about half a second rather than snapping on with the cursor.
+    let colour = 0
 
     // The hole's seat and its capture radius, so the CPU can choreograph what the GPU draws.
     // Read off the same constants the shader is handed, so there is nothing left to keep in
@@ -1930,6 +1939,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       // canvas — so the light theme is no longer the one that needs holding back. Near full
       // strength there, and a shade under it on a dark ground where pale ink carries further.
       gl.uniform1f(uOpacity, inkIsDarker ? 1.0 : 0.90)
+      gl.uniform1f(uColour, colour)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }
 
@@ -1940,6 +1950,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       pointer.x += (pointer.targetX - pointer.x) * 0.3
       pointer.y += (pointer.targetY - pointer.y) * 0.3
       pointer.hover += (pointer.targetHover - pointer.hover) * 0.12
+      colour += (pointer.targetHover - colour) * 0.06
       updateMark(elapsed)
       draw(elapsed)
       frame = requestAnimationFrame(loop)

@@ -13,8 +13,9 @@ export interface ContributionGraphProps {
   data?: ContributionData[]
   year?: number
   className?: string
-  showLegend?: boolean
   showTooltips?: boolean
+  /** A line under the grid, such as a running total. */
+  footer?: React.ReactNode
 }
 
 const MONTHS = [
@@ -32,41 +33,28 @@ const MONTHS = [
   'Dec',
 ]
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
 /**
- * GitHub's own contribution ramp, so the calendar reads as the thing it is.
- *
- * Levels 1–4 are GitHub's published palette verbatim — the grid is recognisable at a glance
- * and the green is the one people have already learned. Level 0 stays on the page's own
- * neutral surface rather than GitHub's (#ebedf0 / #161b22) so the empty cells sit on the
- * document's material instead of importing a second background colour.
+ * Five steps of grey, like the rest of the site: an empty day is the zinc of the page's
+ * hairlines, and each level up is a step lighter, to near-white for the busiest days.
  */
-const GITHUB_CONTRIBUTION_COLORS_DARK = [
-  'oklch(0.2400 0.0050 260)', // Level 0 — no contributions (page surface, not GitHub's)
-  '#0e4429', // Level 1
-  '#006d32', // Level 2
-  '#26a641', // Level 3
-  '#39d353', // Level 4 — highest
+const CONTRIBUTION_GREYS = [
+  'oklch(0.2739 0.0055 286)', // Level 0 — no contributions
+  'oklch(0.4200 0 0)', // Level 1
+  'oklch(0.5800 0 0)', // Level 2
+  'oklch(0.7600 0 0)', // Level 3
+  'oklch(0.9400 0 0)', // Level 4 — highest
 ]
 
-const CONTRIBUTION_LEVELS = [0, 1, 2, 3, 4]
-
-// Responsive sizing to keep the grid inside its container without horizontal scroll
-const CELL_SIZE = 'clamp(0.25rem, 0.7vw, 0.55rem)'
-const CELL_GAP = 'clamp(0.08rem, 0.25vw, 0.25rem)'
-// Ensure day labels never shrink too small (prevents overlap with the grid). The floor is
-// set by the widest label in the machine face — "Sun" at 3 monospace slugs plus its inset —
-// which is wider than the proportional face this column was originally measured for, and
-// below which the label overflows the page padding and gets clipped.
-const DAY_LABEL_WIDTH = 'clamp(1.9rem, calc(var(--cell-size) * 2.8), 2.25rem)'
+// Sized so all 53 weeks fill the reading column without a horizontal scroll, on a phone too.
+const CELL_SIZE = 'clamp(0.3rem, 0.78vw, 0.6875rem)'
+const CELL_GAP = 'clamp(0.1rem, 0.2vw, 0.19rem)'
 
 export function ContributionGraph({
   data = [],
   year = new Date().getFullYear(),
   className = "",
-  showLegend = true,
   showTooltips = true,
+  footer,
 }: ContributionGraphProps) {
   const [hoveredDay, setHoveredDay] = useState<ContributionData | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
@@ -86,8 +74,7 @@ export function ContributionGraph({
     [],
   )
 
-  // The site is dark only, so the grid always uses the dark palette.
-  const contributionColors = GITHUB_CONTRIBUTION_COLORS_DARK
+  const contributionColors = CONTRIBUTION_GREYS
 
   // Generate all days for the year
   const yearData = useMemo(() => {
@@ -245,18 +232,14 @@ export function ContributionGraph({
 
           {/* Month Headers */}
           <thead>
-            <tr className="h-3">
-              <td
-                className="w-7 min-w-7"
-                style={{ width: DAY_LABEL_WIDTH, minWidth: DAY_LABEL_WIDTH }}
-              ></td>
+            <tr className="h-5">
               {monthHeaders.map((header, index) => (
                 <td
                   key={index}
-                  className="text-foreground relative text-left"
+                  className="relative text-left text-muted-foreground"
                   colSpan={header.colspan}
                 >
-                  <span className="absolute top-0 left-1">{header.month}</span>
+                  <span className="absolute top-0 left-0">{header.month}</span>
                 </td>
               ))}
             </tr>
@@ -265,27 +248,14 @@ export function ContributionGraph({
           {/* Day Grid */}
           <tbody>
             {Array.from({ length: 7 }, (_, dayIndex) => (
-              <tr key={dayIndex} className="h-2.5">
-                {/* Day Labels */}
-                <td
-                  className="text-foreground relative"
-                  style={{ width: DAY_LABEL_WIDTH, minWidth: DAY_LABEL_WIDTH }}
-                >
-                  {dayIndex % 2 === 0 && (
-                    <span className="absolute -bottom-0.5 right-1 text-xs">
-                      {DAYS[dayIndex]}
-                    </span>
-                  )}
-                </td>
-
-                {/* Day Cells */}
+              <tr key={dayIndex}>
                 {Array.from({ length: 53 }, (_, weekIndex) => {
                   const dayData = yearData[weekIndex * 7 + dayIndex]
                   if (!dayData || !dayData.date) {
                     return (
                       <td key={weekIndex} className="p-0">
                         <div
-                          className="rounded-sm"
+                          className="rounded-[3px]"
                           style={{
                             height: 'var(--cell-size)',
                             width: 'var(--cell-size)',
@@ -308,7 +278,7 @@ export function ContributionGraph({
                       }
                     >
                       <div
-                        className="rounded-sm transition-colors hover:ring-2 hover:ring-background"
+                        className="rounded-[3px] transition-colors hover:ring-1 hover:ring-foreground/60"
                         style={{
                           height: 'var(--cell-size)',
                           width: 'var(--cell-size)',
@@ -345,22 +315,7 @@ export function ContributionGraph({
         </motion.div>
       )}
 
-      {/* Legend */}
-      {showLegend && (
-        <div className="field-label mt-4 flex items-center justify-between text-muted-foreground">
-          <span>Less</span>
-          <div className="flex items-center gap-1">
-            {CONTRIBUTION_LEVELS.map((level) => (
-              <div
-                key={level}
-                className="h-3 w-3 rounded-sm border border-border"
-                style={{ backgroundColor: contributionColors[level] }}
-              />
-            ))}
-          </div>
-          <span>More</span>
-        </div>
-      )}
+      {footer && <p className="mt-3 font-mono text-[11px] text-muted-foreground sm:text-xs">{footer}</p>}
     </div>
   )
 }
