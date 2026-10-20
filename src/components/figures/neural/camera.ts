@@ -13,8 +13,13 @@ export interface CameraRig {
   readonly controls: OrbitControls
   /** Fits the frame to a new canvas size. */
   resize(width: number, height: number): void
-  /** Pixels per world unit. */
+  /** Pixels per world unit, at the current zoom. */
   pixelsPerUnit(): number
+  /**
+   * Where the view should settle: the height on the sculpture's upright axis it looks at, and
+   * the zoom. It eases there; `instant` jumps, for reduced motion.
+   */
+  setView(height: number, zoom: number, instant?: boolean): void
   /**
    * Turns the camera on by `dt` seconds of its own rotation (0 holds it still) and advances
    * the drag's damping; true while the view is still moving.
@@ -69,6 +74,10 @@ export function createCameraRig(element: HTMLElement, bounds: readonly THREE.Vec
   }
 
   let height = 1
+  // The view eases toward these. Moving the target and the camera by the same step keeps the
+  // orbit's angle, so the turn carries on undisturbed while the view travels.
+  const view = { height: 0, zoom: 1, instant: false }
+  let lookHeight = 0
 
   return {
     camera,
@@ -84,11 +93,26 @@ export function createCameraRig(element: HTMLElement, bounds: readonly THREE.Vec
       camera.updateProjectionMatrix()
     },
     pixelsPerUnit() {
-      return height / (camera.top - camera.bottom)
+      return (height / (camera.top - camera.bottom)) * camera.zoom
+    },
+    setView(h, zoom, instant = false) {
+      view.height = h
+      view.zoom = zoom
+      view.instant = instant
     },
     update(dt) {
       controls.autoRotate = dt > 0
-      return controls.update(dt)
+      const k = view.instant ? 1 : 1 - Math.exp(-(1 / 60) / 0.32)
+      const step = (view.height - lookHeight) * k
+      const travelling = Math.abs(view.height - lookHeight) > 1e-3 || Math.abs(view.zoom - camera.zoom) > 1e-3
+      if (travelling) {
+        lookHeight += step
+        controls.target.y += step
+        camera.position.y += step
+        camera.zoom += (view.zoom - camera.zoom) * k
+        camera.updateProjectionMatrix()
+      }
+      return controls.update(dt) || travelling
     },
     dispose() {
       controls.dispose()

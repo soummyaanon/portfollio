@@ -61,6 +61,8 @@ export interface Signals {
   wave(): void
   /** Sends a signal down every lane that leaves a node, as if it fired. */
   fire(node: number): void
+  /** Multiplies the rate signals enter at; 1 is the resting rate. */
+  setTraffic(multiplier: number): void
 }
 
 export function createSignals(topology: Topology, random: () => number = Math.random): Signals {
@@ -88,6 +90,7 @@ export function createSignals(topology: Topology, random: () => number = Math.ra
     .sort((p, q) => p.at - q.at)
   let waveNext = waveOrder.length
   let spawnIn = 0
+  let traffic = 1
 
   const launch = (lane: number, from: number, speed: number, strength: number, terminal: boolean, hopped = false) => {
     if (state.particles.length >= SIGNAL.maxParticles) return
@@ -126,7 +129,7 @@ export function createSignals(topology: Topology, random: () => number = Math.ra
 
       spawnIn -= dt
       while (spawnIn <= 0) {
-        spawnIn += SIGNAL.every * (0.6 + 0.8 * random())
+        spawnIn += (SIGNAL.every * (0.6 + 0.8 * random())) / traffic
         const input = inputs[Math.floor(random() * inputs.length)]!
         launch(lanesAt[input]![0]!, input, SIGNAL.speed, 0.55 + 0.45 * random(), false)
       }
@@ -174,6 +177,9 @@ export function createSignals(topology: Topology, random: () => number = Math.ra
     fire(node) {
       state.nodeGlow[node] = 1.2
       for (const id of lanesAt[node]!) launch(id, node, SIGNAL.speed * 1.3, 1, true)
+    },
+    setTraffic(multiplier) {
+      traffic = Math.max(multiplier, 0.1)
     },
   }
 }

@@ -8,6 +8,7 @@ import { createNodes } from './nodes'
 import { createParticles } from './particles'
 import { createSignals } from './signals'
 import { across, buildTopology } from './topology'
+import { TOUR, type TourStop } from './tour'
 
 /**
  * The whole sculpture: builds every part once, owns the one animation step, and turns pointer
@@ -27,6 +28,13 @@ export interface NeuralScene {
   /** Lets go of a pinned node. */
   clear(): void
   /**
+   * Puts the view on the guided tour at position `at` (a stop index, fractional between stops),
+   * or takes it off with null. The view holds on each stop and glides between them.
+   */
+  setTour(at: number | null, instant?: boolean): void
+  /** Where the current stop's indicator sits on the canvas, in CSS pixels, or null. */
+  anchor(): { x: number; y: number } | null
+  /**
    * Advances by `dt` seconds (0 when paused) and renders if anything changed. Returns false when
    * the scene is completely at rest, so the caller can stop asking for frames.
    */
@@ -42,7 +50,7 @@ export function createNeuralScene(container: HTMLElement, options: { small: bool
   renderer.outputColorSpace = THREE.SRGBColorSpace
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.toneMappingExposure = 0.9
-    renderer.setClearColor(0x000000, 0)
+  renderer.setClearColor(0x000000, 0)
   renderer.domElement.className = 'nn-canvas'
   container.prepend(renderer.domElement)
 
@@ -84,12 +92,33 @@ export function createNeuralScene(container: HTMLElement, options: { small: bool
   let hovered = -1
   let pinned = -1
   let overCore = false
+  let stop: TourStop | null = null
+
+  // On the tour, with nothing under the pointer, the stop's part is lit and the rest dims.
+  const tourFocus = (current: TourStop) => {
+    const { highlight } = current
+    if (highlight.kind === 'connections') edgeEmphasisTarget.fill(1)
+    if (highlight.kind !== 'layers') return
+    const member = topology.nodes.map((node) =>
+      highlight.layers.some((l) => l.layer === node.layer && (l.side === undefined || l.side === node.side)),
+    )
+    member.forEach((on, i) => (nodeEmphasisTarget[i] = on ? 1 : 0))
+    for (const edge of topology.edges) {
+      const lane = topology.lanes[edge.lane]!
+      const a = topology.points[lane.a]!.node
+      const b = topology.points[lane.b]!.node
+      if (a >= 0 && b >= 0 && member[a] && member[b]) edgeEmphasisTarget[edge.id] = 1
+    }
+  }
 
   const focus = () => {
     nodeEmphasisTarget.fill(0)
     edgeEmphasisTarget.fill(0)
     const at = pinned >= 0 ? pinned : hovered
-    if (at < 0) return
+    if (at < 0) {
+      if (stop) tourFocus(stop)
+      return
+    }
     nodeEmphasisTarget[at] = 1
     for (const lane of neighbours[at]!) {
       edgeEmphasisTarget[lane.edge] = 1
@@ -131,9 +160,45 @@ export function createNeuralScene(container: HTMLElement, options: { small: bool
   let rendered = false
   let resting = 0
 
+  // The indicator's point: world positions of every node and every connection's middle, so a
+  // stop's anchor can land on the nearest real one.
+  const nodeWorld = topology.nodes.map((node) => new THREE.Vector3(...node.position).applyMatrix4(sculpture.matrixWorld))
+  const edgeWorld = topology.edges.map((edge) =>
+    new THREE.Vector3((edge.from[0] + edge.to[0]) / 2, (edge.from[1] + edge.to[1]) / 2, (edge.from[2] + edge.to[2]) / 2).applyMatrix4(sculpture.matrixWorld),
+  )
+  let cssWidth = 1
+  let cssHeight = 1
+  let anchorAt: { x: number; y: number } | null = null
+  const toCamera = new THREE.Vector3()
+  const across3 = new THREE.Vector3()
+  const wanted = new THREE.Vector3()
+  const nearestOf = (points: readonly THREE.Vector3[]) => {
+    let best = points[0]!
+    for (const p of points) if (p.distanceToSquared(wanted) < best.distanceToSquared(wanted)) best = p
+    return best
+  }
+  const placeAnchor = () => {
+    const anchor = stop?.anchor
+    if (!anchor) {
+      anchorAt = null
+      return
+    }
+    // Toward the front of the view and a little to its left, so the indicator sits on the
+    // near side of the part and its label runs out into the margin, clear of the panel.
+    toCamera.subVectors(rig.camera.position, rig.controls.target).setY(0).normalize()
+    across3.set(-toCamera.z, 0, toCamera.x)
+    wanted.copy(across3).multiplyScalar(0.75).addScaledVector(toCamera, 0.65).normalize().multiplyScalar(anchor.radius)
+    wanted.y = anchor.height
+    const point = anchor.snap === 'node' ? nearestOf(nodeWorld) : anchor.snap === 'edge' ? nearestOf(edgeWorld) : wanted
+    const v = point.clone().project(rig.camera)
+    anchorAt = { x: ((v.x + 1) / 2) * cssWidth, y: ((1 - v.y) / 2) * cssHeight }
+  }
+
   return {
     canvas: renderer.domElement,
     resize(width, height) {
+      cssWidth = width
+      cssHeight = height
       rig.resize(width, height)
       renderer.setSize(width, height, false)
       rendered = false
@@ -165,6 +230,33 @@ export function createNeuralScene(container: HTMLElement, options: { small: bool
       pinned = -1
       focus()
     },
+    setTour(at, instant = false) {
+      if (at === null) {
+        stop = null
+        signals.setTraffic(1)
+        rig.setView(0, 1, instant)
+        focus()
+        return
+      }
+      const last = TOUR.length - 1
+      const clamped = Math.min(Math.max(at, 0), last)
+      const from = Math.floor(clamped)
+      const to = Math.min(from + 1, last)
+      // Holds on each stop for the middle of its stretch and glides only between them.
+      const s = THREE.MathUtils.smoothstep(clamped - from, 0.3, 0.7)
+      const a = TOUR[from]!.camera
+      const b = TOUR[to]!.camera
+      rig.setView(a.height + (b.height - a.height) * s, a.zoom + (b.zoom - a.zoom) * s, instant)
+      const next = TOUR[Math.round(clamped)]!
+      if (next !== stop) {
+        stop = next
+        signals.setTraffic(next.traffic ?? 1)
+        focus()
+      }
+    },
+    anchor() {
+      return anchorAt
+    },
     frame(dt) {
       const viewMoved = rig.update(dt)
       // The camera moving under a still pointer changes what it is over.
@@ -181,10 +273,13 @@ export function createNeuralScene(container: HTMLElement, options: { small: bool
       // Ease the emphasis whether or not time runs, so hover still answers while paused.
       const k = 1 - Math.exp(-Math.max(dt, 1 / 60) / 0.12)
       let easing = false
-      const dimTarget = pinned >= 0 ? 1 : hovered >= 0 ? 0.6 : 0
+      const tourDim = stop && stop.highlight.kind !== 'all' ? 0.85 : 0
+      const dimTarget = pinned >= 0 ? 1 : hovered >= 0 ? 0.6 : tourDim
+      const coreTarget = overCore || stop?.highlight.kind === 'core' ? 1 : 0
       dim += (dimTarget - dim) * k
-      coreHover += ((overCore ? 1 : 0) - coreHover) * k
-      easing ||= Math.abs(dimTarget - dim) > 1e-3 || Math.abs((overCore ? 1 : 0) - coreHover) > 1e-3
+      coreHover += (coreTarget - coreHover) * k
+      easing ||= Math.abs(dimTarget - dim) > 1e-3 || Math.abs(coreTarget - coreHover) > 1e-3
+      placeAnchor()
       for (let i = 0; i < nodeCount; i++) {
         nodeEmphasis[i]! += (nodeEmphasisTarget[i]! - nodeEmphasis[i]!) * k
         easing ||= Math.abs(nodeEmphasisTarget[i]! - nodeEmphasis[i]!) > 1e-3

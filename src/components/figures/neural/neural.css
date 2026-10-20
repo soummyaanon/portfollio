@@ -1,4 +1,6 @@
 /* The network floats on the page: no box, no background, and the canvas is transparent. */
+.nn-tour { position: relative; }
+.nn-stage { position: relative; }
 .nn-host {
   position: relative;
   width: 100%;
@@ -9,3 +11,168 @@
 .nn-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; cursor: grab; touch-action: pan-y; }
 .nn-note { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted-foreground); font-size: var(--text-fine); }
 @media (max-width: 640px) { .nn-host { aspect-ratio: 4 / 3; } }
+
+/* A quiet button in the page's label voice: a hairline box that lights on hover. */
+.nn-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-eyebrow);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: color 160ms, border-color 160ms;
+}
+.nn-button:hover,
+.nn-button:focus-visible { color: var(--foreground); border-color: var(--rail-mark, var(--foreground)); }
+
+/* The way into the tour: one eye that blinks and looks around. The lid closes by squashing
+   the whole eye to a line; the wander is a slow glance left, right and back, paused while the
+   pupil is following the pointer. */
+.nn-eye {
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+  color: var(--muted-foreground);
+  border-radius: 999px;
+  transition: color 200ms;
+}
+.nn-eye:hover,
+.nn-eye:focus-visible { color: var(--foreground); }
+.nn-eye:focus-visible { outline: 1px solid var(--border); outline-offset: 2px; }
+.nn-eye-lid { transform-box: fill-box; transform-origin: center; animation: nn-eye-blink 5.2s infinite; }
+.nn-eye-wander { animation: nn-eye-wander 9s ease-in-out infinite; }
+.nn-eye[data-following] .nn-eye-wander { animation: none; }
+
+@keyframes nn-eye-blink {
+  0%, 44%, 49%, 88%, 92%, 100% { transform: scaleY(1); }
+  46.5% { transform: scaleY(0.06); }
+  /* Now and then a second, quicker blink. */
+  90% { transform: scaleY(0.12); }
+}
+@keyframes nn-eye-wander {
+  0%, 12%, 100% { transform: translate(0, 0); }
+  22%, 34% { transform: translate(-5px, 1px); }
+  46%, 56% { transform: translate(5px, -1.5px); }
+  68%, 80% { transform: translate(1px, 2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nn-eye-lid, .nn-eye-wander { animation: none; }
+}
+
+/* ── The tour ───────────────────────────────────────────────────────────────────────────
+   The stage holds still on screen while the track scrolls past it: figure on the left, the
+   panel on the right. */
+.nn-tour[data-touring] .nn-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+}
+.nn-tour[data-touring] .nn-host { aspect-ratio: auto; height: min(92svh, 100%); }
+/* Zoomed in, the sculpture runs past the canvas; its edges fade out rather than cut. */
+.nn-tour[data-touring] .nn-canvas {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+  mask-composite: intersect;
+}
+
+.nn-panel { max-width: 24rem; }
+.nn-copy { animation: nn-copy-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes nn-copy-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* The stops as a ruler: a tick on a hairline per stop, the current one long and lit. */
+.nn-ruler { border-left: 1px solid var(--border); }
+.nn-tick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.3rem 0;
+  color: var(--muted-foreground);
+  opacity: 0.6;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-eyebrow);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  transition: color 200ms, opacity 200ms;
+}
+.nn-tick-mark { display: block; width: 0.5rem; height: 1px; background: currentColor; transition: width 300ms cubic-bezier(0.22, 1, 0.36, 1); }
+.nn-tick:hover { opacity: 1; }
+.nn-tick[data-current] { color: var(--foreground); opacity: 1; }
+.nn-tick[data-current] .nn-tick-mark { width: 1.5rem; }
+
+/* The indicator: a ring on the part, a short line, and the part's name. Its position is
+   written each frame by the render loop; it fades between stops. */
+.nn-mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms;
+  will-change: transform;
+}
+.nn-mark[hidden] { display: none; }
+.nn-mark[data-side='left'] { flex-direction: row-reverse; }
+.nn-mark[data-side='left'] .nn-mark-dot { margin: -0.375rem -0.375rem 0 0; }
+.nn-mark[data-side='left'] .nn-mark-line { background: linear-gradient(to left, var(--foreground), rgb(255 255 255 / 0.35)); }
+.nn-mark[data-side='left'] .nn-mark-label { margin: -0.65rem 0.5rem 0 0; }
+/* Running left, the indicator's own box ends at the anchor, so it is shifted back by its width. */
+.nn-mark[data-side='left'] { translate: -100% 0; }
+.nn-mark-dot {
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin: -0.375rem 0 0 -0.375rem;
+  border: 1px solid var(--foreground);
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px rgb(0 0 0 / 0.35);
+}
+.nn-mark-line { flex: none; width: 2.25rem; height: 1px; margin-top: -0.5px; background: linear-gradient(to right, var(--foreground), rgb(255 255 255 / 0.35)); }
+.nn-mark-label {
+  margin: -0.65rem 0 0 0.5rem;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-eyebrow);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .nn-tour[data-touring] .nn-stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 0.5rem;
+    /* Clear of the fixed dock at the foot of the screen, which would cover the copy. */
+    padding-bottom: 5.5rem;
+  }
+  .nn-tour[data-touring] .nn-host { height: 100%; }
+  .nn-panel { max-width: none; }
+  .nn-panel .nn-ruler { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nn-copy { animation: none; }
+  .nn-mark { transition: none; }
+}

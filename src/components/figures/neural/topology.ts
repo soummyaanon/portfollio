@@ -85,8 +85,9 @@ export const CORE = {
   ],
 } as const
 
-const RING = { input: 3.1, outer: 2.35, inner: 1.1, output: 1.75 }
-const X = { input: 7.2, outer: 4.0, inner: 2.9, output: 7.0 }
+/** Each layer's ring radius and its distance from the core along the flow axis. */
+export const RING = { input: 3.1, outer: 2.35, inner: 1.1, output: 1.75 } as const
+export const X = { input: 7.2, outer: 4.0, inner: 2.9, output: 7.0 } as const
 const deg = Math.PI / 180
 
 const around = (x: number, radius: number, angle: number): Vec3 => [x, radius * Math.sin(angle), radius * Math.cos(angle)]
