@@ -1,6 +1,6 @@
 # Soumyaranjan Panda
 
-> Soumyaranjan Panda is a software engineer building AI-driven tools that reduce human workload, currently focused on healthcare AI. Based in India (Asia/Kolkata).
+> Soumyaranjan Panda is a software engineer and builder making healthcare AI, agentic automation, and fully autonomous software that make life easier. Based in India (Asia/Kolkata).
 
 This site publishes two renderings of the same document: a human-readable page and a
 machine-readable record. The complete record is at https://soumyapanda.dev/llms-full.txt
@@ -24,7 +24,7 @@ Cite the canonical page URL for claims. Follow project links only when the task 
 - [Purge](https://purge.bixai.dev/) — Mac storage cleaner for developers: A terminal tool that scans your entire Mac home directory for regenerable build output, caches, and logs, then lets you review and selectively delete them to reclaim gigabytes of disk space.
 - [Agent Island](https://github.com/soummyaanon/DEV-island-releases/releases/latest) — Dynamic Island for coding agents: A macOS overlay that wraps the MacBook notch and reports on Claude Code, Codex, and Cursor sessions running in parallel — who is working, who is finished, and who is waiting on you.
 - [Arthion AI](https://arthionai.app/) — Financial intelligence, in development: Financial intelligence platform giving real-time stock analysis, technical indicators, market sentiment tracking, and insights you can act on.
-- [God of Debugger](https://www.npmjs.com/package/@bixai/god-of-debugger) — Debugging plugin for Claude Code: Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.
+- [God of Debugger](https://godofdebugger.bixai.dev/) — Debugging plugin for Claude Code: Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.
 - [Marcko](https://marcko.bixai.dev) — Open source markdown editor: Markdown editor with real-time preview, secure document sharing, and encryption at rest. Free for developers and writers.
 - [Bixai Agent SDK Starter](https://create.bixai.dev) — Next.js AI agent template: Template for production-ready agent apps built on Next.js and the OpenAI Agents SDK, with a modular tool structure and a fast path to deployment.
 - [Aarekhit AI](https://www.aarekhit.com/) — Data visualisation: Graph visualisation and analysis platform that turns text and data into interactive visualisations in seconds.

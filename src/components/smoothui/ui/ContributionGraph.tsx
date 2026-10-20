@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState, type CSSProperties } from 'react'
-import { useTheme } from 'next-themes'
+import React, { useMemo, useState, type CSSProperties } from 'react'
 import { motion } from 'motion/react'
 
 export interface ContributionData {
@@ -43,14 +42,6 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
  * neutral surface rather than GitHub's (#ebedf0 / #161b22) so the empty cells sit on the
  * document's material instead of importing a second background colour.
  */
-const GITHUB_CONTRIBUTION_COLORS_LIGHT = [
-  'oklch(0.9250 0.0030 260)', // Level 0 — no contributions (page surface, not GitHub's)
-  '#9be9a8', // Level 1
-  '#40c463', // Level 2
-  '#30a14e', // Level 3
-  '#216e39', // Level 4 — highest
-]
-
 const GITHUB_CONTRIBUTION_COLORS_DARK = [
   'oklch(0.2400 0.0050 260)', // Level 0 — no contributions (page surface, not GitHub's)
   '#0e4429', // Level 1
@@ -77,8 +68,6 @@ export function ContributionGraph({
   showLegend = true,
   showTooltips = true,
 }: ContributionGraphProps) {
-  const { resolvedTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
   const [hoveredDay, setHoveredDay] = useState<ContributionData | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
   const graphStyle = useMemo(
@@ -97,19 +86,8 @@ export function ContributionGraph({
     [],
   )
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const isDark = mounted && resolvedTheme === 'dark'
-
-  const contributionColors = useMemo(
-    () =>
-      isDark
-        ? GITHUB_CONTRIBUTION_COLORS_DARK
-        : GITHUB_CONTRIBUTION_COLORS_LIGHT,
-    [isDark],
-  )
+  // The site is dark only, so the grid always uses the dark palette.
+  const contributionColors = GITHUB_CONTRIBUTION_COLORS_DARK
 
   // Generate all days for the year
   const yearData = useMemo(() => {

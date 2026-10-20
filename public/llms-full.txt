@@ -1,6 +1,6 @@
 # Soumyaranjan Panda — complete record
 
-> Soumyaranjan Panda is a software engineer building AI-driven tools that reduce human workload, currently focused on healthcare AI. Based in India (Asia/Kolkata).
+> Soumyaranjan Panda is a software engineer and builder making healthcare AI, agentic automation, and fully autonomous software that make life easier. Based in India (Asia/Kolkata).
 
 ## Identity
 - Name: Soumyaranjan Panda
@@ -9,8 +9,8 @@
 - Timezone: Asia/Kolkata
 - Site: https://soumyapanda.dev
 - Avatar: /avatar.jpg
-- Focus: AI-driven tools, healthcare AI
-- Interests: deep-space science, political developments
+- Focus: healthcare AI, agentic automation, fully autonomous software
+- Interests: deep space
 - GitHub: https://github.com/soummyaanon
 - X: https://x.com/SoumyapX
 - LinkedIn: https://www.linkedin.com/in/soumyapanda12/
@@ -97,7 +97,7 @@
   - AI-generated stock recommendations
 
 ### God of Debugger — Debugging plugin for Claude Code
-- URL: https://www.npmjs.com/package/@bixai/god-of-debugger
+- URL: https://godofdebugger.bixai.dev/
 - Status: live
 - Summary: Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.
 - Capabilities:

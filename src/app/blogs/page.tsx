@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 
 import { getAllBlogPosts } from '@/lib/blogs'
 import { JsonLd } from '@/components/JsonLd'
+import { BenchRails } from '@/components/document/BenchRails'
 import {
   absoluteUrl,
   breadcrumbSchema,
@@ -36,7 +37,8 @@ export default async function Blogs() {
   const blogPosts = await getAllBlogPosts()
 
   return (
-    <main className="mx-auto w-full max-w-[70rem] px-[clamp(1.25rem,4vw,4rem)] pb-[var(--space-section)] pt-[clamp(2.5rem,6vw,5rem)]">
+    <main className="bench measure-page pb-[var(--space-section)] pt-[clamp(2.5rem,6vw,5rem)]">
+      <BenchRails />
       <JsonLd
         json={graph(
           collectionPageSchema({

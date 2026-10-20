@@ -26,8 +26,8 @@ const BASE_URL = person.site
 
 function summaryLine(): string {
   return (
-    `${person.name} is a ${person.title.toLowerCase()} building ${person.focus[0]} ` +
-    `that reduce human workload, currently focused on ${person.focus[1]}. ` +
+    `${person.name} is a ${person.title.toLowerCase()} and builder making ` +
+    `${person.focus.slice(0, -1).join(', ')}, and ${person.focus.at(-1)} that make life easier. ` +
     `Based in ${person.location} (${person.timezone}).`
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { Fragment, useCallback, useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 
 import { education, person, projects, roles, skills, now } from '@/data/profile'
@@ -211,16 +211,22 @@ export function SpecimenSheet({ posts }: { readonly posts: readonly PostSummary[
         </FieldRow>
         <FieldRow name="focus">
           <Connective>[&quot;</Connective>
-          <Fact id="person.focus.0">{person.focus[0]}</Fact>
-          <Connective>&quot;, &quot;</Connective>
-          <Fact id="person.focus.1">{person.focus[1]}</Fact>
+          {person.focus.map((focus, at) => (
+            <Fragment key={focus}>
+              {at > 0 && <Connective>&quot;, &quot;</Connective>}
+              <Fact id={`person.focus.${at}`}>{focus}</Fact>
+            </Fragment>
+          ))}
           <Connective>&quot;]</Connective>
         </FieldRow>
         <FieldRow name="interests">
           <Connective>[&quot;</Connective>
-          <Fact id="person.interest.0">{person.interests[0]}</Fact>
-          <Connective>&quot;, &quot;</Connective>
-          <Fact id="person.interest.1">{person.interests[1]}</Fact>
+          {person.interests.map((interest, at) => (
+            <Fragment key={interest}>
+              {at > 0 && <Connective>&quot;, &quot;</Connective>}
+              <Fact id={`person.interest.${at}`}>{interest}</Fact>
+            </Fragment>
+          ))}
           <Connective>&quot;]</Connective>
         </FieldRow>
         <FieldRow name="building">

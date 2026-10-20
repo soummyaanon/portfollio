@@ -1,6 +1,6 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
-import { Instrument_Sans, Space_Mono } from 'next/font/google'
+import { Figtree, Space_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 
 import { ThemeProvider } from './components/ThemeProvider'
@@ -10,16 +10,11 @@ import { OPEN_GRAPH_DEFAULTS, SITE_URL } from '@/lib/seo'
 import { person, roles, skills } from '@/data/profile'
 
 /**
- * The signature face, doing two jobs at once: it is both `--font-display` and
- * `--font-mono`. The name, every section title, every label, every date and count, and the
- * whole machine view are set in it. One face carrying that much of the page is what gives
- * the site a voice you would recognise without the name on it.
+ * The machine voice: `--font-mono`. Every section label, every date and count, and the
+ * whole machine view are set in it; titles and text are Figtree.
  *
- * Only 400 and 700 exist — there is no variable axis to lean on — so hierarchy has to come
- * from size, case, and tracking instead, which the type scale in globals.css is cut for.
- *
- * Named for the face, not the role: Tailwind's theme keys are `--font-display` and
- * `--font-mono`, and a font-loader variable of the same name would resolve to itself.
+ * Named for the face, not the role: Tailwind's theme key is `--font-mono`, and a
+ * font-loader variable of the same name would resolve to itself.
  */
 const spaceMono = Space_Mono({
   subsets: ['latin'],
@@ -29,25 +24,23 @@ const spaceMono = Space_Mono({
 })
 
 /**
- * Text face, and only that. Running prose is the one thing a monospace genuinely cannot
- * do well — a paragraph of it is wide, loose, and tiring — so every multi-line block on
- * the site stays in a proportional grotesque with narrow, squared-off counters.
+ * Text and titles: `--font-sans` and `--font-display`. A proportional geometric sans, open
+ * and friendly at reading sizes and firm when cut heavy for titles, paired with the
+ * monospace the way gurbinder.dev pairs them. A variable face, so every weight from 300 to
+ * 900 is one file.
  */
-const instrumentSans = Instrument_Sans({
+const figtree = Figtree({
   subsets: ['latin'],
-  variable: '--font-instrument-sans',
+  variable: '--font-figtree',
   display: 'swap',
 })
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  // Was hardcoded to #000000 while the default theme is light, which flashed a black
-  // browser chrome against a near-white page. These match the resolved --background.
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#fdfcfa' },
-    { media: '(prefers-color-scheme: dark)', color: '#141316' },
-  ],
+  // The theme is forced dark, so the browser chrome matches the dark --background whatever
+  // the visitor's system preference.
+  themeColor: '#0b0d0e',
 }
 
 export const metadata: Metadata = {
@@ -57,7 +50,7 @@ export const metadata: Metadata = {
     template: `%s — ${person.name}`,
   },
   description:
-    'I build AI-driven tools that reduce human workload, currently focused on healthcare AI that streamlines physicians’ workflows.',
+    'I’m a builder making healthcare AI, agentic automation, and fully autonomous software that make life easier.',
   authors: [{ name: person.name, url: SITE_URL }],
   creator: person.name,
   robots: 'index, follow, max-image-preview:large, max-snippet:-1',
@@ -95,8 +88,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${instrumentSans.variable} ${spaceMono.variable}`}>
+    // The font variables go on <html>, not <body>: Tailwind defines `--font-sans` and
+    // `--font-mono` on :root, and there they can only see variables set on <html>. On
+    // <body> they resolved to nothing and the text fell back to the system face.
+    <html lang="en" className={`${figtree.variable} ${spaceMono.variable}`} suppressHydrationWarning>
+      <body>
         {/* Hoisted into <head> by React. Declared here rather than in `metadata.alternates`
             because a child route setting `alternates.canonical` replaces the whole
             `alternates` object, which would silently drop this on every page but one.
@@ -109,7 +105,7 @@ export default function RootLayout({
           title="llms-full.txt"
         />
         <PostHogProvider />
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" forcedTheme="dark" enableSystem={false}>
           {children}
           <NavigationDock />
         </ThemeProvider>

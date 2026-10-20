@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { Fragment, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
@@ -8,7 +8,6 @@ import { ArrowUpRight } from 'lucide-react'
 import {
   education,
   formatMonth,
-  formatPeriod,
   person,
   projects,
   roles,
@@ -17,6 +16,8 @@ import {
 } from '@/data/profile'
 import { Connective, Fact } from './Fact'
 import { EventHorizonProvider, HorizonTrigger } from './EventHorizon'
+import { BenchRails } from './BenchRails'
+import { Workbench, type WorkbenchSlide } from './Workbench'
 import { SectionHead } from './SectionHead'
 import { PLATE_RS, SignalPlate, type HorizonDrive } from './SignalPlate'
 import { Disclosure, DisclosureMark } from './Disclosure'
@@ -104,36 +105,37 @@ function Masthead({ drive }: { readonly drive: React.RefObject<HorizonDrive> }) 
       {/* The lead is the one piece of centred running text, kept to ~44 characters so no
           line is long enough for the ragged left edge to become work to read.
 
-          With no hue to spend, the two focus terms are emphasised structurally instead:
+          With no hue to spend, the focus terms are emphasised structurally instead:
           they switch to the display grotesque at full contrast and tight tracking while the
           sentence around them sits at 70%. Same job an accent colour was doing, done with
           the only two variables left — weight and contrast. */}
       <p className="measure-prose mt-[clamp(2rem,4vw,3rem)] text-balance text-lead leading-[1.45] text-foreground/70">
-        <Connective>I build </Connective>
-        <Fact
-          id="person.focus.0"
-          className="font-display font-semibold tracking-[-0.02em] text-foreground"
-        >
-          {person.focus[0]}
-        </Fact>
-        <Connective> that reduce human workload, currently focused on </Connective>
-        <Fact
-          id="person.focus.1"
-          className="font-display font-semibold tracking-[-0.02em] text-foreground"
-        >
-          {person.focus[1]}
-        </Fact>
-        <Connective>
-          {' '}
-          that streamlines physicians’ workflows. Away from the work I follow{' '}
-        </Connective>
-        <Fact id="person.interest.0">{person.interests[0]}</Fact>
-        <Connective> and </Connective>
-        <Fact id="person.interest.1">{person.interests[1]}</Fact>
+        <Connective>I’m a builder making </Connective>
+        {person.focus.map((item, at) => (
+          <Fragment key={item}>
+            {at > 0 && <Connective>{separator(at, person.focus.length)}</Connective>}
+            <Fact id={`person.focus.${at}`} className="font-display font-semibold tracking-[-0.02em] text-foreground">
+              {item}
+            </Fact>
+          </Fragment>
+        ))}
+        <Connective> that make life easier. Off the clock, I follow </Connective>
+        {person.interests.map((item, at) => (
+          <Fragment key={item}>
+            {at > 0 && <Connective>{separator(at, person.interests.length)}</Connective>}
+            <Fact id={`person.interest.${at}`}>{item}</Fact>
+          </Fragment>
+        ))}
         <Connective>.</Connective>
       </p>
     </header>
   )
+}
+
+/** What goes before item `at` of a list read as prose: "a and b", "a, b, and c". */
+function separator(at: number, length: number) {
+  if (at < length - 1) return ', '
+  return length > 2 ? ', and ' : ' and '
 }
 
 /** Who, what, when — the three facts every role has. */
@@ -217,7 +219,7 @@ function RoleRow({ role }: { readonly role: Role }) {
 function Work() {
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead label="Work" note={pad(roles.length)} />
+      <SectionHead index="01" label="Work" note={pad(roles.length)} />
 
       <ol className="measure-column mt-[var(--space-group)]">
         {roles.map((role) => (
@@ -230,27 +232,46 @@ function Work() {
   )
 }
 
-/** A single entry, so it can be set on the axis outright rather than as a row in a list. */
+/** Set like a Work row — who and what on the left, when on the right — with the emblem in the mark's place. */
 function Education() {
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead label="Education" />
-      {education.map((entry) => (
-        <div key={entry.id} className="measure-prose mt-[var(--space-group)] text-center">
-          <h3 className="text-balance font-display text-title leading-[1.15] text-foreground">
-            <Fact id={`education.${entry.id}.institution`}>{entry.institution}</Fact>
-          </h3>
-          <p className="mt-2 text-fine text-muted-foreground">
-            <Fact id={`education.${entry.id}.credential`}>{entry.credential}</Fact>
-            <Connective>{`, ${entry.field}`}</Connective>
-          </p>
-          <p className="field-label mt-[var(--space-tight)] tracking-[0.1em] text-muted-foreground/70">
-            {formatPeriod(entry.from, entry.until)}
-            {' · '}
-            {entry.focus.join(' · ')}
-          </p>
-        </div>
-      ))}
+      <SectionHead index="03" label="Education" />
+
+      <ol className="measure-column mt-[var(--space-group)]">
+        {education.map((entry) => (
+          <li key={entry.id} className="py-[var(--space-group)]">
+            {/* The emblem gets its own column and opts out of baseline alignment, so the
+                dates still sit on the institution's baseline the way they do in Work. */}
+            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-3">
+              {entry.logo ? (
+                <div className="size-10 shrink-0 self-start overflow-hidden rounded-full ring-1 ring-border grayscale-[0.35]">
+                  <Image src={entry.logo} alt={`${entry.institution} emblem`} width={80} height={80} className="h-full w-full object-cover" />
+                </div>
+              ) : (
+                <span aria-hidden />
+              )}
+              <span className="min-w-0">
+                <h3 className="font-display text-title leading-[1.1] text-foreground">
+                  <Fact id={`education.${entry.id}.institution`}>{entry.institution}</Fact>
+                </h3>
+                <p className="mt-1 text-fine text-muted-foreground">
+                  <Fact id={`education.${entry.id}.credential`}>{entry.credential}</Fact>
+                  <Connective>{`, ${entry.field}`}</Connective>
+                </p>
+                <p className="mt-[var(--space-hairline)] text-caption text-muted-foreground/70">
+                  {entry.focus.join(' · ')}
+                </p>
+              </span>
+
+              <p className="ml-3 field-label text-right tracking-[0.08em] text-muted-foreground">
+                {/* Years only: it is a two-year programme, and the months add nothing to that. */}
+                {entry.from.slice(0, 4)} — {entry.until.slice(0, 4)}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
     </section>
   )
 }
@@ -269,145 +290,132 @@ function ProjectStatus({ status }: { readonly status: 'live' | 'in-development' 
   )
 }
 
+/** Where a project lives, as the bar of a browser window would show it. */
+function hostOf(url: string) {
+  try {
+    const { host, pathname } = new URL(url)
+    const bare = host.replace(/^www\./, '')
+    // A package or a release page is named by its path, not by the registry it sits on.
+    if (bare === 'github.com' || bare === 'npmjs.com') return `${bare}${pathname.split('/').slice(0, 3).join('/')}`
+    return bare
+  } catch {
+    return url
+  }
+}
+
 /**
- * The lead project gets a full block — a centred title, the interface at full column width,
- * then the summary and its capability list. Everything after it is an index entry. Giving
- * every project an identical card is what made the old section read as a template; an
- * editorial hierarchy says which work matters most.
+ * One project as a window onto it: a bar with its address, the interface itself, and the
+ * name and line under it. Screenshots sit in greyscale like the rest of the page and take
+ * their colour back when the card is pointed at, which is the one place colour is allowed in,
+ * because it is the product's own. A project with nothing to show gets the rails' hatch.
  */
-function FeaturedProject({ project }: { readonly project: (typeof projects)[number] }) {
+function ProjectCard({
+  project,
+  index,
+  wide,
+}: {
+  readonly project: (typeof projects)[number]
+  readonly index: number
+  readonly wide: boolean
+}) {
   return (
-    <article className="measure-column mt-[var(--space-group)]">
-      <div className="text-center">
-        <p className="field-label flex items-center justify-center gap-3 text-foreground">
-          01
-          <ProjectStatus status={project.status} />
-        </p>
-        <h3 className="mt-3 font-display text-[length:clamp(1.5rem,0.9rem+2.2vw,2.5rem)] leading-[1] tracking-[-0.04em] text-foreground">
-          <Fact id={`project.${project.id}.name`}>{project.name}</Fact>
-        </h3>
-        <p className="field-label mt-3 text-muted-foreground">
-          <Fact id={`project.${project.id}.tagline`}>{project.tagline}</Fact>
-        </p>
-      </div>
-
-      {project.image && (
-        <div className="elevate mt-[var(--space-group)] overflow-hidden border border-border bg-card">
-          <Image
-            src={project.image}
-            alt={`${project.name} interface`}
-            width={1200}
-            height={630}
-            className="h-auto w-full"
-            sizes="(max-width: 1024px) 100vw, 52rem"
-          />
-        </div>
-      )}
-
-      {/* Summary on the axis, capabilities in balanced columns beneath it. Side by side they
-          left a column of dead paper — the paragraph is four lines and the list is fifteen,
-          and a two-column grid has no way to make those the same height. */}
-      <p className="measure-prose mt-[var(--space-group)] text-center text-body leading-[1.6] text-foreground/85">
-        {project.summary}
-      </p>
-
-      <ul className="mt-[var(--space-group)] gap-x-[clamp(2rem,4vw,3.5rem)] sm:columns-2">
-        {project.capabilities.map((capability) => (
-          <li
-            key={capability}
-            className="flex break-inside-avoid gap-3 border-b border-border/60 py-[var(--space-hairline)] text-fine leading-[1.45] text-muted-foreground"
-          >
-            <span aria-hidden className="mt-[0.7em] h-px w-2 shrink-0 bg-border" />
-            <span>{capability}</span>
-          </li>
-        ))}
-      </ul>
-
-      <p className="mt-[var(--space-group)] text-center">
-        <a
-          href={project.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group/link inline-flex items-center gap-1.5 text-fine text-foreground underline decoration-signal/50 decoration-1 underline-offset-[6px] transition-colors duration-200 hover:decoration-signal"
-        >
-          {project.linkLabel}
+    <li className={`bg-background ${wide ? 'sm:col-span-2' : ''}`}>
+      <a
+        href={project.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="project-card group flex h-full flex-col focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal"
+      >
+        <span className="flex h-7 items-center gap-1.5 border-b border-border px-3">
+          {[0, 1, 2].map((dot) => (
+            <span key={dot} aria-hidden className="size-1.5 rounded-full bg-border transition-colors group-hover:bg-muted-foreground/60" />
+          ))}
+          <span className="field-label ml-2 min-w-0 truncate tracking-[0.06em] normal-case text-muted-foreground/80">
+            {hostOf(project.url)}
+          </span>
           <ArrowUpRight
-            className="size-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
             aria-hidden
+            className="ml-auto size-3 shrink-0 text-muted-foreground transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground"
           />
-        </a>
-      </p>
-    </article>
+        </span>
+
+        <span className={`relative block overflow-hidden border-b border-border ${wide ? 'aspect-[16/8]' : 'aspect-[16/10]'}`}>
+          {project.image ? (
+            <Image
+              src={project.image}
+              alt={`${project.name} interface`}
+              fill
+              className="project-shot object-cover object-top"
+              sizes={wide ? '(max-width: 640px) 100vw, 46rem' : '(max-width: 640px) 100vw, 23rem'}
+            />
+          ) : (
+            <span className="project-hatch absolute inset-0 grid place-items-center">
+              <span className="border border-border bg-background px-3 py-1.5 font-display text-fine text-foreground">
+                {project.name}
+              </span>
+            </span>
+          )}
+        </span>
+
+        <span className="flex flex-1 flex-col p-[clamp(0.875rem,2vw,1.25rem)]">
+          <span className="flex items-baseline gap-3">
+            <span className="field-label text-muted-foreground/70">{pad(index + 1)}</span>
+            <span className="min-w-0 font-display text-title leading-[1.1] text-foreground">
+              <Fact id={`project.${project.id}.name`}>{project.name}</Fact>
+            </span>
+            <span className="ml-auto">
+              <ProjectStatus status={project.status} />
+            </span>
+          </span>
+          <span className="mt-1.5 block pl-[calc(1.5ch+0.75rem)] text-fine text-muted-foreground">
+            <Fact id={`project.${project.id}.tagline`}>{project.tagline}</Fact>
+          </span>
+          <span className={`mt-[var(--space-tight)] block pl-[calc(1.5ch+0.75rem)] text-caption leading-[1.55] text-muted-foreground/75 ${wide ? 'max-w-[60ch]' : 'line-clamp-3'}`}>
+            {project.summary}
+          </span>
+        </span>
+      </a>
+    </li>
   )
 }
 
+/** The three projects the homepage leads with; the rest are on /projects. */
+const FEATURED = ['agent-island', 'purge', 'bixai-starter'] as const
+
+/**
+ * A boxed grid: the cells share one hairline, the way the rails and section lines do, and the
+ * lead project takes the full width of the first row. Only the featured three are here; the
+ * last cell of the box is the way through to every project.
+ */
 function Projects() {
-  const [featured, ...rest] = projects
+  const featured = FEATURED.map((id) => projects.find((project) => project.id === id)).filter(
+    (project): project is (typeof projects)[number] => Boolean(project),
+  )
 
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead label="Selected work" note={pad(projects.length)} />
+      <SectionHead index="04" label="Selected work" note={pad(featured.length)} />
 
-      {featured && <FeaturedProject project={featured} />}
-
-      {/* The remainder as a catalogue index: number, name, what it is. Everything else on
-          request, so the section reads as a list rather than eight stacked essays. */}
-      <ol className="measure-column mt-[var(--space-section)]">
-        {rest.map((project, index) => (
-          <li key={project.id} className="border-b border-border first:border-t">
-            <Disclosure
-              className="py-[var(--space-group)]"
-              summary={(open) => (
-                <div className="grid grid-cols-[2rem_auto_minmax(0,1fr)] items-start gap-x-3">
-                  <span className="field-label mt-[0.5em] text-muted-foreground/70 transition-colors group-hover:text-foreground">
-                    {pad(index + 2)}
-                  </span>
-                  <DisclosureMark open={open} />
-                  <span className="min-w-0">
-                    <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="font-display text-title leading-[1.1] text-foreground">
-                        <Fact id={`project.${project.id}.name`}>{project.name}</Fact>
-                      </span>
-                      <ProjectStatus status={project.status} />
-                    </span>
-                    <span className="mt-1 block text-fine text-muted-foreground">
-                      <Fact id={`project.${project.id}.tagline`}>{project.tagline}</Fact>
-                    </span>
-                  </span>
-                </div>
-              )}
-            >
-              <div className="pl-[calc(2rem+0.625rem+1.5rem)] pt-[var(--space-group)]">
-                <p className="max-w-[58ch] text-body leading-[1.5] text-foreground/80">
-                  {project.summary}
-                </p>
-
-                <ul className="mt-[var(--space-group)] space-y-[var(--space-hairline)]">
-                  {project.capabilities.map((capability) => (
-                    <li key={capability} className="flex gap-3 text-caption text-muted-foreground">
-                      <span aria-hidden className="mt-[0.65em] h-px w-2 shrink-0 bg-border" />
-                      <span>{capability}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <a
-                  href={project.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group/link mt-[var(--space-group)] inline-flex items-center gap-1.5 text-fine text-foreground underline decoration-signal/50 decoration-1 underline-offset-[6px] transition-colors duration-200 hover:decoration-signal"
-                >
-                  {project.linkLabel}
-                  <ArrowUpRight
-                    className="size-3 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
-                    aria-hidden
-                  />
-                </a>
-              </div>
-            </Disclosure>
-          </li>
-        ))}
-      </ol>
+      <div className="measure-column mt-[var(--space-group)] border border-border bg-border">
+        <ol className="grid gap-px sm:grid-cols-2">
+          {featured.map((project, index) => (
+            <ProjectCard key={project.id} project={project} index={index} wide={index === 0} />
+          ))}
+        </ol>
+        <Link
+          href="/projects/"
+          className="group mt-px flex items-center justify-between gap-4 bg-background px-[clamp(0.875rem,2vw,1.25rem)] py-4 transition-colors hover:bg-card focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal"
+        >
+          <span className="field-label tracking-[0.2em] text-foreground">See all projects</span>
+          <span className="flex items-center gap-3">
+            <span className="field-label text-muted-foreground">{pad(projects.length)} entries</span>
+            <ArrowUpRight
+              aria-hidden
+              className="size-3.5 rotate-45 text-muted-foreground transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:text-foreground"
+            />
+          </span>
+        </Link>
+      </div>
     </section>
   )
 }
@@ -435,7 +443,7 @@ function Skills() {
 
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead label="Tools" />
+      <SectionHead index="05" label="Tools" />
 
       {/* The fade is a mask, not two gradient overlays: it works over any background, so it
           survives a theme flip without a second pair of elements tinted the other way. */}
@@ -466,7 +474,7 @@ function Writing({ posts }: { readonly posts: readonly PostSummary[] }) {
 
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead label="Writing" note={pad(posts.length)} />
+      <SectionHead index="06" label="Writing" note={pad(posts.length)} />
       <ol className="measure-column mt-[var(--space-group)]">
         {posts.map((post) => (
           <li key={post.slug} className="border-b border-border">
@@ -493,9 +501,11 @@ function Writing({ posts }: { readonly posts: readonly PostSummary[] }) {
 export function HumanView({
   posts,
   contributions,
+  workbench = [],
 }: {
   readonly posts: readonly PostSummary[]
   readonly contributions?: React.ReactNode
+  readonly workbench?: readonly WorkbenchSlide[]
 }) {
   // Handed to the provider, which is what gives the hole something to eat: everything inside this
   // element is a shred, except the plate's own subtree.
@@ -511,8 +521,9 @@ export function HumanView({
     <EventHorizonProvider rootRef={rootRef} driveRef={driveRef}>
       <div
         ref={rootRef}
-        className="measure-page px-[clamp(1.25rem,4vw,4rem)] pb-[var(--space-section)]"
+        className="bench measure-page pb-[var(--space-section)]"
       >
+        <BenchRails />
         <Masthead drive={driveRef} />
         <Work />
         {contributions && <div className="mt-[var(--space-section)]">{contributions}</div>}
@@ -520,6 +531,7 @@ export function HumanView({
         <Projects />
         <Skills />
         <Writing posts={posts} />
+        <Workbench slides={workbench} />
         {/* Closes the axis — and turns out to be the heaviest thing on the page. Without it the
             document just stops at whatever the last list was. */}
         <HorizonTrigger />
