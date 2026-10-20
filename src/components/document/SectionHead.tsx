@@ -16,12 +16,15 @@
 export function SectionHead({
   label,
   note,
+  index,
 }: {
   readonly label: string
   readonly note?: string
+  /** The section's number, printed in the right rail where the head's line meets it. */
+  readonly index?: string
 }) {
   return (
-    <div className="measure-column flex items-center gap-[clamp(0.875rem,2.5vw,2rem)]">
+    <div data-index={index} className="bench-line measure-column flex items-center gap-[clamp(0.875rem,2.5vw,2rem)]">
       <span aria-hidden className="rule-fade-r h-px flex-1" />
 
       <h2 className="field-label flex items-baseline gap-2.5 whitespace-nowrap tracking-[0.26em] text-muted-foreground">

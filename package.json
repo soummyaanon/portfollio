@@ -44,7 +44,8 @@
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
     "remark-rehype": "^11.1.2",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -52,6 +53,7 @@
     "@types/node": "^20.19.17",
     "@types/react": "^19.1.14",
     "@types/react-dom": "^19",
+    "@types/three": "^0.180.0",
     "critters": "^0.0.23",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",

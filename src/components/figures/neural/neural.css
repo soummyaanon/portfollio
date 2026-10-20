@@ -1,0 +1,11 @@
+/* The network floats on the page: no box, no background, and the canvas is transparent. */
+.nn-host {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 960 / 640;
+  outline: none;
+}
+.nn-host:focus-visible { outline: 1px solid var(--border); outline-offset: 4px; }
+.nn-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; cursor: grab; touch-action: pan-y; }
+.nn-note { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted-foreground); font-size: var(--text-fine); }
+@media (max-width: 640px) { .nn-host { aspect-ratio: 4 / 3; } }

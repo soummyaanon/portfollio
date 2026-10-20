@@ -18,9 +18,10 @@ import {
 } from '@/lib/seo'
 import { person, projects, roles } from '@/data/profile'
 import GitHubContributions from './components/GitHubContributions'
+import { NeuralNetworkFigure } from '@/components/figures/neural/figure'
 
 const DESCRIPTION =
-  'I build AI-driven tools that reduce human workload, currently focused on healthcare AI that streamlines physicians’ workflows.'
+  'I’m a builder making healthcare AI, agentic automation, and fully autonomous software that make life easier.'
 
 export const metadata: Metadata = {
   description: DESCRIPTION,
@@ -36,6 +37,18 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
   },
 }
+
+/** The drawn figures in the closing carousel. */
+const WORKBENCH = [
+  {
+    id: 'network',
+    name: 'Neural network',
+    tagline: 'Signals through a network, as a sculpture',
+    url: person.links.find((link) => link.label === 'GitHub')?.url ?? person.site,
+    linkLabel: 'GitHub',
+    figure: <NeuralNetworkFigure key="network" />,
+  },
+]
 
 /**
  * Server component: it owns metadata and the JSON-LD graph, resolves blog data from the
@@ -88,7 +101,11 @@ export default async function Home() {
           ),
         )}
       />
-      <PortfolioDocument posts={summaries} contributions={<GitHubContributions />} />
+      <PortfolioDocument
+        posts={summaries}
+        contributions={<GitHubContributions />}
+        workbench={WORKBENCH}
+      />
     </main>
   )
 }

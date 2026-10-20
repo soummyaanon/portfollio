@@ -127,8 +127,8 @@ export const person: Person = {
   // wider than 80, and a five-minute cache lifetime GitHub sets and nobody here can change.
   // The same face is now 15 KB of JPEG at 256px sitting next to the HTML.
   avatar: '/avatar.jpg',
-  focus: ['AI-driven tools', 'healthcare AI'],
-  interests: ['deep-space science', 'political developments'],
+  focus: ['healthcare AI', 'agentic automation', 'fully autonomous software'],
+  interests: ['deep space'],
   links: [
     { label: 'GitHub', url: 'https://github.com/soummyaanon' },
     { label: 'X', url: 'https://x.com/SoumyapX' },
@@ -229,7 +229,7 @@ export const education: readonly Education[] = [
     from: '2022-12',
     until: '2024-10',
     focus: ['Software Development', 'Algorithms', 'Data Structures'],
-    logo: '/company-logos/visvesvaraya-technological-university.png',
+    logo: '/company-logos/vtu.webp',
   },
 ]
 
@@ -250,6 +250,7 @@ export const projects: readonly Project[] = [
       'Handles macOS permission restrictions with a fallback path',
       'No dependencies, no telemetry',
     ],
+    image: '/purge.webp',
   },
   {
     // Source repo is private; the releases repo is public and is what the link points at.
@@ -268,6 +269,7 @@ export const projects: readonly Project[] = [
       'Click a session to raise the exact terminal tab hosting it',
       'Entirely local — no accounts, no API keys, no telemetry',
     ],
+    image: '/agent-island.webp',
   },
   {
     id: 'arthion',
@@ -289,13 +291,14 @@ export const projects: readonly Project[] = [
     logo: '/arthion-logo.ico',
   },
   {
-    // Source repo is private; the package on npm is the public artifact.
+    // Source repo is private. The plugin ships on npm (@bixai/god-of-debugger); the link goes to
+    // its own site, which explains the protocol and links to the package.
     id: 'god-of-debugger',
     name: 'God of Debugger',
     tagline: 'Debugging plugin for Claude Code',
     status: 'live',
-    url: 'https://www.npmjs.com/package/@bixai/god-of-debugger',
-    linkLabel: 'View on npm',
+    url: 'https://godofdebugger.bixai.dev/',
+    linkLabel: 'Visit site',
     summary:
       'Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.',
     capabilities: [
@@ -305,6 +308,7 @@ export const projects: readonly Project[] = [
       'Survival table scoring each hypothesis killed, survived, or inconclusive',
       'Promotes surviving experiments into permanent regression tests',
     ],
+    image: '/god-of-debugger.webp',
   },
   {
     id: 'marcko',

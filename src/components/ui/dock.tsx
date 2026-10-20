@@ -12,7 +12,6 @@ import {
 import type { MotionProps } from "motion/react"
 import { Home, FileText, FolderOpen, Github, Linkedin, Mail } from "lucide-react"
 import { FaXTwitter } from "react-icons/fa6"
-import { AnimatedThemeToggler } from "./animated-theme-toggler"
 
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -543,17 +542,6 @@ const NavigationDock = () => {
         </DockIcon>
         <DockIcon tooltip="Email" onClick={navigateToEmail}>
           <Icons.email className="size-6" strokeWidth={1} />
-        </DockIcon>
-        <DockSeparator
-          currentSize={dockSize}
-          onResizeStart={handleResizeStart}
-          onResize={handleResize}
-          onResizeEnd={handleResizeEnd}
-        />
-        <DockIcon tooltip="Toggle theme">
-          <div className="flex items-center justify-center w-full h-full">
-            <AnimatedThemeToggler className="size-6" />
-          </div>
         </DockIcon>
       </Dock>
     </div>

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { BenchRails } from '@/components/document/BenchRails'
+
 export const metadata: Metadata = {
   title: 'Page not found',
   description: 'This URL does not exist. Use the recovery links to continue browsing.',
@@ -18,7 +20,8 @@ const recoveryLinks = [
 
 export default function NotFound() {
   return (
-    <main className="mx-auto flex min-h-[80vh] w-full max-w-[70rem] flex-col justify-center px-[clamp(1.25rem,4vw,4rem)] py-[clamp(4rem,10vw,8rem)]">
+    <main className="bench measure-page flex min-h-[80vh] flex-col justify-center py-[clamp(4rem,10vw,8rem)]">
+      <BenchRails />
       <p className="field-label text-muted-foreground">HTTP 404</p>
       <h1 className="mt-[var(--space-tight)] font-display text-display leading-[0.9] tracking-[-0.03em] text-foreground">
         Page not found

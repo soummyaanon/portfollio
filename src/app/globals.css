@@ -13,10 +13,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
-  /* Deliberately the same face. Space Mono is the display voice and the machine voice —
-     the difference between a title and a field key is size and case, not family. */
-  --font-display: var(--font-space-mono), ui-monospace, monospace;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  /* Titles share the text face, Figtree, cut heavier; Space Mono is kept for the machine
+     voice — labels, field keys, dates, counts — as gurbinder.dev pairs the two. */
+  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-space-mono), ui-monospace, monospace;
   --color-signal: var(--signal);
   --color-signal-ink: var(--signal-ink);
@@ -231,29 +231,28 @@
 }
 
 .dark {
-  /* The same material inverted, and inverted to the stop: the ground is #000 and the ink is
-     #fff. The lightness ramp is still not a mirror of the light theme — dark surfaces need
-     the steps between them opened up or the hairlines vanish — and every surface below sits
-     lower than it used to, because they are now being read against pitch black rather than
-     against a near-black that was already a fifth of the way up the scale. */
-  --background: oklch(0 0 0);
-  --foreground: oklch(1 0 0);
-  --card: oklch(0.1450 0 0);
-  --card-foreground: oklch(1 0 0);
-  --popover: oklch(0 0 0);
-  --popover-foreground: oklch(1 0 0);
+  /* Graphite rather than pitch black, after gurbinder.dev: the ground is #0b0d0e (a near-black
+     with the faintest cool cast), the ink #fafafa, cards #1a1b1c and every hairline and quiet
+     fill zinc #27272a. Secondary text is a flat 55% grey (#8c8c8c). Still greys only: the cast
+     is under half a percent of chroma, so nothing reads as a colour. */
+  --background: oklch(0.1572 0.0039 229);
+  --foreground: oklch(0.9851 0 0);
+  --card: oklch(0.2215 0.0025 248);
+  --card-foreground: oklch(0.9851 0 0);
+  --popover: oklch(0.1572 0.0039 229);
+  --popover-foreground: oklch(0.9851 0 0);
   --primary: oklch(1 0 0);
   --primary-foreground: oklch(0 0 0);
   --secondary: oklch(0.5800 0 0);
   --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.1700 0 0);
-  --muted-foreground: oklch(0.6500 0 0);
-  --accent: oklch(0.2400 0 0);
+  --muted: oklch(0.2739 0.0055 286);
+  --muted-foreground: oklch(0.6401 0 0);
+  --accent: oklch(0.2739 0.0055 286);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.7000 0 0);
-  --border: oklch(0.2800 0 0);
-  --input: oklch(0.2800 0 0);
-  --ring: oklch(1 0 0);
+  --border: oklch(0.2739 0.0055 286);
+  --input: oklch(0.2739 0.0055 286);
+  --ring: oklch(0.8711 0.0055 286);
 
   --signal: oklch(1 0 0);
   --signal-ink: oklch(0.8600 0 0);
@@ -264,13 +263,13 @@
   --chart-3: oklch(0.5200 0 0);
   --chart-4: oklch(0.7400 0 0);
   --chart-5: oklch(1 0 0);
-  --sidebar: oklch(0.1450 0 0);
+  --sidebar: oklch(0.2215 0.0025 248);
   --sidebar-foreground: oklch(1 0 0);
   --sidebar-primary: oklch(1 0 0);
   --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(0.2400 0 0);
+  --sidebar-accent: oklch(0.2739 0.0055 286);
   --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.2800 0 0);
+  --sidebar-border: oklch(0.2739 0.0055 286);
   --sidebar-ring: oklch(1 0 0);
   --destructive-foreground: oklch(0 0 0);
   --radius: 0.75rem;
@@ -302,20 +301,19 @@
     letter-spacing: var(--tracking-normal);
   }
 
-  /* Titles: bold, and pulled tight. A monospace sets every glyph on a 0.6em slug, so at
-     title sizes the gaps between letters read as gaps between words unless the tracking
-     is negative. */
+  /* Titles: bold and drawn in slightly. Figtree is spaced for reading sizes, so at title
+     sizes a little negative tracking keeps a word reading as one shape. */
   .font-display {
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
   }
 
   /* Declared after `.font-display` on purpose — same specificity, so source order decides
-     which cut an element carrying both classes gets. The name is tracked in harder still,
-     because the fixed advance width only gets more obvious as the size goes up. */
+     which cut an element carrying both classes gets. The name is tracked in a touch harder,
+     since spacing looks looser the larger the type. */
   .text-display {
     font-weight: 700;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.03em;
   }
 
   /* Labels, field keys, counts, and dates. This is where the page reads technical — not
@@ -396,9 +394,9 @@ body {
   background-image: linear-gradient(to left, transparent, var(--border));
 }
 
-/* Instrument Sans starts at 400, so the old `font-weight: 100` silently clamped up while
-   still asking for a face that does not exist. Justification is gone with it: without
-   hyphenation the browser can only solve a short measure by tearing word spaces open. */
+/* Prose is set at 400: an old `font-weight: 100` asked for a hairline face the text font
+   does not have. Justification is gone with it: without hyphenation the browser can only
+   solve a short measure by tearing word spaces open. */
 .prose {
   font-weight: 400;
   line-height: 1.75;
@@ -919,4 +917,214 @@ body {
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Bench rails ──────────────────────────────────────────────────────────────────────────
+   Two boxed rails run the full height of the page, filled with a 45° hatch and carrying a
+   ruler strip on their inner edge. Every section head is a line that crosses from one rail
+   to the other, with a + where it meets each rail's inner edge and the section's number
+   in the right rail. Lengths are in the page's own container units, so the line always
+   lands on the rails whatever the column width. */
+.bench {
+  --gutter: clamp(1.25rem, 4vw, 4rem);
+  --rail: clamp(0.625rem, 0.2rem + 1.6vw, 1.75rem);
+  --rail-ruler: 0.5rem;
+  --rail-hatch: oklch(1 0 0 / 0.1);
+  --rail-tick: oklch(1 0 0 / 0.32);
+  --rail-mark: oklch(1 0 0 / 0.55);
+  position: relative;
+  padding-inline: var(--gutter);
+  container-type: inline-size;
+}
+
+.bench-rail {
+  position: absolute;
+  inset-block: 0;
+  width: var(--rail);
+  border-inline: 1px solid var(--border);
+  background-image: repeating-linear-gradient(-45deg, var(--rail-hatch) 0 1px, transparent 1px 7px);
+  pointer-events: none;
+}
+
+.bench-rail[data-side="left"] { left: 0; }
+.bench-rail[data-side="right"] { right: 0; }
+
+/* The ruler strip: a solid band on the inner edge with ticks hanging from the rail's border,
+   a short one every 8px and a long one every 64px. */
+.bench-rail::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  width: var(--rail-ruler);
+  background-color: var(--background);
+  background-image:
+    repeating-linear-gradient(to bottom, var(--rail-tick) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(to bottom, var(--rail-tick) 0 1px, transparent 1px 8px);
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 55% 100%;
+}
+
+.bench-rail[data-side="left"]::before {
+  right: 0;
+  border-left: 1px solid var(--border);
+  background-position: right top, right top;
+}
+
+.bench-rail[data-side="right"]::before {
+  left: 0;
+  border-right: 1px solid var(--border);
+  background-position: left top, left top;
+}
+
+.bench-track {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  margin-right: calc(var(--rail-ruler) + 1px);
+}
+
+/* The carriage: a small block in the hatch with an index line reaching across the ruler.
+   It is the one bright thing on the rails. */
+.bench-carriage {
+  position: absolute;
+  top: 1.5rem;
+  left: 3px;
+  right: 3px;
+  height: 2.75rem;
+  border: 1px solid var(--rail-mark);
+  background:
+    radial-gradient(circle, var(--rail-mark) 0 1px, transparent 1.5px) center 5px / 4px 4px no-repeat,
+    radial-gradient(circle, var(--rail-mark) 0 1px, transparent 1.5px) center calc(100% - 5px) / 4px 4px no-repeat,
+    var(--background);
+}
+
+.bench-carriage::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: calc(var(--rail-ruler) + 4px);
+  height: 1px;
+  background: var(--foreground);
+}
+
+@supports (animation-timeline: scroll()) {
+  .bench-carriage {
+    animation: bench-carriage linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
+@keyframes bench-carriage {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(100dvh - 3rem - 2.75rem)); }
+}
+
+/* Section heads: the label becomes a boxed tag, and the line under it runs out to both rails. */
+.bench .bench-line {
+  position: relative;
+}
+
+.bench .bench-line > .rule-fade-l,
+.bench .bench-line > .rule-fade-r {
+  visibility: hidden;
+}
+
+.bench .bench-line > h2 {
+  position: relative;
+  z-index: 1;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+/* The crossing line, with a + where it meets the inner edge of each rail. */
+.bench .bench-line::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: calc(50% - 50cqw - var(--gutter));
+  width: calc(100cqw + 2 * var(--gutter));
+  height: 9px;
+  translate: 0 -50%;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--rail-mark), var(--rail-mark)) var(--rail) 0 / 1px 100% no-repeat,
+    linear-gradient(var(--rail-mark), var(--rail-mark)) calc(100% - var(--rail)) 0 / 1px 100% no-repeat,
+    linear-gradient(var(--border), var(--border)) 0 50% / 100% 1px no-repeat;
+}
+
+/* The section's number, set in the right rail just under the line. (Not a CSS counter: the
+   bench is a size container, and the style containment that comes with it scopes counters.) */
+.bench .bench-line[data-index]::after {
+  content: attr(data-index);
+  position: absolute;
+  top: calc(50% + 0.5rem);
+  right: calc(50% - 50cqw - var(--gutter) + 1px);
+  width: calc(var(--rail) - var(--rail-ruler) - 2px);
+  padding-block: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--foreground);
+  background: var(--background);
+}
+
+@media (max-width: 639px) {
+  .bench { --rail-ruler: 0px; }
+  .bench-rail::before,
+  .bench-carriage::after,
+  .bench .bench-line::after { display: none; }
+  .bench-track { margin-right: 0; }
+  .bench-carriage { left: 2px; right: 2px; height: 2rem; background: var(--background); }
+}
+
+/* ── Workbench: the figure plate at the end of the page ─────────────────────────────────── */
+.workbench .iso-plate {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.workbench-step {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  transition: color 160ms, border-color 160ms;
+}
+
+.workbench-step:hover,
+.workbench-step:focus-visible {
+  color: var(--foreground);
+  border-color: var(--rail-mark, var(--foreground));
+}
+
+/* ── Project cards ─────────────────────────────────────────────────────────────────────────
+   Screenshots wait in greyscale and take their colour back when pointed at. The hatch is the
+   rails' own, for projects with no site to show. */
+.project-shot {
+  filter: grayscale(1) contrast(1.05) brightness(0.8);
+  transform: scale(1.001);
+  transition: filter 420ms var(--ease-out-quint), transform 900ms var(--ease-out-quint);
+}
+
+.project-card:hover .project-shot,
+.project-card:focus-visible .project-shot {
+  filter: none;
+  transform: scale(1.025);
+}
+
+.project-hatch {
+  background-image: repeating-linear-gradient(-45deg, oklch(1 0 0 / 0.13) 0 1px, transparent 1px 7px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-shot { transition: none; }
+  .project-card:hover .project-shot { transform: none; }
 }

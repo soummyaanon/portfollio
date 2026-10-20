@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 
 import { ProjectIndex } from '@/components/ProjectIndex'
 import { JsonLd } from '@/components/JsonLd'
+import { BenchRails } from '@/components/document/BenchRails'
 import {
   breadcrumbSchema,
   collectionPageSchema,
@@ -35,7 +36,8 @@ export const metadata: Metadata = {
 
 export default function ProjectsPage() {
   return (
-    <main className="mx-auto w-full max-w-[76rem] px-[clamp(1.25rem,4vw,4rem)] pb-[var(--space-section)] pt-[clamp(2.5rem,6vw,5rem)]">
+    <main className="bench measure-page pb-[var(--space-section)] pt-[clamp(2.5rem,6vw,5rem)]">
+      <BenchRails />
       <JsonLd
         json={graph(
           collectionPageSchema({

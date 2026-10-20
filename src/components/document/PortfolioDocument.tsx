@@ -8,13 +8,16 @@ import { HumanView } from './HumanView'
 import { SpecimenSheet } from './SpecimenSheet'
 import { ModeToggle } from './ModeToggle'
 import type { PostSummary } from './types'
+import type { WorkbenchSlide } from './Workbench'
 
 interface DocumentProps {
   readonly posts: readonly PostSummary[]
   readonly contributions?: React.ReactNode
+  /** Drawn figures for the closing carousel, one per project. Built on the server. */
+  readonly workbench?: readonly WorkbenchSlide[]
 }
 
-function Surface({ posts, contributions }: DocumentProps) {
+function Surface({ posts, contributions, workbench }: DocumentProps) {
   const { mode, toggle } = useDocumentMode()
 
   // `m` flips the rendering. Guarded so it cannot fire while a field or a contenteditable
@@ -48,7 +51,7 @@ function Surface({ posts, contributions }: DocumentProps) {
     <LayoutGroup>
       <ModeToggle />
       {mode === 'human' ? (
-        <HumanView posts={posts} contributions={contributions} />
+        <HumanView posts={posts} contributions={contributions} workbench={workbench} />
       ) : (
         <SpecimenSheet posts={posts} />
       )}

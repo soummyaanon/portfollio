@@ -27,7 +27,7 @@ export default function GitHubContributions() {
   if (YEARS.length === 0 || year === undefined) {
     return (
       <section>
-        <SectionHead label="Contributions" />
+        <SectionHead index="02" label="Contributions" />
         <p className="measure-prose mt-[var(--space-group)] text-center text-fine text-muted-foreground">
           Calendar data is generated at build time and is not available for this build.
         </p>
@@ -42,6 +42,7 @@ export default function GitHubContributions() {
   return (
     <section>
       <SectionHead
+        index="02"
         label="Contributions"
         note={entry ? `${entry.total.toLocaleString()} in ${year}` : undefined}
       />

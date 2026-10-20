@@ -6,6 +6,7 @@ import { ShareButtons } from '@/components/ShareButtons'
 import { BlogContent } from '@/components/blog-content'
 import type { Metadata } from 'next'
 import { JsonLd } from '@/components/JsonLd'
+import { BenchRails } from '@/components/document/BenchRails'
 import { absoluteUrl, blogPostingSchema, breadcrumbSchema, graph } from '@/lib/seo'
 import { person } from '@/data/profile'
 
@@ -95,7 +96,8 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
     })
 
     return (
-      <main className="min-h-screen bg-background">
+      <main className="bench measure-page min-h-screen bg-background">
+        <BenchRails />
         {/* Built from src/lib/seo.ts so the author and publisher resolve by @id to the one
             Person declared on the homepage, rather than restating a second, unlinked copy
             of the same entity on every post. */}
