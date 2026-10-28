@@ -12,6 +12,25 @@
       "has": [{ "type": "host", "value": "mainportfollio.vercel.app" }],
       "destination": "https://soumyapanda.dev/:path",
       "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "cookie", "key": "lang", "value": "hi" }],
+      "destination": "/hi/",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "missing": [{ "type": "cookie", "key": "lang" }],
+      "has": [
+        {
+          "type": "header",
+          "key": "accept-language",
+          "value": "^hi(?:-[A-Za-z]+)?(?:[,;].*)?$"
+        }
+      ],
+      "destination": "/hi/",
+      "permanent": false
     }
   ]
 }

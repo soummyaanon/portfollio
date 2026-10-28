@@ -461,15 +461,16 @@ const MONTHS = [
 ] as const
 
 /**
- * `2025-07` → `Jul 2025`. The human encoding of a date the machine view prints raw.
+ * `2025-07` → `Jul 2025`. The human encoding of a date the machine view prints raw. Pass
+ * another language's month names to read it in that language.
  * Returns the input unchanged if it is not in `YYYY-MM` form, so a malformed record
  * degrades to visible-but-wrong rather than throwing during a static build.
  */
-export function formatMonth(value: string): string {
+export function formatMonth(value: string, months: readonly string[] = MONTHS): string {
   const match = /^(\d{4})-(\d{2})$/.exec(value)
   if (!match) return value
 
-  const month = MONTHS[Number(match[2]) - 1]
+  const month = months[Number(match[2]) - 1]
   return month ? `${month} ${match[1]}` : value
 }
 

@@ -13,11 +13,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), var(--font-devanagari), ui-sans-serif, system-ui, sans-serif;
   /* Titles share the text face, Figtree, cut heavier; Space Mono is kept for the machine
      voice — labels, field keys, dates, counts — as gurbinder.dev pairs the two. */
-  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-space-mono), ui-monospace, monospace;
+  --font-display: var(--font-figtree), var(--font-devanagari), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-space-mono), var(--font-devanagari), ui-monospace, monospace;
   --color-signal: var(--signal);
   --color-signal-ink: var(--signal-ink);
 
@@ -337,6 +337,48 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Devanagari hangs every letter in a word from one continuous headline, the shirorekha, so
+   any tracking at all — the wide spacing on labels as much as the tight spacing on titles —
+   cuts that line into pieces. Unlayered so it outranks the tracking utilities, and scoped by
+   language, so Latin text inside a Hindi page (marked lang="en") keeps its spacing. */
+:lang(hi) .field-label,
+:lang(hi) .font-display,
+:lang(hi) .text-display,
+:lang(hi) [class*='tracking-'] {
+  letter-spacing: normal;
+}
+
+/* The dock's language switch, for a visitor in India reading English: one hairline ring
+   breathes out from the glyph, once, a moment after the page settles. Ink only, no fill, and
+   nothing at all for anyone who has asked for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .lang-nudge {
+    position: relative;
+  }
+
+  .lang-nudge::after {
+    content: '';
+    position: absolute;
+    inset: -30%;
+    border: 1px solid var(--foreground);
+    border-radius: 9999px;
+    opacity: 0;
+    pointer-events: none;
+    animation: lang-nudge 1.8s cubic-bezier(0.22, 1, 0.36, 1) 1.5s 1 both;
+  }
+}
+
+@keyframes lang-nudge {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
 }
 
 body {

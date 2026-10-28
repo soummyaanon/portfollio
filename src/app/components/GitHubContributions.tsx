@@ -3,6 +3,7 @@
 import { ContributionGraph } from '@/components/smoothui/ui/ContributionGraph'
 import { SectionHead } from '@/components/document/SectionHead'
 import { contributionYears, github } from '@/data/github'
+import { useI18n } from '@/i18n/useLocale'
 
 /**
  * Renders the contribution calendar from data resolved at build time.
@@ -21,6 +22,7 @@ const YEARS = contributionYears
 const ALL_TIME = YEARS.reduce((sum, year) => sum + (github.contributions[String(year)]?.total ?? 0), 0)
 
 export default function GitHubContributions() {
+  const { t } = useI18n()
   // The current year only: one calendar, no year picker.
   const year = YEARS[0]
 
@@ -29,9 +31,9 @@ export default function GitHubContributions() {
   if (YEARS.length === 0 || year === undefined) {
     return (
       <section>
-        <SectionHead index="02" label="GitHub activity" />
+        <SectionHead index="02" label={t.sections.github} />
         <p className="measure-prose mt-[var(--space-group)] text-center text-fine text-muted-foreground">
-          Calendar data is generated at build time and is not available for this build.
+          {t.github.unavailable}
         </p>
       </section>
     )
@@ -43,7 +45,7 @@ export default function GitHubContributions() {
 
   return (
     <section>
-      <SectionHead index="02" label="GitHub activity" />
+      <SectionHead index="02" label={t.sections.github} />
 
       {/* Centred on the page axis like every other band, and capped at the reading column
           so a 53-week grid does not become the widest thing on the page. */}
@@ -54,7 +56,9 @@ export default function GitHubContributions() {
           data={[...days]}
           year={year}
           showTooltips
-          footer={`Total ${ALL_TIME.toLocaleString()} contributions since ${YEARS.at(-1)}`}
+          // en-US grouping in every language: Hindi's lakh grouping (1,23,456) would be a
+          // second way of writing the same number on a page that already has one.
+          footer={t.github.total(ALL_TIME.toLocaleString('en-US'), String(YEARS.at(-1)))}
         />
       </div>
     </section>

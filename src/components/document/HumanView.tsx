@@ -5,15 +5,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
-import {
-  education,
-  formatMonth,
-  person,
-  projects,
-  roles,
-  skills,
-  type Role,
-} from '@/data/profile'
+import { formatMonth, skills, type Project, type Role } from '@/data/profile'
+import { localizePath } from '@/i18n/config'
+import type { Dictionary } from '@/i18n/dictionaries'
+import { useI18n } from '@/i18n/useLocale'
 import { Connective, Fact } from './Fact'
 import { BenchRails } from './BenchRails'
 import { Workbench, type WorkbenchSlide } from './Workbench'
@@ -45,6 +40,11 @@ function pad(value: number) {
 }
 
 function Masthead() {
+  const {
+    t,
+    profile: { person },
+  } = useI18n()
+
   return (
     // Top padding clears the fixed mode toggle, which owns the top-right corner. It is pulled
     // in tighter than the plate below it is tall: the plate grew, and it grew upward, because
@@ -65,7 +65,9 @@ function Masthead() {
           rows below: the sky above belongs to the hole, and the face belongs with the byline. */}
       <div className="measure-column">
         <div className="flex items-center justify-between gap-[clamp(1rem,2.5vw,1.75rem)]">
-          <h1 className="font-display text-display leading-[0.82] tracking-[-0.035em] text-foreground">
+          {/* The name is set in Latin in every language, so it keeps its tracking on a Hindi
+              page too (see the :lang(hi) rule in globals.css). */}
+          <h1 lang="en" className="font-display text-display leading-[0.82] tracking-[-0.035em] text-foreground">
             <span className="block">
               <Fact id="person.given">{person.givenName}</Fact>
             </span>
@@ -109,10 +111,10 @@ function Masthead() {
             sentence around them sits at 70%. Same job an accent colour was doing, done with
             the only two variables left — weight and contrast. */}
         <p className="mt-[clamp(2rem,4vw,3rem)] max-w-[var(--measure-prose)] text-pretty text-lead font-light leading-[1.45] text-foreground/70">
-          <Connective>I’m a builder making </Connective>
+          <Connective>{t.lead.before}</Connective>
           {person.focus.map((item, at) => (
             <Fragment key={item}>
-              {at > 0 && <Connective>{separator(at, person.focus.length)}</Connective>}
+              {at > 0 && <Connective>{separator(at, person.focus.length, t.list)}</Connective>}
               <Fact
                 id={`person.focus.${at}`}
                 className={`text-shimmer font-display font-semibold tracking-[-0.02em] text-foreground ${SHIMMER_DELAY[at] ?? ''}`}
@@ -121,14 +123,14 @@ function Masthead() {
               </Fact>
             </Fragment>
           ))}
-          <Connective> that make life easier. Off the clock, I follow </Connective>
+          <Connective>{t.lead.afterFocus}</Connective>
           {person.interests.map((item, at) => (
             <Fragment key={item}>
-              {at > 0 && <Connective>{separator(at, person.interests.length)}</Connective>}
+              {at > 0 && <Connective>{separator(at, person.interests.length, t.list)}</Connective>}
               <Fact id={`person.interest.${at}`}>{item}</Fact>
             </Fragment>
           ))}
-          <Connective>.</Connective>
+          <Connective>{t.lead.afterInterests}</Connective>
         </p>
       </div>
     </header>
@@ -139,9 +141,9 @@ function Masthead() {
 const SHIMMER_DELAY = ['[animation-delay:0ms]', '[animation-delay:700ms]', '[animation-delay:1400ms]']
 
 /** What goes before item `at` of a list read as prose: "a and b", "a, b, and c". */
-function separator(at: number, length: number) {
-  if (at < length - 1) return ', '
-  return length > 2 ? ', and ' : ' and '
+function separator(at: number, length: number, list: Dictionary['list']) {
+  if (at < length - 1) return list.comma
+  return length > 2 ? list.serialAnd : list.and
 }
 
 /**
@@ -150,6 +152,8 @@ function separator(at: number, length: number) {
  * name when the line is too short for both.
  */
 function RoleHeading({ role, open }: { readonly role: Role; readonly open?: boolean }) {
+  const { t } = useI18n()
+
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-6">
       <div className="flex min-w-0 items-baseline gap-3">
@@ -173,10 +177,10 @@ function RoleHeading({ role, open }: { readonly role: Role; readonly open?: bool
       </div>
 
       <p className="field-label text-right tracking-[0.08em] text-muted-foreground">
-        <Fact id={`role.${role.id}.from`}>{formatMonth(role.from)}</Fact>
+        <Fact id={`role.${role.id}.from`}>{formatMonth(role.from, t.months)}</Fact>
         <Connective>{' — '}</Connective>
         <Fact id={`role.${role.id}.until`}>
-          {role.until ? formatMonth(role.until) : 'Present'}
+          {role.until ? formatMonth(role.until, t.months) : t.present}
         </Fact>
       </p>
     </div>
@@ -189,6 +193,7 @@ function RoleHeading({ role, open }: { readonly role: Role; readonly open?: bool
  * nothing.
  */
 function RoleRow({ role }: { readonly role: Role }) {
+  const { t } = useI18n()
   const detail = role.summary || role.location || role.stack?.length
 
   if (!detail) {
@@ -210,7 +215,7 @@ function RoleRow({ role }: { readonly role: Role }) {
         {role.location && (
           <p className="mt-[var(--space-tight)] text-caption text-muted-foreground">
             {role.location}
-            {role.remote ? ' · Remote' : ''}
+            {role.remote ? ` · ${t.remote}` : ''}
           </p>
         )}
         {role.stack && role.stack.length > 0 && (
@@ -224,9 +229,14 @@ function RoleRow({ role }: { readonly role: Role }) {
 }
 
 function Work() {
+  const {
+    t,
+    profile: { roles },
+  } = useI18n()
+
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead index="01" label="Work" note={pad(roles.length)} />
+      <SectionHead index="01" label={t.sections.work} note={pad(roles.length)} />
 
       <ol className="measure-column mt-[var(--space-group)] divide-y divide-border/60">
         {roles.map((role) => (
@@ -241,9 +251,14 @@ function Work() {
 
 /** Set like a Work row — who and what on the left, when on the right — with the emblem in the mark's place. */
 function Education() {
+  const {
+    t,
+    profile: { education },
+  } = useI18n()
+
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead index="03" label="Education" />
+      <SectionHead index="03" label={t.sections.education} />
 
       {/* One line per entry, in the Work section's voice: a small emblem, the institution, the
           credential in a lighter voice beside it and the years on the right; the focus sits
@@ -255,7 +270,7 @@ function Education() {
               <div className="flex min-w-0 items-baseline gap-3">
                 {entry.logo && (
                   <span className="mt-px size-[1.375rem] shrink-0 self-start overflow-hidden rounded-full ring-1 ring-border grayscale">
-                    <Image src={entry.logo} alt={`${entry.institution} emblem`} width={44} height={44} className="h-full w-full object-cover" />
+                    <Image src={entry.logo} alt={t.emblemAlt(entry.institution)} width={44} height={44} className="h-full w-full object-cover" />
                   </span>
                 )}
                 <span className="flex min-w-0 flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
@@ -290,10 +305,12 @@ function Education() {
  * around it says this is a stamp on the record, not part of the sentence.
  */
 function ProjectStatus({ status }: { readonly status: 'live' | 'in-development' }) {
+  const { t } = useI18n()
+
   if (status === 'live') return null
   return (
     <span className="field-label shrink-0 border border-border px-1.5 py-[0.15rem] leading-none text-muted-foreground">
-      In development
+      {t.inDevelopment}
     </span>
   )
 }
@@ -322,10 +339,12 @@ function ProjectCard({
   index,
   wide,
 }: {
-  readonly project: (typeof projects)[number]
+  readonly project: Project
   readonly index: number
   readonly wide: boolean
 }) {
+  const { t } = useI18n()
+
   return (
     <li className={`bg-background ${wide ? 'sm:col-span-2' : ''}`}>
       <a
@@ -351,7 +370,7 @@ function ProjectCard({
           {project.image ? (
             <Image
               src={project.image}
-              alt={`${project.name} interface`}
+              alt={t.interfaceAlt(project.name)}
               fill
               className="project-shot object-cover object-top"
               sizes={wide ? '(max-width: 640px) 100vw, 46rem' : '(max-width: 640px) 100vw, 23rem'}
@@ -396,13 +415,18 @@ const FEATURED = ['agent-island', 'purge', 'bixai-starter'] as const
  * last cell of the box is the way through to every project.
  */
 function Projects() {
+  const {
+    locale,
+    t,
+    profile: { projects },
+  } = useI18n()
   const featured = FEATURED.map((id) => projects.find((project) => project.id === id)).filter(
-    (project): project is (typeof projects)[number] => Boolean(project),
+    (project): project is Project => Boolean(project),
   )
 
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead index="04" label="Selected work" note={pad(featured.length)} />
+      <SectionHead index="04" label={t.sections.selectedWork} note={pad(featured.length)} />
 
       <div className="measure-column mt-[var(--space-group)] border border-border bg-border">
         <ol className="grid gap-px sm:grid-cols-2">
@@ -411,12 +435,12 @@ function Projects() {
           ))}
         </ol>
         <Link
-          href="/projects/"
+          href={localizePath('/projects/', locale)}
           className="group mt-px flex items-center justify-between gap-4 bg-background px-[clamp(0.875rem,2vw,1.25rem)] py-4 transition-colors hover:bg-card focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal"
         >
-          <span className="field-label tracking-[0.2em] text-foreground">See all projects</span>
+          <span className="field-label tracking-[0.2em] text-foreground">{t.seeAllProjects}</span>
           <span className="flex items-center gap-3">
-            <span className="field-label text-muted-foreground">{pad(projects.length)} entries</span>
+            <span className="field-label text-muted-foreground">{t.entries(pad(projects.length))}</span>
             <ArrowUpRight
               aria-hidden
               className="size-3.5 rotate-45 text-muted-foreground transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:text-foreground"
@@ -445,13 +469,14 @@ function Projects() {
  * Hovering stops it, so a name that catches your eye can actually be read.
  */
 function Skills() {
+  const { t } = useI18n()
   // Languages and frameworks on the top rail, everything else on the bottom. Split by
   // count rather than meaning would leave one rail short enough to show a seam.
   const rails = [skills.slice(0, 2), skills.slice(2)]
 
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead index="05" label="Tools" />
+      <SectionHead index="05" label={t.sections.tools} />
 
       {/* The fade is a mask, not two gradient overlays: it works over any background, so it
           survives a theme flip without a second pair of elements tinted the other way. */}
@@ -478,11 +503,12 @@ function Skills() {
 }
 
 function Writing({ posts }: { readonly posts: readonly PostSummary[] }) {
+  const { locale, t } = useI18n()
   if (posts.length === 0) return null
 
   return (
     <section className="mt-[var(--space-section)]">
-      <SectionHead index="06" label="Writing" note={pad(posts.length)} />
+      <SectionHead index="06" label={t.sections.writing} note={pad(posts.length)} />
       <ol className="measure-column mt-[var(--space-group)]">
         {posts.map((post) => (
           <li key={post.slug} className="border-b border-border">
@@ -492,7 +518,11 @@ function Writing({ posts }: { readonly posts: readonly PostSummary[] }) {
             >
               {/* Title and date only. The excerpts live on /blogs, where the list is the
                   whole point of the page rather than one section of it. */}
-              <span className="min-w-0 font-display text-title leading-[1.15] text-foreground decoration-signal/50 decoration-1 underline-offset-[6px] group-hover:underline">
+              {/* The pieces are written in English whatever the page around them is in. */}
+              <span
+                lang={locale === 'en' ? undefined : 'en'}
+                className="min-w-0 font-display text-title leading-[1.15] text-foreground decoration-signal/50 decoration-1 underline-offset-[6px] group-hover:underline"
+              >
                 {post.title}
               </span>
               <span className="field-label text-muted-foreground sm:text-right">

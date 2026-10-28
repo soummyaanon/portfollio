@@ -1,6 +1,6 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
-import { Figtree, Space_Mono } from 'next/font/google'
+import { Figtree, Noto_Sans_Devanagari, Space_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 
 import { ThemeProvider } from './components/ThemeProvider'
@@ -8,6 +8,7 @@ import { NavigationDock } from '@/components/ui/dock'
 import { PostHogProvider } from '../components/PostHogProvider'
 import { OPEN_GRAPH_DEFAULTS, SITE_URL } from '@/lib/seo'
 import { person, roles, skills } from '@/data/profile'
+import { HtmlLang } from '@/i18n/HtmlLang'
 
 /**
  * The machine voice: `--font-mono`. Every section label, every date and count, and the
@@ -33,6 +34,18 @@ const figtree = Figtree({
   subsets: ['latin'],
   variable: '--font-figtree',
   display: 'swap',
+})
+
+/**
+ * Hindi. Figtree and Space Mono have no Devanagari, so this sits behind both of them in every
+ * stack (see globals.css) and the browser reaches it glyph by glyph. Not preloaded, and its
+ * @font-face carries a Devanagari unicode-range, so an English page never downloads it.
+ */
+const devanagari = Noto_Sans_Devanagari({
+  subsets: ['devanagari'],
+  variable: '--font-devanagari',
+  display: 'swap',
+  preload: false,
 })
 
 export const viewport: Viewport = {
@@ -91,7 +104,7 @@ export default function RootLayout({
     // The font variables go on <html>, not <body>: Tailwind defines `--font-sans` and
     // `--font-mono` on :root, and there they can only see variables set on <html>. On
     // <body> they resolved to nothing and the text fell back to the system face.
-    <html lang="en" className={`${figtree.variable} ${spaceMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${figtree.variable} ${spaceMono.variable} ${devanagari.variable}`} suppressHydrationWarning>
       <body>
         {/* Hoisted into <head> by React. Declared here rather than in `metadata.alternates`
             because a child route setting `alternates.canonical` replaces the whole
@@ -104,6 +117,7 @@ export default function RootLayout({
           href="/llms-full.txt"
           title="llms-full.txt"
         />
+        <HtmlLang />
         <PostHogProvider />
         <ThemeProvider attribute="class" forcedTheme="dark" enableSystem={false}>
           {children}

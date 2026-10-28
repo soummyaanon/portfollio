@@ -1,7 +1,9 @@
 import Image from 'next/image'
 import { ArrowUpRight } from 'lucide-react'
 
-import { projects } from '@/data/profile'
+import type { Locale } from '@/i18n/config'
+import { dictionary } from '@/i18n/dictionaries'
+import { localizedProfile } from '@/i18n/profile'
 
 /**
  * The complete project catalogue, for the dedicated /projects route.
@@ -11,7 +13,10 @@ import { projects } from '@/data/profile'
  * an index; this page gives every project its full entry — that difference is the reason the
  * separate route exists.
  */
-export function ProjectIndex() {
+export function ProjectIndex({ locale }: { readonly locale: Locale }) {
+  const { projects } = localizedProfile(locale)
+  const t = dictionary(locale)
+
   return (
     <ol>
       {projects.map((project, index) => (
@@ -31,7 +36,7 @@ export function ProjectIndex() {
                 </h2>
                 {project.status === 'in-development' && (
                   <span className="text-caption uppercase tracking-[0.14em] text-signal-ink">
-                    In development
+                    {t.inDevelopment}
                   </span>
                 )}
               </div>
@@ -63,7 +68,7 @@ export function ProjectIndex() {
                 <div className="mb-[var(--space-group)] overflow-hidden rounded-md border border-border bg-card">
                   <Image
                     src={project.image}
-                    alt={`${project.name} interface`}
+                    alt={t.interfaceAlt(project.name)}
                     width={1200}
                     height={630}
                     className="h-auto w-full"

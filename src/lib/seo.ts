@@ -8,6 +8,7 @@
  */
 
 import { education, person, projects, roles, skills } from '@/data/profile'
+import { DEFAULT_LOCALE, LOCALES, localizePath, OG_LOCALES, type Locale } from '@/i18n/config'
 
 import type { Metadata } from 'next'
 
@@ -40,6 +41,17 @@ export const OPEN_GRAPH_DEFAULTS = {
     },
   ],
 } satisfies Metadata['openGraph']
+
+/**
+ * The Open Graph locale fields for a page in `locale`, naming the other languages it is
+ * also published in. Spread after `OPEN_GRAPH_DEFAULTS`.
+ */
+export function openGraphLocale(locale: Locale) {
+  return {
+    locale: OG_LOCALES[locale],
+    alternateLocale: LOCALES.filter((other) => other !== locale).map((other) => OG_LOCALES[other]),
+  } satisfies Metadata['openGraph']
+}
 
 export const PERSON_ID = `${SITE_URL}/#person`
 export const WEBSITE_ID = `${SITE_URL}/#website`
@@ -167,17 +179,28 @@ export const PROFILE_PAGE_ID = `${SITE_URL}/#profilepage`
 export function profilePageSchema({
   description,
   dateModified,
+  locale = DEFAULT_LOCALE,
+  title = person.title,
 }: {
   readonly description: string
   readonly dateModified: string
+  readonly locale?: Locale
+  /** The job title as the page in `locale` prints it. */
+  readonly title?: string
 }): JsonLd {
+  // A translation is its own page with its own node; it describes the same person, so
+  // `mainEntity` still points at the one Person the English homepage defines.
+  const english = locale === DEFAULT_LOCALE
+  const url = absoluteUrl(localizePath('/', locale))
+
   return {
     '@type': 'ProfilePage',
-    '@id': PROFILE_PAGE_ID,
-    url: absoluteUrl('/'),
-    name: `${person.name} — ${person.title}`,
+    '@id': english ? PROFILE_PAGE_ID : `${url}#profilepage`,
+    url,
+    name: `${person.name} — ${title}`,
     description,
-    inLanguage: 'en',
+    inLanguage: locale,
+    ...(english ? {} : { translationOfWork: { '@id': PROFILE_PAGE_ID } }),
     dateModified,
     isPartOf: { '@id': WEBSITE_ID },
     mainEntity: { '@id': PERSON_ID },
@@ -216,19 +239,24 @@ export function collectionPageSchema({
   name,
   description,
   listId,
+  locale = DEFAULT_LOCALE,
 }: {
+  /** The language-neutral path, e.g. `/projects/`; the locale prefix is added here. */
   readonly path: string
   readonly name: string
   readonly description: string
   readonly listId: string
+  readonly locale?: Locale
 }): JsonLd {
+  const url = absoluteUrl(localizePath(path, locale))
+
   return {
     '@type': 'CollectionPage',
-    '@id': `${absoluteUrl(path)}#page`,
-    url: absoluteUrl(path),
+    '@id': `${url}#page`,
+    url,
     name,
     description,
-    inLanguage: 'en',
+    inLanguage: locale,
     isPartOf: { '@id': WEBSITE_ID },
     about: { '@id': PERSON_ID },
     mainEntity: { '@id': listId },

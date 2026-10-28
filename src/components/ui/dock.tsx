@@ -12,8 +12,12 @@ import {
 import type { MotionProps } from "motion/react"
 import { Home, FileText, FolderOpen, Github, Linkedin, Mail } from "lucide-react"
 import { FaXTwitter } from "react-icons/fa6"
+import { usePathname } from "next/navigation"
 
 import { cn } from "@/lib/utils"
+import { counterpartPath, LOCALE_COOKIE, localizePath, type Locale } from "@/i18n/config"
+import { shouldNudge } from "@/i18n/nudge"
+import { useI18n } from "@/i18n/useLocale"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export interface DockProps extends VariantProps<typeof dockVariants> {
@@ -475,7 +479,53 @@ const DockSeparator = ({
 
 DockSeparator.displayName = "DockSeparator"
 
+/**
+ * Saves the visitor's choice before the switcher's link is followed. `vercel.json` reads it
+ * on `/`, so a choice made once is honoured on every later visit and beats whatever language
+ * the browser asks for.
+ */
+function rememberLocale(locale: Locale) {
+  const secure = window.location.protocol === "https:" ? "; secure" : ""
+  document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; samesite=lax${secure}`
+}
+
+/** Remembers that this tab has been nudged, so the pulse is once per visit, not per page. */
+const NUDGE_KEY = "lang-nudged"
+
+/**
+ * True once, after mount, for a visitor in India reading English who has never chosen a
+ * language (see `shouldNudge`). Decided in an effect, never during render: the time zone and
+ * the cookie exist only in the browser, and reading them while rendering would make the
+ * prerendered HTML disagree with the hydrated page.
+ */
+function useLanguageNudge(locale: Locale) {
+  const [nudge, setNudge] = React.useState(false)
+
+  React.useEffect(() => {
+    let timeZone: string | undefined
+    try {
+      timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    } catch {
+      return
+    }
+    if (!shouldNudge({ locale, timeZone, cookie: document.cookie })) return
+
+    // Storage can be blocked; the pulse then simply plays on each page, which is harmless.
+    try {
+      if (window.sessionStorage.getItem(NUDGE_KEY)) return
+      window.sessionStorage.setItem(NUDGE_KEY, "1")
+    } catch {}
+
+    setNudge(true)
+  }, [locale])
+
+  return nudge
+}
+
 const NavigationDock = () => {
+  const pathname = usePathname() ?? "/"
+  const { locale, t } = useI18n()
+  const nudge = useLanguageNudge(locale)
   const [dockSize, setDockSize] = useState(DEFAULT_SIZE)
   const dockSizeSpring = useSpring(dockSize, {
     mass: 0.12,
@@ -513,14 +563,31 @@ const NavigationDock = () => {
         iconSize={DEFAULT_SIZE}
         baseIconSize={dockSizeSpring}
       >
-        <DockIcon tooltip="Home" href="/">
+        <DockIcon tooltip={t.nav.home} href={localizePath("/", locale)}>
           <Icons.home className="size-6" strokeWidth={1} />
         </DockIcon>
-        <DockIcon tooltip="Blogs" href="/blogs/">
+        <DockIcon tooltip={t.nav.blogs} href={localizePath("/blogs/", locale)}>
           <Icons.blogs className="size-6" strokeWidth={1} />
         </DockIcon>
-        <DockIcon tooltip="Projects" href="/projects/">
+        <DockIcon tooltip={t.nav.projects} href={localizePath("/projects/", locale)}>
           <Icons.projects className="size-6" strokeWidth={1} />
+        </DockIcon>
+        {/* The language switch: a real link to the same page in the other language, labelled
+            in that language, so it reads to the person it is for. */}
+        <DockIcon
+          tooltip={t.switcher.label}
+          href={counterpartPath(pathname, t.switcher.target)}
+          onClick={() => rememberLocale(t.switcher.target)}
+        >
+          <span
+            lang={t.switcher.target}
+            className={cn(
+              "flex items-center justify-center text-[0.8rem] font-medium leading-none",
+              nudge && "lang-nudge"
+            )}
+          >
+            {t.switcher.glyph}
+          </span>
         </DockIcon>
         <DockSeparator
           currentSize={dockSize}
@@ -537,7 +604,7 @@ const NavigationDock = () => {
         <DockIcon tooltip="X" href="https://x.com/SoumyapX" external>
           <Icons.x className="size-6" strokeWidth={1} />
         </DockIcon>
-        <DockIcon tooltip="Email" onClick={navigateToEmail}>
+        <DockIcon tooltip={t.nav.email} onClick={navigateToEmail}>
           <Icons.email className="size-6" strokeWidth={1} />
         </DockIcon>
       </Dock>

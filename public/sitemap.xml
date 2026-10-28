@@ -18,6 +18,23 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://soumyapanda.dev/hi/</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://soumyapanda.dev/hi/blogs/</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://soumyapanda.dev/hi/projects/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://soumyapanda.dev/blogs/inside-yc-qm/</loc>
     <lastmod>2026-08-01</lastmod>
     <changefreq>monthly</changefreq>

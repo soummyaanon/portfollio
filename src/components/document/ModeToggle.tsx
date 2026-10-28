@@ -2,13 +2,12 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 
+import { useI18n } from '@/i18n/useLocale'
+
 import { useDocumentMode, type DocumentMode } from './DocumentMode'
 import { MORPH_EASE } from './Fact'
 
-const OPTIONS: readonly { readonly mode: DocumentMode; readonly label: string }[] = [
-  { mode: 'human', label: 'Human' },
-  { mode: 'machine', label: 'Machine' },
-]
+const MODES: readonly DocumentMode[] = ['human', 'machine']
 
 /**
  * A segmented control, deliberately plain: a hairline box, a solid indicator, and two words.
@@ -18,6 +17,7 @@ const OPTIONS: readonly { readonly mode: DocumentMode; readonly label: string }[
 export function ModeToggle() {
   const { mode, setMode } = useDocumentMode()
   const reduceMotion = useReducedMotion()
+  const { t } = useI18n()
 
   return (
     // data-horizon-eat: fixed chrome lives outside the human view, so the hole at the foot of
@@ -29,19 +29,19 @@ export function ModeToggle() {
     >
       <div
         role="radiogroup"
-        aria-label="Document rendering"
+        aria-label={t.mode.group}
         className="relative flex rounded-full border border-border bg-background/95 p-0.5"
       >
-        {OPTIONS.map((option) => {
-          const isActive = option.mode === mode
+        {MODES.map((option) => {
+          const isActive = option === mode
 
           return (
             <button
-              key={option.mode}
+              key={option}
               type="button"
               role="radio"
               aria-checked={isActive}
-              onClick={() => setMode(option.mode)}
+              onClick={() => setMode(option)}
               className="relative rounded-full px-3 py-1.5 text-caption uppercase tracking-[0.14em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
             >
               {isActive && !reduceMotion && (
@@ -57,7 +57,7 @@ export function ModeToggle() {
               <span
                 className={`relative ${isActive ? 'text-background' : 'text-muted-foreground'}`}
               >
-                {option.label}
+                {t.mode[option]}
               </span>
             </button>
           )
@@ -66,7 +66,9 @@ export function ModeToggle() {
 
       {/* Hidden where there is no keyboard to press. */}
       <p className="mt-1.5 hidden text-right text-caption text-muted-foreground/60 sm:block">
-        press <kbd className="font-mono text-foreground/70">m</kbd>
+        {t.mode.pressBefore}
+        <kbd className="font-mono text-foreground/70">m</kbd>
+        {t.mode.pressAfter}
       </p>
     </div>
   )
