@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 
 import { AudioToggle } from './AudioToggle'
-import { KEPLER, PLATE_RS, PLATE_SEAT_X, PLATE_SEAT_Y } from './plate-geometry'
+import { KEPLER, PLATE_ROLL, PLATE_RS, PLATE_SEAT_X, PLATE_SEAT_Y } from './plate-geometry'
 import { EnduranceOrbit } from '@/components/figures/endurance/EnduranceOrbit'
 
 /**
@@ -16,23 +16,22 @@ import { EnduranceOrbit } from '@/components/figures/endurance/EnduranceOrbit'
  * the plate and a ranging circle opens from the point of contact, lifting the magnitude of every
  * star it crosses.
  *
- * The black hole is built from its physics rather than drawn: the sky behind it is sampled
- * through the point-mass lens equation, so the stars arc around it and a
- * second inverted image appears inside the Einstein radius without being asked for. Around it
- * an accretion disk lives in the source plane and is seen through that lens, which is what
- * folds its far side into the arc riding over the shadow; its light carries the Doppler
- * beaming of matter orbiting at four tenths of c, the gravitational redshift of the inner
- * annulus, and the winding shear of a Keplerian flow in two octaves of turbulence, with the
- * sampling folded at the disk's inner edge so wings, crown and the ring of light around the
- * shadow are one unbroken flow where a flat lens would leave wedges. Point sources brighten by the lens's
+ * The black hole is built from its physics rather than drawn. The hole and its disk are ray
+ * traced: every pixel follows a light ray back through the Schwarzschild geometry, through a
+ * flared, turbulent volume of gas, so the far side of the disk rises into the arc over the
+ * shadow, its underside folds into the faint image beneath, and the cool, dusty outer disk
+ * crosses in front as a band. The gas glows hot at the inner edge and cools outward, carries
+ * the Doppler factor of matter orbiting at up to four tenths of c and the gravitational
+ * redshift of the inner annulus, and turns at Kepler's rate on the same clock the Endurance
+ * orbits on. Debris streaks fall in along radial paths. The sky is sampled through the
+ * point-mass lens equation, so stars arc round the hole and a second inverted image appears
+ * inside the Einstein radius without being asked for; point sources brighten by the lens's
  * true magnification as they cross behind — extended ones do not, because lensing conserves
- * surface brightness — so a star drifting into alignment flares into an Einstein ring on its
- * own schedule. The dark disc is the photon capture radius at 2.598 rs, not the horizon, and
- * the ring on it converges through two sub-rings the way the real one does. A little spin
- * twists the nearby sky (frame dragging), time runs slow beside the mass (the Schwarzschild
- * factor, in the scintillation) and arrives late (the Shapiro delay), and the incursions are
- * the stretch-and-squeeze strain of passing gravitational waves, kept off the hole's own
- * ground where its gravity, not theirs, owns the geometry.
+ * surface brightness. The dark disc is the photon capture radius at 2.598 rs, not the horizon.
+ * A little spin twists the nearby sky (frame dragging), time runs slow beside the mass (the
+ * Schwarzschild factor, in the scintillation) and arrives late (the Shapiro delay), and the
+ * incursions are the stretch-and-squeeze strain of passing gravitational waves, kept off the
+ * hole's own ground where its gravity, not theirs, owns the geometry.
  *
  * It is drawn on a raw WebGL2 canvas rather than through a scene graph: this is a single
  * full-quad fragment shader, so Three.js would have bought a camera, a renderer, and
@@ -43,7 +42,8 @@ import { EnduranceOrbit } from '@/components/figures/endurance/EnduranceOrbit'
  * reduced to a catalogued position among other catalogued positions. Greys at rest — the ink is
  * the page's own — with the disk's real colour eased in while the plate is hovered.
  *
- * Cheap by construction — one draw call per frame, paused off-screen, capped at 2× DPR,
+ * One draw call per frame, paused off-screen, capped at 2× DPR and stepping its resolution
+ * down on a machine that cannot keep up,
  * frozen on the first frame when the visitor prefers reduced motion, and silently absent
  * if WebGL2 is not there.
  */
@@ -70,6 +70,9 @@ uniform float uField;    // ambient sky density — at 0 the whole field is skip
 uniform float uKepler;   // Kepler's law on the page's one clock: ω(r) = uKepler / r^1.5
 uniform float uRs;       // the Schwarzschild radius, plate units — everything else follows from it
 uniform vec2  uSeat;     // where the hole sits, plate space
+const int ROCKS = 14;
+uniform vec4  uRocks[ROCKS]; // rocks falling in: xyz in units of rs (disk in the xz plane, eye toward +z), w = radius, 0 = none
+uniform float uRoll;     // the camera's roll about the line of sight, radians: the disk's slant across the frame
 
 out vec4 fragColor;
 
@@ -208,107 +211,363 @@ vec3 gwave(vec2 p, vec2 c, float t, float w, float k, float breathe, float psi) 
 }
 
 /**
- * The accretion disk's light at an offset d from the hole, sampled through the lens: the
- * far side of the annulus folds up over the shadow and arrives as the arc riding the ring,
- * its inverted twin hugging the underside — nothing here draws either arc. The shadow
- * itself stays clean: a band across it was tried and retired, because at this size the
- * plate reads better with the dark disc unbroken.
- *
- * The disk is a thin annulus from the innermost stable orbit at 3 rs out to 9 rs, seen at
- * ~83° of inclination — the camera riding just above the disk plane, which is where the
- * film put it. Its light is Keplerian speed √(rs/2r), Doppler beaming, and gravitational
- * redshift. The beaming is muted, as the film's Gargantua has it: Thorne's full asymmetry left
- * half the disk missing, and Nolan had it evened out, so the approaching limb leads only a
- * little. A hot rim just outside the ISCO
- * carries the brightness the film put there, and the whole thing runs through a soft-knee
- * tonemap, 1 − e^(−x), so the inner band saturates into an even blaze instead of clipping
- * into a flat wedge — blown out the way film stock blows out, not the way a clamp does.
- *
- * The texture is silk, not smoke, as the film's disk is: two octaves of noise stretched long
- * along the flow and fine across it, at low contrast, carried on annular bands that each turn
- * at their own Keplerian rate, on the same clock as the Endurance's orbit — banded because a continuous shear winds any pattern below pixel scale
- * within minutes, and the finer octave shearing 35% faster than the lanes it rides is the
- * turbulence. The streaks live in the disk's midtones; the blaze at the rim is allowed to
- * swallow them exactly as an overexposed frame would.
- *
- * The last term is bloom without a blur pass: a taller, fainter ellipse of haze riding the
- * same annulus, carrying the same beaming — the scattered light a lens and the gas around
- * the flow both throw off a source this bright. Nearly off on paper, where haze reads as
- * a thumbprint.
+ * Value noise that wraps in x every \`period\` cells, so a pattern laid round the disk in angle
+ * closes on itself instead of tearing along one radius.
  */
-float diskLight(vec2 d, float rs, float t, float shadow) {
-  // The inclination is the camera's now, not a constant. cosI is the sine of the eye's
-  // elevation above the disk plane — the factor an orthographic projection squashes a circle's
-  // vertical extent by — and sinI is its cosine, the line-of-sight component the Doppler
-  // beaming is taken along. Both fall straight out of the camera's basis, so tilting the view
-  // opens the annulus from a knife-edge into a full ellipse without a term here knowing that
-  // anything moved. At the default elevation these are the 0.125 and 0.992 they always were.
-  // Floored where the disk is exactly edge-on and the divide would run away; the CPU clamps
-  // the elevation to the same place, so the floor is a guard rather than a working value.
-  float cosI = max(uCam.z, 0.05);
-  float sinI = uCam.w;
-  vec2 dplane = vec2(d.x, d.y / cosI);
-  float diskIn = 3.0 * rs;
-  float diskOut = 9.0 * rs;
-  // The wrap. A flat lens leaves a void around the shadow — the radii it hands this
-  // function dive inside the inner edge, where nothing emits, and the disk used to arrive
-  // as two flaps floating beside a separate ring. In the film's render that void is filled
-  // by light that crossed the disk plane more than once on its way around the mass.
-  // Folding the radius back across the inner edge is this plate's version of the same
-  // thing: a pixel the lens sends inside the edge samples the inner annulus again, so the
-  // wings, the crown and the ring of light around the shadow are one piece of material
-  // seen more than once — the lanes bend around the hole because they are the lanes,
-  // continued.
-  float rd0 = max(length(dplane), 1e-4);
-  float rd = diskIn + abs(rd0 - diskIn);
-  // Every per-orbit factor stays clamped at the ISCO, which the fold now enforces by
-  // construction — and it keeps β from passing 1 where the raw radius ran through zero.
-  float rdc = max(rd, diskIn);
-  // The camera's azimuth is added in, so the turbulence is pinned to the *material* rather
-  // than to the screen. Left out, swinging the view would drag every lane around with it and
-  // the one thing azimuth is supposed to cost this disk — nothing — would become a visible
-  // smear of the entire texture.
-  float phi = atan(dplane.y, dplane.x) + atan(uCam.y, uCam.x);
-  // Each band turns at Kepler's rate on the page's one clock, the clock the Endurance orbits
-  // on: the inner lanes lap the hole in about fourteen seconds and the outer ones in about
-  // seventy, the same r^(-3/2) law that carries the ship round in two minutes further out.
-  float bandR = max((floor(rd * 32.0) + 0.5) / 32.0, diskIn);
-  float whirl = uKepler / pow(bandR, 1.5);
-  float coarse = noise(vec2(rd * 40.0, (phi - whirl * t) * 2.6));
-  float fine = noise(vec2(rd * 110.0, (phi - whirl * t * 1.35) * 7.0) + 7.3);
-  // Each octave fades out as its radial period closes on a pixel. At hero size the fine one
-  // ran at two or three cycles per pixel near the rim and aliased into a sandy speckle that
-  // read as noise on a photograph rather than gas; filtered, it is the turbulence it was meant
-  // to be wherever it can be resolved and its mean everywhere else.
-  float coarseW = smoothstep(0.9, 0.35, fwidth(rd * 40.0));
-  float fineW = smoothstep(0.9, 0.35, fwidth(rd * 110.0));
-  // Contrast held low, as on the film's disk: fine silky streaks that show the flow turning
-  // without breaking the even blaze into lanes.
-  float lanes = 0.6 + 0.28 * mix(0.5, coarse, coarseW) + 0.12 * mix(0.5, fine, fineW);
-  float beta = sqrt(rs / (2.0 * rdc));
-  // Beaming at the 1.2th power, the film's evened-out look rather than the full cube.
-  float dopp = pow(1.0 / (1.0 - beta * sinI * (dplane.x / rdc)), 1.2);
-  // The Doppler flip. Inside the fold the lens is showing the counter-image of the
-  // opposite limb, so the raw beaming changes sides right at the ring — a dim sliver
-  // hugging the shadow on the bright side, which is precisely what read as the wing
-  // floating free of the hole. But the wrap is light from every part of the orbit at
-  // once, so its beaming is blended flat, and the wings fade smoothly into an evenly
-  // lit ring instead of docking against their own dimmed reflection.
-  float foldMix = smoothstep(diskIn * 1.1, diskIn * 0.5, rd0);
-  float doppEff = mix(min(dopp, 3.0), 1.15, foldMix);
-  float gfac = sqrt(max(1.0 - rs / rdc, 0.0));
-  float rim = 1.0 + 1.0 * smoothstep(diskIn * 1.9, diskIn * 1.02, rd);
-  float body = pow(rs / rdc, 1.7) * 17.0
-    * smoothstep(diskOut * 1.25, diskOut * 0.75, rd)
-    * lanes * rim * doppEff * gfac;
-  float film = 1.0 - exp(-body);
-  vec2 hp = vec2(d.x, d.y / 0.42);
-  float hr = length(hp);
-  float haze = smoothstep(diskIn * 0.85, diskIn * 1.15, hr)
-    * smoothstep(diskOut * 1.5, diskIn * 1.1, hr)
-    * (0.25 + 0.75 * min(dopp, 3.0) / 3.0)
-    * mix(0.15, 0.03, shadow);
-  return max(film * mix(0.92, 0.62, shadow), haze);
+float wrapNoise(vec2 q, float period) {
+  vec2 i = floor(q);
+  vec2 f = q - i;
+  f = f * f * (3.0 - 2.0 * f);
+  float x0 = mod(i.x, period);
+  float x1 = mod(i.x + 1.0, period);
+  return mix(
+    mix(hash(vec2(x0, i.y)), hash(vec2(x1, i.y)), f.x),
+    mix(hash(vec2(x0, i.y + 1.0)), hash(vec2(x1, i.y + 1.0)), f.x),
+    f.y
+  );
+}
+
+/** Three octaves of it: long arcs of gas, then the filaments riding them. */
+// How many pixels one unit of ln r spans at the current sample, foreshortening allowed for —
+// set per sample by diskStep. Every octave whose period would fall under a couple of pixels is
+// faded to its mean instead of drawn: below that it can only alias into speckle, and speckle
+// is what a small hole drawn at full detail turned into.
+float gPxPerLn = 1000.0;
+float gRsPerPx = 0.01;
+
+/** Resolution weight for a pattern of the given frequency in ln r: 1 when resolved, 0 when not. */
+float resolved(float freq) {
+  return smoothstep(1.6, 4.5, gPxPerLn / freq);
+}
+
+float diskFbm(vec2 q, float period, float freq) {
+  float v = 0.0;
+  float a = 0.5;
+  for (int i = 0; i < 3; i++) {
+    v += a * mix(0.5, wrapNoise(q, period), resolved(freq));
+    q = q * vec2(2.0, 2.1) + vec2(0.0, 17.3);
+    period *= 2.0;
+    freq *= 2.1;
+    a *= 0.5;
+  }
+  return v / 0.875;
+}
+
+/**
+ * The gas's turbulence at angle ang (in turns) and ln r: three octaves laid round the disk,
+ * pushed about by a coarser field of their own (domain warping), which is what turns parallel
+ * lanes into the eddies and tongues of a flow that is shearing and churning at once.
+ */
+float diskGas(float ang, float lr, float yz, float seed) {
+  vec2 base = vec2(ang * 8.0, lr * 9.0 + yz * 2.6 + seed);
+  vec2 warp = vec2(wrapNoise(base * vec2(0.5, 0.45) + vec2(0.0, 5.2), 4.0), wrapNoise(base * vec2(0.5, 0.45) + vec2(0.0, 19.7), 4.0));
+  return diskFbm(base + (warp - 0.5) * vec2(2.0, 3.0), 8.0, 9.0);
+}
+
+/** Threads of hot gas: ridged noise, bright along its creases, stretched long along the flow. */
+float diskFilaments(float ang, float lr, float yz, float seed) {
+  vec2 q = vec2(ang * 10.0, lr * 18.0 + yz * 4.0 + seed);
+  q.y += (wrapNoise(q * vec2(0.5, 0.12), 5.0) - 0.5) * 6.0;
+  float a = 1.0 - abs(2.0 * wrapNoise(q, 10.0) - 1.0);
+  float b = 1.0 - abs(2.0 * wrapNoise(q * vec2(2.0, 2.2) + vec2(0.0, 7.1), 20.0) - 1.0);
+  // Each octave of thread fades to its mean (a ridge averages to about a third) once it is
+  // finer than the pixels can carry.
+  float ca = mix(0.33, a * a, resolved(18.0));
+  float cb = mix(0.33, b * b, resolved(40.0));
+  return ca * (0.55 + 0.45 * cb);
+}
+
+// The disk, in units of rs: from just inside the innermost stable orbit, where the plunging gas
+// still glows faintly, out to where it frays into the dust it is fed from.
+const float DISK_IN = 3.0;
+const float DISK_OUT = 15.0;
+
+/** The disk's half-thickness at radius rc: thin, flaring only gently outward, as the film's disk is. */
+float diskHalfThickness(float rc) {
+  return 0.08 + 0.026 * rc;
+}
+
+/**
+ * One step's worth of the disk's light, taken at pos for a path of length ds.
+ *
+ * The gas is a volume rather than a sheet: density falls off as a gaussian away from the
+ * midplane, with the scale height flaring outward, and is broken by turbulence that is laid
+ * out in (angle, ln r) — so the structures are long arcs that keep their shape as the radius
+ * grows, the way sheared gas does. Each annulus turns at Kepler's rate on the page's one
+ * clock, the clock the Endurance orbits on. A continuous shear winds any pattern below pixel
+ * scale within minutes, so the turbulence is carried on two clocks a half-period apart and
+ * cross-faded: each is wound for at most one period and then handed over while it is faint.
+ *
+ * Emission runs hot at the inner edge and cools outward; absorption runs the other way, so the
+ * outer disk is the dusty, brown, half-opaque band the reference shows crossing the shadow,
+ * and the inner disk is a blaze. The light carries the Doppler factor of the orbiting gas
+ * (muted to the 1.5th power, the film's evened-out look rather than the full cube) and the
+ * gravitational redshift √(1 − rs/r).
+ */
+void diskStep(vec3 pos, vec3 dir, float ds, float t, inout vec3 light, inout float trans) {
+  float rc = length(pos.xz);
+  float h = diskHalfThickness(rc);
+  float vert = exp(-(pos.y * pos.y) / (h * h));
+  // rc rs per unit of ln r, over rs per pixel; the disk is seen nearly edge-on, which crowds its
+  // radial structure several-fold on screen, hence the allowance.
+  gPxPerLn = rc / gRsPerPx * 0.35;
+  float radial = smoothstep(1.7, 2.5, rc) * mix(0.22, 1.0, smoothstep(DISK_IN * 0.85, DISK_IN * 1.25, rc)) * smoothstep(DISK_OUT, DISK_OUT * 0.5, rc);
+  float shape = vert * radial;
+  if (shape < 0.004) return;
+
+  float phiGeo = atan(pos.z, pos.x);
+  float ang = (phiGeo + atan(uCam.y, uCam.x)) / 6.2831853;
+  float lr = log(rc);
+  // Kepler on the shared clock: ω = uKepler / r^1.5, with r in plate units.
+  float omega = uKepler / pow(rc * uRs, 1.5);
+  const float P = 10.0;
+  float cyc = fract(t / P);
+  float wA = 1.0 - abs(2.0 * cyc - 1.0);
+  float tA = cyc * P;
+  float tB = fract(cyc + 0.5) * P;
+  float turnA = omega * tA / 6.2831853;
+  float turnB = omega * tB / 6.2831853;
+  // And it falls in as it goes round. Viscosity bleeds the gas's angular momentum away, so
+  // every parcel drifts inward while it orbits — slowly far out, faster near the hole, at a
+  // fixed fraction of the orbital rate — and the pattern is carried down in ln r with it. With
+  // the shear, that is what winds the streaks into the trailing spirals of a real disk.
+  const float INFLOW = 0.05;
+  float lrA = lr + INFLOW * omega * tA;
+  float lrB = lr + INFLOW * omega * tB;
+  float yz = pos.y / h;
+  float nA = diskGas(ang - turnA, lrA, yz, 0.0);
+  float nB = diskGas(ang - turnB, lrB, yz, 37.0);
+  float fA = diskFilaments(ang - turnA, lrA, yz, 0.0);
+  float fB = diskFilaments(ang - turnB, lrB, yz, 37.0);
+  float n = mix(nB, nA, wA);
+  // A second, finer field for the brightness alone, so dense gas is not always bright gas:
+  // ridged, so it reads as threads of hot gas, and where it is quiet the band goes dark and
+  // brown, which is the dust.
+  float glow = mix(fB, fA, wA);
+
+  // Wispy edges: the turbulence also decides how far up the gas reaches.
+  float fluff = smoothstep(0.30, 0.72, n + 0.18 * (vert - 0.5));
+  // The outer disk carries more mass per column than its glow lets on: it is the dense, cool,
+  // dusty band that crosses in front of the shadow.
+  float rho = shape * fluff * mix(1.0, 1.7, smoothstep(5.0, 12.0, rc));
+
+  // Hot spots: knots of gas heated by magnetic flares, the bright clumps that are actually seen
+  // circling Sagittarius A* every half hour or so. Each rides its own circular orbit at Kepler's
+  // rate, sheared long along it, and is drawn by the same tracer as everything else — so it is
+  // seen to swing up over the shadow along the arc and slide under it in the lower image, the
+  // hole bending its light the whole way round.
+  float hot = 0.0;
+  for (int k = 0; k < 3; k++) {
+    float fk = float(k);
+    float rk = 3.6 + 1.55 * fk;
+    float wk = uKepler / pow(rk * uRs, 1.5);
+    float phk = fk * 2.3 + 0.7 + wk * t;
+    float dphi = atan(sin(phiGeo - phk), cos(phiGeo - phk)) * rk;
+    float dr = rc - rk;
+    hot += exp(-(dr * dr) / 0.12 - (dphi * dphi) / (1.1 + 0.5 * fk) - (pos.y * pos.y) / 0.08);
+  }
+  if (rho < 0.002 && hot < 0.01) return;
+
+  float heat = pow(DISK_IN / max(rc, DISK_IN), 1.7);
+  float beta = sqrt(0.5 / max(rc, DISK_IN));
+  vec3 vgas = beta * vec3(-sin(phiGeo), 0.0, cos(phiGeo));
+  float gamma = inversesqrt(1.0 - beta * beta);
+  float dop = 1.0 / (gamma * (1.0 - dot(vgas, -dir)));
+  float gfac = sqrt(max(1.0 - 1.0 / max(rc, 1.0), 0.0));
+  float beam = clamp(pow(dop, 0.9), 0.6, 2.0) * gfac;
+
+  float bright = rho * (0.18 + 1.9 * glow) * (0.1 + 8.0 * heat) * beam + hot * 3.2 * beam;
+  // Temperature, read as a colour: amber where the gas is cool, white-gold where it blazes.
+  float temp = clamp(heat * 1.25 * mix(0.8, 1.25, glow) * (0.6 + 0.4 * beam) + hot, 0.0, 1.0);
+  vec3 tint = mix(vec3(0.50, 0.33, 0.22), vec3(0.98, 0.86, 0.72), smoothstep(0.08, 0.55, temp));
+  tint = mix(tint, vec3(1.0, 0.97, 0.92), smoothstep(0.55, 1.0, temp));
+  float absorb = rho * mix(2.4, 0.3, heat) * (1.3 - 0.8 * glow);
+
+  light += trans * tint * bright * ds;
+  trans *= exp(-absorb * ds);
+}
+
+/**
+ * A rock's orientation as it tumbles: a rotation built from two angles that run on the clock at
+ * the rock's own rates, so no two turn alike.
+ */
+mat3 rockFrame(float seed, float t) {
+  float a = t * (0.6 + 0.5 * fract(seed * 0.37)) + seed * 2.1;
+  float b = t * (0.35 + 0.4 * fract(seed * 0.61)) + seed * 1.3;
+  mat3 ry = mat3(cos(a), 0.0, -sin(a), 0.0, 1.0, 0.0, sin(a), 0.0, cos(a));
+  mat3 rx = mat3(1.0, 0.0, 0.0, 0.0, cos(b), sin(b), 0.0, -sin(b), cos(b));
+  return ry * rx;
+}
+
+/** Each rock's proportions: elongated and flattened, never a ball. */
+vec3 rockAxes(float seed) {
+  return vec3(1.0, 0.52 + 0.2 * fract(seed * 0.73), 0.68 + 0.2 * fract(seed * 0.29));
+}
+
+/**
+ * A rock's face where a ray struck it, given the surface normal in its own frame: lumpy — the
+ * normal pushed about by noise, so light breaks across it like rubble — lit from the hole, where
+ * the inner disk blazes, from the disk plane beneath or above it, and rimmed by the glowing gas
+ * behind it, all dimming with distance.
+ */
+vec3 rockShade(vec3 hp, vec3 nLocal, mat3 frame, vec3 view, float seed) {
+  vec3 q = nLocal * 2.4 + seed * 7.13;
+  vec3 lump = vec3(noise(q.xy + 1.3), noise(q.yz + 4.1), noise(q.zx + 8.7)) - 0.5;
+  vec3 n = normalize(frame * normalize(nLocal + 0.9 * lump));
+  float grit = noise(q.xy * 3.3 + q.z * 2.0);
+  float r = length(hp);
+  vec3 toHole = -hp / max(r, 1e-3);
+  float near = pow(DISK_IN * 1.8 / max(r, DISK_IN), 1.1);
+  float key = max(dot(n, toHole), 0.0) * 2.6 * near;
+  float fill = max(dot(n, vec3(0.0, -sign(hp.y), 0.0)), 0.0) * 0.5 * smoothstep(DISK_OUT, 4.0, r);
+  float rim = pow(1.0 - abs(dot(n, view)), 3.0) * 0.9 * near;
+  vec3 albedo = vec3(0.50, 0.44, 0.38) * (0.55 + 0.9 * grit);
+  return albedo * vec3(1.0, 0.88, 0.74) * (key * 1.3 + fill + rim + 0.18);
+}
+
+/**
+ * Gargantua, traced.
+ *
+ * Each pixel is a ray from a distant observer, launched parallel at its impact parameter b —
+ * the plate offset from the hole in units of rs — and followed through the Schwarzschild
+ * geometry with the exact null-geodesic acceleration in Cartesian form, a = −(3/2) h² x / r⁵,
+ * h the ray's conserved specific angular momentum. Nothing here draws an arc: the far side of
+ * the disk is lifted over the shadow and folded under it because that is where its light
+ * arrives, the photon ring is light that went round, and the shadow is the rays that did not
+ * come back — exactly √27/2 rs across, in impact parameter, which is where the analytic edge
+ * below sits.
+ *
+ * The step is adaptive (a tenth of the radius out in the open, finer inside the gas) and
+ * jittered per pixel, so the volume integrates without slicing into visible layers.
+ *
+ * Returns the disk's light; trans comes back as how much of the sky behind still shows, and
+ * captured as whether the ray fell in.
+ */
+vec3 traceHole(vec2 b, float t, out float trans, out float captured) {
+  float se = max(uCam.z, 0.05);
+  float ce = uCam.w;
+  vec3 fwd = vec3(0.0, -se, ce);
+  vec3 up = vec3(0.0, ce, se);
+  const float FAR = 42.0;
+  vec3 pos = -fwd * FAR + vec3(b.x, 0.0, 0.0) + up * b.y;
+  vec3 dir = fwd;
+  vec3 hv = cross(pos, dir);
+  float h2 = dot(hv, hv);
+
+  vec3 light = vec3(0.0);
+  trans = 1.0;
+  captured = 0.0;
+  // White noise, re-rolled every frame: the integration error becomes a fine grain that the
+  // eye averages away in motion. Structured noise (interleaved gradient) was tried and wove a
+  // visible cross-hatch into the gas.
+  float jitter = hash(gl_FragCoord.xy + fract(t * 7.31) * 113.0);
+
+  // Which rocks this ray could possibly meet. Far from the hole a ray is deflected by about
+  // 2 rs / b, so over the forty-odd rs it travels it strays from its straight line by at most
+  // ~90 / b; a rock further than that from the line is skipped for the whole march. Close in,
+  // where rays wrap round the hole, every rock stays a candidate. Most pixels end up testing
+  // none, which is what keeps fourteen rocks affordable.
+  int cand = 0;
+  float bl = length(b);
+  float stray = 90.0 / max(bl, 1.0);
+  for (int k = 0; k < ROCKS; k++) {
+    vec4 rock = uRocks[k];
+    if (rock.w <= 0.0) continue;
+    vec3 oc = rock.xyz - pos;
+    vec3 off = oc - dir * dot(oc, dir);
+    float reach = rock.w + stray;
+    if (bl < 7.0 || dot(off, off) < reach * reach) cand |= 1 << k;
+  }
+
+  for (int i = 0; i < 560; i++) {
+    float r2 = dot(pos, pos);
+    float r = sqrt(r2);
+    if (r < 1.0) { captured = 1.0; break; }
+    if (r > FAR + 2.0 && dot(pos, dir) > 0.0) break;
+    if (trans < 0.02) break;
+
+    float rc = length(pos.xz);
+    float h = diskHalfThickness(rc);
+    float ds = clamp(0.11 * r, 0.035, 1.6);
+    bool inGas = abs(pos.y) < 2.6 * h && rc > 1.6 && rc < DISK_OUT * 1.02;
+    if (inGas) ds = min(ds, (0.045 + 0.012 * rc) * mix(2.4, 1.0, exp(-(pos.y * pos.y) / (h * h))));
+    if (i == 0) ds *= jitter;
+
+    vec3 prev = pos;
+    dir += (-1.5 * h2 / (r2 * r2 * r)) * pos * ds;
+    pos += dir * ds;
+
+    // The rocks, tested against this step of the bent ray as a straight segment — exact to the
+    // step, and the steps are short wherever the bending is strong. A rock behind the hole is
+    // found by rays that went round it, so its image smears into an arc like the disk's does.
+    // Each is a tumbling ellipsoid: the segment is carried into the rock's own frame, where it
+    // is a unit sphere, and tested there.
+    bool struck = false;
+    for (int k = 0; k < ROCKS; k++) {
+      if (cand == 0) break;
+      if ((cand & (1 << k)) == 0) continue;
+      vec4 rock = uRocks[k];
+      vec3 seg = pos - prev;
+      float sl = length(seg);
+      float reach = sl + rock.w;
+      vec3 oc = pos - rock.xyz;
+      if (dot(oc, oc) > reach * reach) continue;
+      float seed = float(k) + 1.0;
+      mat3 frame = rockFrame(seed, t);
+      vec3 axes = rockAxes(seed) * rock.w;
+      vec3 l0 = (transpose(frame) * (prev - rock.xyz)) / axes;
+      vec3 l1 = (transpose(frame) * (pos - rock.xyz)) / axes;
+      vec3 ld = l1 - l0;
+      float A = dot(ld, ld);
+      float B = dot(l0, ld);
+      float C = dot(l0, l0) - 1.0;
+      float disc = B * B - A * C;
+      if (disc < 0.0) continue;
+      float th = (-B - sqrt(disc)) / max(A, 1e-8);
+      if (th > 1.0 || (th < 0.0 && C > 0.0 && B > 0.0)) continue;
+      th = max(th, 0.0);
+      vec3 nLocal = normalize((l0 + ld * th) / axes);
+      vec3 hp = prev + seg * th;
+      light += trans * rockShade(hp, nLocal, frame, -normalize(dir), seed);
+      trans = 0.0;
+      struck = true;
+      break;
+    }
+    if (struck) break;
+
+    if (inGas) diskStep(pos, normalize(dir), ds, t, light, trans);
+  }
+  return light;
+}
+
+/**
+ * Debris falling in: short streaks of matter on radial paths, drawn out by the exposure the way
+ * a long shutter draws out anything moving fast. Laid out in (angle, ln r) about the hole, so
+ * every streak points at it, they lengthen with distance as perspective would have them, and
+ * the whole field drifts inward on the page's one clock, hastening as it nears the mass.
+ */
+float infall(vec2 d, float t, float px) {
+  float r = length(d);
+  if (r < 1e-3) return 0.0;
+  float ang = atan(d.y, d.x) / 6.2831853;
+  const float SPOKES = 56.0;
+  const float RINGS = 7.0;
+  vec2 g = vec2(ang * SPOKES, log(r) * RINGS + t * 0.45);
+  vec2 cell = floor(g);
+  vec2 f = g - cell;
+  float pick = hash(cell + 91.7);
+  if (pick > 0.15) return 0.0;
+  vec2 at = 0.3 + 0.4 * hash2(cell + 4.4);
+  // Across the streak in plate units, along it in cell units.
+  float across = (f.x - at.x) * 6.2831853 * r / SPOKES;
+  float along = f.y - at.y;
+  float len = 0.12 + 0.2 * hash(cell + 2.9);
+  float w = max(px * 0.8, 0.0022);
+  float body = exp(-(across * across) / (w * w)) * smoothstep(len, 0.0, abs(along));
+  // A brighter head on the inward end, the way a lit fleck smears behind itself.
+  body *= 0.55 + 0.45 * smoothstep(len, -len, along);
+  float mag = 0.25 + 0.75 * hash(cell + 13.1);
+  return body * mag * mag;
 }
 
 /**
@@ -365,13 +624,13 @@ float catalogue(vec2 p, float scale, float cut, float t, float bright, float px,
       // size on the page at 1× and at 2×. The pixel floor is only a floor, and it must not be
       // what decides how big a star is: sized off px, the whole catalogue halved on a retina
       // screen and the field turned to specks.
-      float core = max(mix(0.0110, 0.0240, m), px) * swell;
+      float core = max(mix(0.0040, 0.0105, m), px) * swell;
       float halo = 0.045 + 0.040 * m;
 
       float spike = 0.0;
       if (m > 0.28) {
         float across = core * 0.62;
-        spike = m * 0.24 * (
+        spike = m * 0.10 * (
           exp(-(dv.y * dv.y) / (across * across)) * exp(-abs(dv.x) / (0.030 + 0.060 * m)) +
           exp(-(dv.x * dv.x) / (across * across)) * exp(-abs(dv.y) / (0.022 + 0.042 * m))
         );
@@ -568,7 +827,7 @@ void main() {
   float stars = 0.0;
   if (uField > 0.0) {
     float weight = mix(1.0, 1.10, uShadow) * uField;
-    float glow = mix(0.20, 0.055, uShadow);
+    float glow = mix(0.07, 0.055, uShadow);
     float swell = 1.0 + anomaly * 0.55;
     // Each shell's distance appears twice in its own call and nowhere else — once as the rate it
     // drifts at, once as the density it is drawn at. That repetition is the point.
@@ -582,128 +841,78 @@ void main() {
     stars = max(max(near, veil), max(mid, deep));
   }
 
-  // The accretion disk — the proper view of the hole, in the same single ink. The annulus
-  // lives in the source plane and is seen here through the lens above, which is what folds
-  // its far side into the arcs over and under the shadow; the physics is all in diskLight.
-  float disk = diskLight(sky - holeAt, rs, uTime, uShadow);
+  // Gargantua itself — traced, not drawn. b is the pixel's impact parameter in units of rs,
+  // turned by the camera's roll so the disk lies across the frame at the film's slant.
+  vec2 rel = p - holeAt;
+  float cr = cos(uRoll);
+  float sr = sin(uRoll);
+  vec2 b = vec2(cr * rel.x + sr * rel.y, -sr * rel.x + cr * rel.y) / rs;
+  float trans;
+  float captured;
+  gRsPerPx = px / rs;
+  vec3 diskRGB = traceHole(b, uTime, trans, captured);
+  // A soft-knee film response, so the inner blaze saturates into an even white the way an
+  // overexposed frame does, rather than clipping into a flat wedge.
+  vec3 diskFilm = 1.0 - exp(-diskRGB * 1.45);
 
-  // The sky, as the film shows it behind Gargantua: the disk and the lensed stars, and nothing
-  // else. The sweep lifts the magnitude of every star it crosses — it is not a ring travelling
-  // over the chart, it is the chart being read. The point sources alone carry the lens
-  // magnification, for the surface-brightness reason given above.
-  float field = disk;
-
-  // The drain — the hole taking its share of the stream.
-  //
-  // Nothing here chooses which stars are swallowed, and that is the whole design: which ones go in
-  // is decided by how close they pass, and how close they pass is the actual physical criterion.
-  // So the selection is free. dil is the Schwarzschild factor √(1 − r_c/r) already computed
-  // above, and it is the right factor twice over — it is the rate a distant clock is seen to tick
-  // down there, and it is also, to the order this plate works at, how much of the light climbs
-  // back out. It reaches exactly zero at the capture radius.
-  //
-  // So a star drawn toward the mass dims, slows, hangs at the edge of the black disc and is gone,
-  // arriving at nothing precisely as it reaches it — which is what is really seen, because a
-  // distant observer never does watch anything cross. Its neighbour a little further out sails
-  // past untouched.
-  //
-  // It runs *against* the magnification, and the order they win in is the physics rather than a
-  // compromise: out where the lens is strong but the redshift is not, magn wins and a star
-  // crossing behind the mass flares up toward its Einstein ring; in the last stretch the redshift
-  // overtakes it and the same star is extinguished. Flare, then out. Both are true at once, and
-  // the sequence falls out of multiplying them.
-  field = max(field, stars * magn * dil * (1.0 + sweep * 1.8 + anomaly * 0.35));
-  field = max(field, sweep * 0.30);
-
-  // Inside the capture radius there is nothing to draw — not dark ink, *no* ink, so the disc
-  // is the colour of whatever the plate is sitting on. On paper that is a hole punched in the
-  // chart; on a dark ground it is the thing itself. One rule, and the theme decides what it
-  // means. The edge is nearly hard, because the photon sphere is: a ray one hair inside it
-  // does not come back.
+  // Inside the capture radius there is nothing to draw — no ink at all, so the disc is the
+  // colour of whatever the plate sits on. The analytic edge is the traced one (the shadow is
+  // exactly √27/2 rs in impact parameter), drawn smooth where the ray march can only say yes
+  // or no per pixel.
   float holeD = holeDist;
-  float cut = smoothstep(holeR * 0.90, holeR * 1.02, holeD);
-  field *= cut;
+  float cut = smoothstep(holeR * 0.985, holeR * 1.01, holeD);
 
+  // The lensed sky shows only where the gas lets it through.
+  float starInk = stars * magn * dil * (1.0 + sweep * 1.8 + anomaly * 0.35) * trans * cut;
+  starInk = max(starInk, sweep * 0.30);
 
-  // The photon ring, and its sub-rings. Light that has gone one more half-orbit around the
-  // mass arrives exponentially closer to the critical curve and exponentially fainter — the
-  // true ratio is e^(−π) ≈ 1/23 per half-orbit, which would put the first sub-ring below a
-  // single 8-bit step. They are drawn at a third and a ninth instead: exaggeration, in the
-  // service of the structure existing at all. The brightest mark on the plate and the only
-  // one allowed to be — it is light that has orbited the mass and come back out to the eye.
-  float ring = smoothstep(hair * 1.5 + px, hair * 1.5 - px, abs(holeD - holeR * 1.10)) * 0.52;
-  ring += smoothstep(hair + px, hair - px, abs(holeD - holeR * 1.040)) * 0.17;
-  ring += smoothstep(hair * 0.75 + px, hair * 0.75 - px, abs(holeD - holeR * 1.012)) * 0.06;
-  // The ring is beamed like the disk it is made of, and as gently: a touch brighter on the
-  // approaching (+x) side, nearly even all the way round as the film's ring is.
-  ring *= 0.88 + 0.24 * smoothstep(-1.0, 1.0, (p.x - holeAt.x) / max(holeD, 1e-4));
-  // A breath of light outside the rings, where the lensed sky piles up. Nearly switched off
-  // on paper: the identical mark that reads as light on a dark ground reads as a thumbprint
-  // on a white one.
-  ring += smoothstep(holeR * 1.10, holeR * 2.4, holeD) * smoothstep(holeR * 3.2, holeR * 1.3, holeD) * mix(0.05, 0.018, uShadow);
+  // The photon ring: light that has gone once round the mass and come back out, a hairline
+  // hugging the shadow, with a fainter sub-ring inside it. Behind the near band like the
+  // shadow is, so the band crosses over it.
+  float ring = smoothstep(hair * 1.1 + px, hair * 1.1 - px, abs(holeD - holeR * 1.035)) * 0.55;
+  ring += smoothstep(hair * 0.7 + px, hair * 0.7 - px, abs(holeD - holeR * 1.008)) * 0.18;
+  ring *= trans;
 
-  float ink = max(field, ring);
+  // Bloom without a blur pass: a soft envelope of scattered light round the bright inner
+  // disk, the haze a lens throws off a source this bright.
+  float bloom = exp(-max(holeD - holeR, 0.0) / (holeR * 0.85)) * 0.10 * cut;
 
-  // Greys at rest, like the rest of the site. The objects that carry colour keep their tonal
-  // structure in grey: the disk is still a blackbody read off its own brightness, with
-  // temperature carried as lightness, so the cool outer annulus runs a mid grey and the hot
-  // inner rim and the photon ring run up to white.
-  //
-  // Hovered, the plate shows the colour the disk really has, uColour easing from one set to the
-  // other: its blackbody ramp from amber to white-gold.
-  //
-  // uShadow is 1 on *paper* (ink darker than the page), so the second argument of each mix is
-  // the light theme's value: there the hot end is the deep one, as ink on white has to be.
-  vec3 emberCool = mix(vec3(mix(0.62, 0.34, uShadow)), mix(vec3(0.96, 0.44, 0.07), vec3(0.66, 0.26, 0.02), uShadow), uColour);
-  vec3 emberHot = mix(vec3(mix(1.00, 0.10, uShadow)), mix(vec3(1.00, 0.90, 0.72), vec3(0.92, 0.62, 0.14), uShadow), uColour);
-  vec3 emberRGB = mix(emberCool, emberHot, smoothstep(0.16, 0.80, disk));
+  // Greys at rest, like the rest of the site; hovered, the disk shows the colour it has.
+  float lum = dot(diskFilm, vec3(0.2126, 0.7152, 0.0722));
+  float peak = max(diskFilm.r, max(diskFilm.g, diskFilm.b));
+  vec3 diskGrey = vec3(mix(lum, peak, 0.55));
+  vec3 diskSeen = mix(diskGrey, diskFilm, uColour);
+  vec3 warm = mix(vec3(1.0), vec3(1.0, 0.86, 0.66), uColour);
 
-  // Weighted by each source's own contribution, and the shadow's cut applied to the disk,
-  // which sits behind it, so the grey follows the ink rather than floating free of it: where the disk
-  // is what you are looking at the pixel takes the disk's grey, where a catalogue star crosses
-  // it the ink takes its share back, and inside the shadow there is no ink at all. Read before
-  // the mask and the grain, which scale ink and hue alike and so cancel out of the ratio.
-  float diskLit = disk * cut;
-  float hueW = diskLit + ring;
-  // The ring takes the hot end flat rather than the ramp: it is light that has orbited the
-  // mass and come back out, so it is the disk's own material seen at its most beamed.
-  vec3 hue = emberRGB * diskLit + emberHot * ring;
-  vec3 baseInk = mix(uInk, hue / max(hueW, 1e-4), clamp(hueW / max(ink, 1e-4), 0.0, 1.0));
+  // Debris falling in, in front of everything, thinning out at the plate's edge and gone before
+  // it reaches the shadow, where it has crossed out of sight.
+  float debris = 0.0;
+  if (uField > 0.0) {
+    debris = infall(rel, uTime, px) * smoothstep(holeR * 1.3, holeR * 2.6, holeD) * uField;
+  }
 
-  // No marker rings the subject any more — the dashed reticle went with the portrait, and the halo
-  // that cleared space for it went too. A hole that bends the whole sky around itself does not need
-  // an arrow pointing at it: the crowding at the lens is the picture.
-  //
-  // The sky no longer runs all the way in to the shadow, though, and that is the drain's doing. The
-  // two factors were measured against each other across the field: far out the product sits near
-  // 0.9, a slight vignette; it climbs to 2.8 at the Einstein radius, where the crowding peaks; and
-  // inside that it collapses to nothing by the edge of the black disc. So the ring of piled-up sky
-  // survives intact and is now the brightest thing in the star field, with a swept edge inside it
-  // where the stream is being consumed. The hole clears its own ground.
+  vec3 col = diskSeen + warm * (ring + bloom) + uInk * (starInk + debris);
 
-  // One mask, applied last, covering lines and objects alike — so nothing reaches the edge of
-  // the drawing buffer and the plate has no boundary of its own.
-  float mask = smoothstep(2.0, 0.35, length(p * vec2(0.62, 1.0)));
-  mask *= smoothstep(0.0, 0.30, uv.x) * smoothstep(1.0, 0.70, uv.x);
-  mask *= smoothstep(0.0, 0.30, uv.y) * smoothstep(1.0, 0.70, uv.y);
-  ink *= mask;
+  // One mask, applied last, covering everything — so nothing reaches the edge of the drawing
+  // buffer and the plate has no boundary of its own.
+  float mask = smoothstep(2.3, 0.6, length(p * vec2(0.55, 1.0)));
+  mask *= smoothstep(0.0, 0.22, uv.x) * smoothstep(1.0, 0.78, uv.x);
+  mask *= smoothstep(0.0, 0.18, uv.y) * smoothstep(1.0, 0.82, uv.y);
+  col *= mask;
 
-  // Grain multiplies rather than adds. Added, it survived the mask and laid a faint dither
-  // across every pixel of the buffer — which is exactly the rectangle that was showing up
-  // against the page. Multiplied, zero stays zero and the plate has no visible extent.
-  // It also stays out of the highlights: grain is a shadow-and-midtone texture, and on the
-  // blazing inner disk it read as sand on the gas.
-  ink *= 1.0 + (hash(gl_FragCoord.xy) - 0.5) * 0.13 * (1.0 - smoothstep(0.15, 0.6, ink));
+  // Grain multiplies rather than adds, so zero stays zero and the plate has no visible extent,
+  // and stays out of the highlights, where it would read as sand on the gas.
+  float level = max(col.r, max(col.g, col.b));
+  col *= 1.0 + (hash(gl_FragCoord.xy) - 0.5) * 0.10 * (1.0 - smoothstep(0.15, 0.6, level));
 
-  // The plate in its page ink and greys, in straight alpha, because the context was asked
-  // for straight alpha.
-  float baseA = clamp(ink, 0.0, 1.0) * uOpacity;
-  // The faint haze sits a few 8-bit steps above nothing, so the grain above is smaller than one
-  // step there and the haze printed in flat terraces. A triangular dither of one step breaks
-  // them up, and it fades in over the first three steps so empty sky stays exactly zero.
+  // Straight alpha, because the context was asked for straight alpha: the light's strength is
+  // the alpha, its colour the hue. A one-step triangular dither breaks the faint haze's
+  // terraces and fades in over the first three steps so empty sky stays exactly zero.
+  float alpha = clamp(max(col.r, max(col.g, col.b)), 0.0, 1.0);
+  vec3 hue = col / max(alpha, 1e-4);
   float dither = hash(gl_FragCoord.xy) + hash(gl_FragCoord.yx + 19.19) - 1.0;
-  baseA = clamp(baseA + dither / 255.0 * smoothstep(0.0, 3.0 / 255.0, baseA), 0.0, 1.0);
-  fragColor = vec4(baseInk, baseA);
+  alpha = clamp(alpha + dither / 255.0 * smoothstep(0.0, 3.0 / 255.0, alpha), 0.0, 1.0);
+  fragColor = vec4(clamp(hue, 0.0, 1.0), alpha * uOpacity);
 }
 `
 
@@ -834,8 +1043,51 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     const uRs = gl.getUniformLocation(program, 'uRs')
     const uKepler = gl.getUniformLocation(program, 'uKepler')
     const uSeat = gl.getUniformLocation(program, 'uSeat')
+    const uRoll = gl.getUniformLocation(program, 'uRoll')
+    const uRocks = gl.getUniformLocation(program, 'uRocks')
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+    /**
+     * Rocks falling in. Each is on a near-circular orbit a little out of the disk's plane,
+     * turning at Kepler's rate on the shared clock and losing ground to drag from the gas, so it
+     * spirals inward a few percent of a radius per radian. Inside the innermost stable orbit
+     * there is no circular orbit left to hold and it plunges; at the horizon it is gone and
+     * another fades in from the outer disk. Lengths in rs, as the tracer wants them.
+     */
+    const ROCK_COUNT = 14
+    const rockData = new Float32Array(ROCK_COUNT * 4)
+    const rocks = Array.from({ length: ROCK_COUNT }, (_, i) => ({ r: 0, phi: 0, tilt: 0, node: 0, size: 0, age: 0, seed: i }))
+    const spawnRock = (rock: (typeof rocks)[number], anywhere: boolean) => {
+      rock.r = anywhere ? 4 + Math.random() * 10 : 11 + Math.random() * 4
+      rock.phi = Math.random() * Math.PI * 2
+      rock.tilt = (Math.random() - 0.5) * 0.5
+      rock.node = Math.random() * Math.PI * 2
+      rock.size = 0.1 + Math.random() * 0.16
+      rock.age = anywhere ? 10 : 0
+    }
+    for (const rock of rocks) spawnRock(rock, true)
+
+    function stepRocks(dt: number) {
+      rocks.forEach((rock, i) => {
+        const omega = KEPLER / (rock.r * PLATE_RS) ** 1.5
+        rock.phi += omega * dt
+        // Drag: inward at a fixed fraction of the orbital speed; past the ISCO, the plunge.
+        const drift = 0.045 * omega * rock.r + (rock.r < 3 ? 3.5 * (3 - rock.r) + 0.6 : 0)
+        rock.r -= drift * dt
+        rock.age += dt
+        if (rock.r < 1.05) spawnRock(rock, false)
+        const x = rock.r * Math.cos(rock.phi)
+        const z = rock.r * Math.sin(rock.phi)
+        const y = rock.r * Math.sin(rock.tilt) * Math.sin(rock.phi - rock.node)
+        const grow = Math.min(1, rock.age / 1.5)
+        rockData[i * 4] = x
+        rockData[i * 4 + 1] = y
+        rockData[i * 4 + 2] = z
+        rockData[i * 4 + 3] = rock.size * grow * grow
+      })
+    }
+    stepRocks(0)
 
     let width = 0
     let height = 0
@@ -880,9 +1132,22 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       box = { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
     }
 
+    /**
+     * The fraction of the device's resolution the plate renders at. The hole is ray-traced —
+     * hundreds of geodesic steps through a volume per pixel — which a recent laptop does at
+     * full Retina resolution without noticing and an older one or a phone cannot. So it starts
+     * at full and steps down, never back up, while frames run long; the gas is soft enough
+     * that a lower resolution costs it little.
+     */
+    let renderScale = 1
+    let lastNow = 0
+    let frameAvg = 16
+    let settleAt = 0
+    let droppedAt = -Infinity
+
     function resize() {
       if (!gl) return
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const dpr = Math.min(window.devicePixelRatio || 1, 2) * renderScale
       const next = Math.max(1, Math.round(box.width * dpr))
       const nextHeight = Math.max(1, Math.round(box.height * dpr))
       if (next === width && nextHeight === height) return
@@ -903,6 +1168,8 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
       gl.uniform1f(uRs, PLATE_RS)
       gl.uniform1f(uKepler, KEPLER)
       gl.uniform2f(uSeat, PLATE_SEAT_X, PLATE_SEAT_Y)
+      gl.uniform1f(uRoll, PLATE_ROLL)
+      gl.uniform4fv(uRocks, rockData)
       gl.uniform4f(uCam, Math.cos(cam.az), Math.sin(cam.az), Math.sin(cam.elev), Math.cos(cam.elev))
       // Every probe is read every frame rather than cached, which is what lets a theme
       // flip take effect without any wiring between the toggle and this canvas.
@@ -922,7 +1189,30 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     }
 
     function loop(now: number) {
-      elapsed = (now - start) / 1000
+      // A smoothed frame time decides it, and only once the page has settled: the first
+      // seconds carry hydration, shader compiles and font loads, and judging the GPU by those
+      // would cost the plate its resolution for good. Under ~35 fps, sustained, steps down;
+      // back near the display's own pace, steps back up. A 60 Hz display paces frames at
+      // 16.7 ms, comfortably inside the band, so vsync is never mistaken for strain.
+      const dt = lastNow ? now - lastNow : 0
+      lastNow = now
+      if (!settleAt) settleAt = now + 3000
+      if (dt > 0 && dt < 250) frameAvg += (dt - frameAvg) * 0.03
+      if (now > settleAt) {
+        if (frameAvg > 28 && renderScale > 0.6) {
+          renderScale = Math.max(0.6, renderScale - 0.1)
+          settleAt = now + 1500
+          droppedAt = now
+        } else if (frameAvg < 18 && renderScale < 1 && now - droppedAt > 20000) {
+          // Tried again only every twenty seconds, so a machine on the edge does not flicker
+          // between two resolutions.
+          renderScale = Math.min(1, renderScale + 0.1)
+          settleAt = now + 1500
+        }
+      }
+      const nextElapsed = (now - start) / 1000
+      stepRocks(Math.min(Math.max(nextElapsed - elapsed, 0), 0.1))
+      elapsed = nextElapsed
       colour += (hoverTarget - colour) * 0.06
       draw(elapsed)
       frame = requestAnimationFrame(loop)
@@ -935,6 +1225,7 @@ export function SignalPlate({ children }: { readonly children?: React.ReactNode 
     }
 
     function pause() {
+      lastNow = 0
       if (!frame) return
       cancelAnimationFrame(frame)
       frame = 0

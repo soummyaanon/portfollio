@@ -7,9 +7,14 @@
  * own module so the Endurance, which orbits the hole on a canvas laid over the plate, reads
  * the same numbers without pulling in the shader.
  */
-export const PLATE_RS = 0.075
+export const PLATE_RS = 0.05
 export const PLATE_SEAT_X = 0
 export const PLATE_SEAT_Y = 0.03
+/**
+ * The camera's roll about the line of sight, radians: the disk lies across the frame at a
+ * slant, its left wing high and its right wing low, as the film frames Gargantua.
+ */
+export const PLATE_ROLL = -0.1
 /** √27/2 — the photon capture radius in units of rs. The edge of the black disc, not the horizon. */
 export const CAPTURE_RATIO = 2.598
 
@@ -18,12 +23,12 @@ export const CAPTURE_RATIO = 2.598
  * an ellipse from 0.74 to 1.16 plate units, taking `period` screen seconds for the Newtonian
  * orbit of the same size.
  */
-export const ENDURANCE_ORBIT = { a: 0.95, e: 0.22, period: 120 } as const
+export const ENDURANCE_ORBIT = { a: 0.95, e: 0.22, period: 80 } as const
 
 /**
  * Kepler's law on that clock: a circular orbit at radius r turns at KEPLER / r^1.5 radians per
  * screen second. The disk's gas and the ship's orbit are the same physics at different radii,
- * so the inner edge of the disk laps the hole in about 14 s, its outer edge in about 72 s and
- * the ship, further out, in about 120 s.
+ * so the inner edge of the disk laps the hole in about 5 s, gas at 9 rs in about 26 s and the
+ * ship, further out, in about 80 s.
  */
 export const KEPLER = ((2 * Math.PI) / ENDURANCE_ORBIT.period) * ENDURANCE_ORBIT.a ** 1.5

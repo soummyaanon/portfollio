@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-import { CAPTURE_RATIO, ENDURANCE_ORBIT, PLATE_RS, PLATE_SEAT_X, PLATE_SEAT_Y } from '@/components/document/plate-geometry'
+import { CAPTURE_RATIO, ENDURANCE_ORBIT, PLATE_ROLL, PLATE_RS, PLATE_SEAT_X, PLATE_SEAT_Y } from '@/components/document/plate-geometry'
 
 import { createOrbit } from './orbit'
 import { createShip } from './ship'
@@ -47,11 +47,11 @@ export const ORBIT = {
   spin: 2 * Math.PI * Math.sqrt(32 / 9.81),
   /**
    * The ship's ring radius on screen, in plate units: about a third of the shadow's width, so the
-   * hole plainly dwarfs it and the ring still reads as the ring. True scale is out of reach — a
-   * 64 m ship beside a horizon two astronomical units across would be a ten-billionth of the
-   * shadow.
+   * hole plainly dwarfs it and the ring still reads as the ring — held to the hole's size, so the
+   * ship shrinks with it. True scale is out of reach — a 64 m ship beside a horizon two
+   * astronomical units across would be a ten-billionth of the shadow.
    */
-  size: 0.062,
+  size: 0.83 * PLATE_RS,
 } as const
 
 const HOLE_R = CAPTURE_RATIO * PLATE_RS
@@ -122,7 +122,14 @@ export function createOrbitScene(container: HTMLElement, options: { small: boole
       const across = r * Math.sin(angle)
       // Lower arc in front (z > 0), upper arc behind.
       const z = across * Math.sqrt(1 - ORBIT.open * ORBIT.open)
-      carrier.position.set(PLATE_SEAT_X + r * Math.cos(angle), PLATE_SEAT_Y - across * ORBIT.open, z)
+      // Laid in the disk's plane, so turned by the plate camera's roll like the disk is.
+      const lx = r * Math.cos(angle)
+      const ly = -across * ORBIT.open
+      carrier.position.set(
+        PLATE_SEAT_X + lx * Math.cos(PLATE_ROLL) - ly * Math.sin(PLATE_ROLL),
+        PLATE_SEAT_Y + lx * Math.sin(PLATE_ROLL) + ly * Math.cos(PLATE_ROLL),
+        z,
+      )
       // A touch of perspective in an orthographic frame: nearer reads a little larger.
       carrier.scale.setScalar(ORBIT.size * (1 + 0.14 * (z / reach)))
       // Behind the hole and close to the arc of the disk's far side, the arc's light lies

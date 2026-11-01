@@ -52,10 +52,11 @@ describe('one clock for the disk and the ship', () => {
     const lap = (r: number) => (2 * Math.PI) / (KEPLER / r ** 1.5)
     // The ship's own semi-major axis comes round in the orbit's period, by construction.
     expect(lap(ENDURANCE_ORBIT.a)).toBeCloseTo(ENDURANCE_ORBIT.period, 6)
-    // The disk runs from the innermost stable orbit at 3 rs to 9 rs.
-    expect(lap(3 * PLATE_RS)).toBeGreaterThan(12)
-    expect(lap(3 * PLATE_RS)).toBeLessThan(16)
-    expect(lap(9 * PLATE_RS)).toBeGreaterThan(65)
-    expect(lap(9 * PLATE_RS)).toBeLessThan(80)
+    // The disk's inner edge, at the innermost stable orbit (3 rs), laps in about five seconds;
+    // gas at 9 rs in about twenty-six.
+    expect(lap(3 * PLATE_RS)).toBeGreaterThan(4)
+    expect(lap(3 * PLATE_RS)).toBeLessThan(6.5)
+    expect(lap(9 * PLATE_RS)).toBeGreaterThan(22)
+    expect(lap(9 * PLATE_RS)).toBeLessThan(30)
   })
 })
