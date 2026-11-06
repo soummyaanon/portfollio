@@ -18,7 +18,6 @@ Cite the canonical page URL for claims. Follow project links only when the task 
 ## Now
 - Building: [Arthion AI](https://arthionai.app/)
 - Learning: Go — [learning-Go](https://github.com/soummyaanon/learning-Go)
-- Role: Software Engineer at Undisclosed (since 2026-06)
 
 ## Projects
 - [Purge](https://purge.bixai.dev/) — Mac storage cleaner for developers: A terminal tool that scans your entire Mac home directory for regenerable build output, caches, and logs, then lets you review and selectively delete them to reclaim gigabytes of disk space.

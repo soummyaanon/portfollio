@@ -12,6 +12,7 @@
 import fs from 'fs'
 import path from 'path'
 import {
+  currentRole,
   education,
   formatPeriod,
   person,
@@ -71,8 +72,9 @@ export function buildIndex(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): 
   out.push('## Now')
   out.push(`- Building: [${now.building.name}](${now.building.url})`)
   out.push(`- Learning: ${now.learning.language} — [${now.learning.repo}](${now.learning.url})`)
-  if (roles[0]) {
-    out.push(`- Role: ${roles[0].title} at ${roles[0].org} (since ${roles[0].from})`)
+  // Only an ongoing role belongs under "Now"; a past one would claim a job that has ended.
+  if (currentRole) {
+    out.push(`- Role: ${currentRole.title} at ${currentRole.org} (since ${currentRole.from})`)
   }
   out.push('')
 
