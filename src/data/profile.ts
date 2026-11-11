@@ -137,9 +137,6 @@ export const person: Person = {
 }
 
 export const roles: readonly Role[] = [
-  // TEMPORARILY HIDDEN (2026-11-07): the current role is off the site for now. To restore it,
-  // uncomment this record; its Hindi strings are still in src/i18n/profile.ts under `undisclosed`.
-  /*
   {
     // Location and stack are not filled in yet — see the note in the Role interface for why
     // that is allowed rather than stubbed. `title` defaults to the person's stated title
@@ -159,7 +156,6 @@ export const roles: readonly Role[] = [
     until: null,
     summary: 'Building automation across internal processes to raise organisational efficiency.',
   },
-  */
   {
     id: 'wybit',
     org: 'Wybit',

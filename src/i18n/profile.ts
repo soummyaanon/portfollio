@@ -46,12 +46,11 @@ export const HINDI: ProfileTranslation = {
     interests: ['डीप स्पेस'],
   },
   roles: {
-    // TEMPORARILY HIDDEN with its role in src/data/profile.ts — uncomment both together.
-    // undisclosed: {
-    //   org: 'गोपनीय',
-    //   title: 'सॉफ़्टवेयर इंजीनियर',
-    //   summary: 'संगठन की कार्यक्षमता बढ़ाने के लिए आंतरिक प्रक्रियाओं में ऑटोमेशन बना रहा हूँ।',
-    // },
+    undisclosed: {
+      org: 'गोपनीय',
+      title: 'सॉफ़्टवेयर इंजीनियर',
+      summary: 'संगठन की कार्यक्षमता बढ़ाने के लिए आंतरिक प्रक्रियाओं में ऑटोमेशन बना रहा हूँ।',
+    },
     wybit: {
       title: 'सॉफ़्टवेयर इंजीनियर',
       location: 'ऑरलैंडो, फ़्लोरिडा, अमेरिका',
