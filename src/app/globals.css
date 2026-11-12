@@ -18,6 +18,12 @@
      voice — labels, field keys, dates, counts — as gurbinder.dev pairs the two. */
   --font-display: var(--font-figtree), var(--font-devanagari), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-space-mono), var(--font-devanagari), ui-monospace, monospace;
+  /* Vercel's Geist Pixel (Grid cut). Latin only, and the loader's own fallback stack ends in
+     `monospace`, so nothing after it is ever reached: Hindi text swaps to the sans instead
+     (see the :lang(hi) .font-pixel rule). */
+  --font-pixel: var(--font-geist-pixel-grid);
+  /* The name's cut: round dots. Always Latin, so it needs no Hindi fallback. */
+  --font-pixel-circle: var(--font-geist-pixel-circle);
   --color-signal: var(--signal);
   --color-signal-ink: var(--signal-ink);
 
@@ -348,6 +354,12 @@ html {
 :lang(hi) .text-display,
 :lang(hi) [class*='tracking-'] {
   letter-spacing: normal;
+}
+
+/* Geist Pixel has no Devanagari, so a Hindi sentence set in it would fall to whatever
+   monospace the system has. The name keeps the pixel face: it is marked lang="en". */
+:lang(hi) .font-pixel {
+  font-family: var(--font-sans);
 }
 
 /* The dock's language switch, for a visitor in India reading English: one hairline ring
@@ -1126,22 +1138,46 @@ body {
   .bench-carriage { left: 2px; right: 2px; height: 2rem; background: var(--background); }
 }
 
-/* ── Hero focus terms: a slow band of light passes along each word ─────────────────────────
-   The words sit a step below white and a white band crosses them left to right, every few
-   seconds, then rests. Greys only. With reduced motion or forced colours they are plain text. */
+/* ── Hero focus terms: a band of light passes along each word ───────────────────────────────
+   Set in Geist Pixel, which has one weight, so the terms stand out by brightness alone: the
+   resting tone (0.9) sits clearly above the 70% sentence around them, and the band peaks at
+   full white. A 3s cycle, the pass taking the first 55% of it. The stagger is a custom
+   property rather than an `animation-delay` utility: this rule is unlayered, so its
+   `animation` shorthand beat Tailwind's utilities layer and reset every delay to 0. */
 .text-shimmer {
-  background-image: linear-gradient(105deg, oklch(0.8 0 0) 0 43%, oklch(1 0 0) 50%, oklch(0.8 0 0) 57% 100%);
+  background-image: linear-gradient(105deg, oklch(0.9 0 0) 0 43%, oklch(1 0 0) 50%, oklch(0.9 0 0) 57% 100%);
   background-size: 260% 100%;
   background-position: 100% 0;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: text-shimmer 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation: text-shimmer 3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation-delay: var(--shimmer-delay, 0s);
 }
 
 @keyframes text-shimmer {
   0% { background-position: 100% 0; }
-  40%, 100% { background-position: 0% 0; }
+  55%, 100% { background-position: 0% 0; }
+}
+
+/* Hover: a fast, continuous sweep under the pointer, on the name and the lead's terms. The
+   resting tone drops to 0.7 so a white band shows even on text that is already white. Only
+   for a real pointer (a tap would leave it stuck on) and only when motion is welcome. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+  .shimmer-hover:hover,
+  .text-shimmer:hover {
+    background-image: linear-gradient(105deg, oklch(0.7 0 0) 0 40%, oklch(1 0 0) 50%, oklch(0.7 0 0) 60% 100%);
+    background-size: 260% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-shimmer-hover 0.9s linear infinite;
+  }
+}
+
+@keyframes text-shimmer-hover {
+  from { background-position: 100% 0; }
+  to { background-position: 0% 0; }
 }
 
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {

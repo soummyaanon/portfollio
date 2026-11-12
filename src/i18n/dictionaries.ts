@@ -63,6 +63,11 @@ const en = {
   months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   present: 'Present',
   remote: 'Remote',
+  /** The byline's live number, explained only on hover. */
+  humanSpan: {
+    describe: (percent: string, human: bigint, universe: bigint) =>
+      `Since Vaivasvata Manu, ${human.toLocaleString('en-IN')} of Brahma’s ${universe.toLocaleString('en-IN')} years: ${percent}, by the Surya Siddhanta`,
+  },
   inDevelopment: 'In development',
   seeAllProjects: 'See all projects',
   entries: (count: string) => `${count} entries`,
@@ -140,6 +145,10 @@ const hi: Dictionary = {
   months: ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'],
   present: 'अब तक',
   remote: 'रिमोट',
+  humanSpan: {
+    describe: (percent: string, human: bigint, universe: bigint) =>
+      `वैवस्वत मनु से अब तक: ब्रह्मा के ${universe.toLocaleString('en-IN')} वर्षों में से ${human.toLocaleString('en-IN')} वर्ष, यानी ${percent}, सूर्य सिद्धांत के अनुसार`,
+  },
   inDevelopment: 'डेवलपमेंट में',
   seeAllProjects: 'सभी प्रोजेक्ट देखें',
   entries: (count) => `${count} प्रोजेक्ट`,

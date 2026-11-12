@@ -193,7 +193,9 @@ export function SpecimenSheet({ posts }: { readonly posts: readonly PostSummary[
           <Fact id="person.title">{person.title}</Fact>
         </FieldRow>
         <FieldRow name="location">
-          <Fact id="person.location">{person.location}</Fact>
+          <span lang="hi">
+            <Fact id="person.location">{person.location}</Fact>
+          </span>
         </FieldRow>
         <FieldRow name="timezone">
           <Fact id="person.timezone">{person.timezone}</Fact>

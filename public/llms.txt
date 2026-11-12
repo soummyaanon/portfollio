@@ -1,6 +1,6 @@
 # Soumyaranjan Panda
 
-> Soumyaranjan Panda is a software engineer and builder making healthcare AI, agentic automation, and fully autonomous software that make life easier. Based in India (Asia/Kolkata).
+> Soumyaranjan Panda is an AI engineer and builder making healthcare AI, agentic automation, and fully autonomous software that make life easier. Based in भारत (Asia/Kolkata).
 
 This site publishes two renderings of the same document: a human-readable page and a
 machine-readable record. The complete record is at https://soumyapanda.dev/llms-full.txt

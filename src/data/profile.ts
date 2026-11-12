@@ -115,8 +115,10 @@ export const person: Person = {
   alternateNames: ['Soumya Panda'],
   givenName: 'Soumyaranjan',
   familyName: 'Panda',
-  title: 'Software Engineer',
-  location: 'India',
+  title: 'AI Engineer',
+  // Written in Devanagari in every language, by choice. Rendered inside `lang="hi"` so it
+  // takes the Devanagari face and drops the byline's letter-spacing, which breaks conjuncts.
+  location: 'भारत',
   timezone: 'Asia/Kolkata',
   site: 'https://soumyapanda.dev',
   // Served from this origin, and a path rather than a URL so it is one string to change.
@@ -151,7 +153,7 @@ export const roles: readonly Role[] = [
     id: 'undisclosed',
     org: 'Undisclosed',
     withheld: true,
-    title: person.title,
+    title: 'Software Engineer',
     from: '2026-06',
     until: null,
     summary: 'Building automation across internal processes to raise organisational efficiency.',

@@ -40,8 +40,7 @@ const VISIT = 'साइट देखें'
 
 export const HINDI: ProfileTranslation = {
   person: {
-    title: 'सॉफ़्टवेयर इंजीनियर',
-    location: 'भारत',
+    title: 'AI इंजीनियर',
     focus: ['हेल्थकेयर AI', 'एजेंटिक ऑटोमेशन', 'पूरी तरह ऑटोनॉमस सॉफ़्टवेयर'],
     interests: ['डीप स्पेस'],
   },

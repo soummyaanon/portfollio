@@ -11,6 +11,7 @@ import type { Dictionary } from '@/i18n/dictionaries'
 import { useI18n } from '@/i18n/useLocale'
 import { Connective, Fact } from './Fact'
 import { BenchRails } from './BenchRails'
+import { HumanSpan } from './HumanSpan'
 import { Workbench, type WorkbenchSlide } from './Workbench'
 import { SectionHead } from './SectionHead'
 import { SignalPlate } from './SignalPlate'
@@ -65,15 +66,15 @@ function Masthead() {
           rows below: the sky above belongs to the hole, and the face belongs with the byline. */}
       <div className="measure-column">
         <div className="flex items-center justify-between gap-[clamp(1rem,2.5vw,1.75rem)]">
-          {/* The name is set in Latin in every language, so it keeps its tracking on a Hindi
-              page too (see the :lang(hi) rule in globals.css). */}
-          <h1 lang="en" className="font-display text-display leading-[0.82] tracking-[-0.035em] text-foreground">
+          {/* The name is set in Latin in every language, in Geist Pixel Circle at its one weight (500):
+              a synthesized bold would smear the dots, and negative tracking would make them touch. */}
+          <h1 lang="en" className="font-pixel-circle text-display font-medium leading-[0.95] tracking-normal text-foreground">
             <span className="block">
-              <Fact id="person.given">{person.givenName}</Fact>
+              <Fact id="person.given" className="shimmer-hover">{person.givenName}</Fact>
             </span>
             {' '}
             <span className="block">
-              <Fact id="person.family">{person.familyName}</Fact>
+              <Fact id="person.family" className="shimmer-hover">{person.familyName}</Fact>
             </span>
           </h1>
           <div className="elevate size-[clamp(3.25rem,5.5vw,4.5rem)] shrink-0 overflow-hidden rounded-full bg-card ring-1 ring-border">
@@ -89,35 +90,37 @@ function Masthead() {
           </div>
         </div>
 
-        {/* Tracking is dialled back on narrow screens: at 0.28em the three facts run 40 characters
-            wide and wrap, which strands a separator dot at the end of the first line. */}
+        {/* Title, place, and a live count of how much of the universe's age humans have
+            existed for. Tracking is dialled back on narrow screens so the row wraps between
+            items, not inside one. */}
         <p className="field-label mt-[clamp(1.25rem,2.5vw,2rem)] flex flex-wrap items-center gap-x-3 gap-y-1 tracking-[0.16em] text-muted-foreground sm:tracking-[0.26em]">
-          <Fact id="person.title">{person.title}</Fact>
+          <Fact id="person.title" className="text-shimmer">{person.title}</Fact>
           <Connective>
             <span aria-hidden className="block h-2.5 w-px bg-border" />
           </Connective>
-          <Fact id="person.location">{person.location}</Fact>
+          <span lang="hi" className="tracking-normal">
+            <Fact id="person.location">{person.location}</Fact>
+          </span>
           <Connective>
             <span aria-hidden className="block h-2.5 w-px bg-border" />
           </Connective>
-          <Fact id="person.timezone">{person.timezone}</Fact>
+          <HumanSpan describe={t.humanSpan.describe} />
         </p>
 
         {/* The lead is held to the prose measure, so no line runs long enough to be work to
             read, and set ragged-right from the column's left edge like the rest of the page.
 
-            With no hue to spend, the focus terms are emphasised structurally instead:
-            they switch to the display grotesque at full contrast and tight tracking while the
-            sentence around them sits at 70%. Same job an accent colour was doing, done with
-            the only two variables left — weight and contrast. */}
-        <p className="mt-[clamp(2rem,4vw,3rem)] max-w-[var(--measure-prose)] text-pretty text-lead font-light leading-[1.45] text-foreground/70">
+            The whole sentence is set in Geist Pixel. The face has a single weight, so the focus
+            terms are emphasised by contrast alone: full white with the shimmer pass, while the
+            sentence around them sits at 70%. */}
+        <p className="mt-[clamp(2rem,4vw,3rem)] max-w-[var(--measure-prose)] text-pretty font-pixel text-lead leading-[1.6] text-foreground/70">
           <Connective>{t.lead.before}</Connective>
           {person.focus.map((item, at) => (
             <Fragment key={item}>
               {at > 0 && <Connective>{separator(at, person.focus.length, t.list)}</Connective>}
               <Fact
                 id={`person.focus.${at}`}
-                className={`text-shimmer font-display font-semibold tracking-[-0.02em] text-foreground ${SHIMMER_DELAY[at] ?? ''}`}
+                className={`text-shimmer text-foreground ${SHIMMER_DELAY[at] ?? ''}`}
               >
                 {item}
               </Fact>
@@ -127,7 +130,7 @@ function Masthead() {
           {person.interests.map((item, at) => (
             <Fragment key={item}>
               {at > 0 && <Connective>{separator(at, person.interests.length, t.list)}</Connective>}
-              <Fact id={`person.interest.${at}`}>{item}</Fact>
+              <Fact id={`person.interest.${at}`} className="shimmer-hover">{item}</Fact>
             </Fragment>
           ))}
           <Connective>{t.lead.afterInterests}</Connective>
@@ -138,7 +141,7 @@ function Masthead() {
 }
 
 /** The shimmer reaches each focus term in turn, so the light reads as one pass along the line. */
-const SHIMMER_DELAY = ['[animation-delay:0ms]', '[animation-delay:700ms]', '[animation-delay:1400ms]']
+const SHIMMER_DELAY = ['[--shimmer-delay:0ms]', '[--shimmer-delay:350ms]', '[--shimmer-delay:700ms]']
 
 /** What goes before item `at` of a list read as prose: "a and b", "a, b, and c". */
 function separator(at: number, length: number, list: Dictionary['list']) {

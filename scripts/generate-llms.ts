@@ -25,9 +25,22 @@ import { getAllBlogPosts } from '../src/lib/blogs'
 
 const BASE_URL = person.site
 
+/**
+ * The title as it reads mid-sentence: "an AI engineer", "a software engineer". Only the
+ * first word is lowered, and only when it is not an acronym, so "AI" keeps its capitals;
+ * the article follows the sound of the first letter.
+ */
+function titleInSentence(title: string): string {
+  const [first = '', ...rest] = title.split(' ')
+  const word = first === first.toUpperCase() ? first : first.toLowerCase()
+  const phrase = [word, ...rest.map((part) => part.toLowerCase())].join(' ')
+  const article = /^[aeiou]/i.test(phrase) || /^[AEFHILMNORSX][A-Z]/.test(word) ? 'an' : 'a'
+  return `${article} ${phrase}`
+}
+
 function summaryLine(): string {
   return (
-    `${person.name} is a ${person.title.toLowerCase()} and builder making ` +
+    `${person.name} is ${titleInSentence(person.title)} and builder making ` +
     `${person.focus.slice(0, -1).join(', ')}, and ${person.focus.at(-1)} that make life easier. ` +
     `Based in ${person.location} (${person.timezone}).`
   )

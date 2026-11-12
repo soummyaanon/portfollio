@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { Figtree, Noto_Sans_Devanagari, Space_Mono } from 'next/font/google'
+import { GeistPixelCircle, GeistPixelGrid } from 'geist/font/pixel'
 import { Analytics } from '@vercel/analytics/next'
 
 import { ThemeProvider } from './components/ThemeProvider'
@@ -47,6 +48,15 @@ const devanagari = Noto_Sans_Devanagari({
   display: 'swap',
   preload: false,
 })
+
+/**
+ * Vercel's Geist Pixel, two cuts: Circle (`--font-geist-pixel-circle`) for the name, Grid
+ * (`--font-geist-pixel-grid`) for the intro sentence. Local woff2 files inside the `geist`
+ * package, so no network font request. One weight only (500); emphasis inside them comes
+ * from contrast, never a synthesized bold.
+ */
+const geistPixelCircle = GeistPixelCircle
+const geistPixelGrid = GeistPixelGrid
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -104,7 +114,7 @@ export default function RootLayout({
     // The font variables go on <html>, not <body>: Tailwind defines `--font-sans` and
     // `--font-mono` on :root, and there they can only see variables set on <html>. On
     // <body> they resolved to nothing and the text fell back to the system face.
-    <html lang="en" className={`${figtree.variable} ${spaceMono.variable} ${devanagari.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${figtree.variable} ${spaceMono.variable} ${devanagari.variable} ${geistPixelGrid.variable} ${geistPixelCircle.variable}`} suppressHydrationWarning>
       <body>
         {/* Hoisted into <head> by React. Declared here rather than in `metadata.alternates`
             because a child route setting `alternates.canonical` replaces the whole

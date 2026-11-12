@@ -139,7 +139,9 @@ export function personSchema(description: string): JsonLd {
     sameAs: person.links.map((link) => link.url),
     address: {
       '@type': 'PostalAddress',
-      addressCountry: person.location,
+      // ISO 3166 code, not the display name: the page says "Bharat", which a parser
+      // reading `addressCountry` would not resolve to a country.
+      addressCountry: 'IN',
     },
     hasOccupation: {
       '@type': 'Occupation',
