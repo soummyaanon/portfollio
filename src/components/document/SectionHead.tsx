@@ -32,7 +32,7 @@ export function SectionHead({
         {note && (
           <>
             <span aria-hidden className="h-2 w-px shrink-0 self-center bg-border" />
-            <span className="text-foreground">{note}</span>
+            <span className="glow-text">{note}</span>
           </>
         )}
       </h2>

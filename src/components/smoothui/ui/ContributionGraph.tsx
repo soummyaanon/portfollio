@@ -34,15 +34,16 @@ const MONTHS = [
 ]
 
 /**
- * Five steps of grey, like the rest of the site: an empty day is the zinc of the page's
- * hairlines, and each level up is a step lighter, to near-white for the busiest days.
+ * Five steps from the page's grey into the accent: an empty day is the zinc of the page's
+ * hairlines, and each level up is lighter and a little cooler, from slate through ice blue to
+ * pale lavender for the busiest days. Chroma stays low so the grid still reads as one tone.
  */
 const CONTRIBUTION_GREYS = [
   'oklch(0.2739 0.0055 286)', // Level 0 — no contributions
-  'oklch(0.4200 0 0)', // Level 1
-  'oklch(0.5800 0 0)', // Level 2
-  'oklch(0.7600 0 0)', // Level 3
-  'oklch(0.9400 0 0)', // Level 4 — highest
+  'oklch(0.4200 0.0200 240)', // Level 1
+  'oklch(0.5800 0.0400 235)', // Level 2
+  'oklch(0.7400 0.0600 250)', // Level 3
+  'oklch(0.8800 0.0700 290)', // Level 4 — highest
 ]
 
 // Sized so all 53 weeks fill the reading column without a horizontal scroll, on a phone too.

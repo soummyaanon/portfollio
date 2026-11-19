@@ -183,7 +183,7 @@ function RoleHeading({ role, open }: { readonly role: Role; readonly open?: bool
         <Fact id={`role.${role.id}.from`}>{formatMonth(role.from, t.months)}</Fact>
         <Connective>{' — '}</Connective>
         <Fact id={`role.${role.id}.until`}>
-          {role.until ? formatMonth(role.until, t.months) : t.present}
+          {role.until ? formatMonth(role.until, t.months) : <span className="glow-text">{t.present}</span>}
         </Fact>
       </p>
     </div>
@@ -365,7 +365,7 @@ function ProjectCard({
           </span>
           <ArrowUpRight
             aria-hidden
-            className="ml-auto size-3 shrink-0 text-muted-foreground transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground"
+            className="ml-auto size-3 shrink-0 text-muted-foreground transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-glow group-focus-visible:text-glow"
           />
         </span>
 
@@ -389,7 +389,9 @@ function ProjectCard({
 
         <span className="flex flex-1 flex-col p-[clamp(0.875rem,2vw,1.25rem)]">
           <span className="flex items-baseline gap-3">
-            <span className="field-label text-muted-foreground/70">{pad(index + 1)}</span>
+            <span className="field-label text-muted-foreground/70 transition-colors duration-300 group-hover:text-glow group-focus-visible:text-glow">
+              {pad(index + 1)}
+            </span>
             <span className="min-w-0 font-display text-title leading-[1.1] text-foreground">
               <Fact id={`project.${project.id}.name`}>{project.name}</Fact>
             </span>
@@ -446,7 +448,7 @@ function Projects() {
             <span className="field-label text-muted-foreground">{t.entries(pad(projects.length))}</span>
             <ArrowUpRight
               aria-hidden
-              className="size-3.5 rotate-45 text-muted-foreground transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:text-foreground"
+              className="size-3.5 rotate-45 text-muted-foreground transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:text-glow"
             />
           </span>
         </Link>
@@ -524,7 +526,7 @@ function Writing({ posts }: { readonly posts: readonly PostSummary[] }) {
               {/* The pieces are written in English whatever the page around them is in. */}
               <span
                 lang={locale === 'en' ? undefined : 'en'}
-                className="min-w-0 font-display text-title leading-[1.15] text-foreground decoration-signal/50 decoration-1 underline-offset-[6px] group-hover:underline"
+                className="min-w-0 font-display text-title leading-[1.15] text-foreground decoration-glow/70 decoration-1 underline-offset-[6px] group-hover:underline"
               >
                 {post.title}
               </span>

@@ -48,11 +48,11 @@ export function ModeToggle() {
                 <motion.span
                   layoutId="mode-indicator"
                   transition={{ duration: 0.4, ease: MORPH_EASE }}
-                  className="absolute inset-0 rounded-full bg-foreground"
+                  className="bg-glow-gradient absolute inset-0 rounded-full"
                 />
               )}
               {isActive && reduceMotion && (
-                <span className="absolute inset-0 rounded-full bg-foreground" />
+                <span className="bg-glow-gradient absolute inset-0 rounded-full" />
               )}
               <span
                 className={`relative ${isActive ? 'text-background' : 'text-muted-foreground'}`}

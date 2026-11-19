@@ -26,6 +26,7 @@
   --font-pixel-circle: var(--font-geist-pixel-circle);
   --color-signal: var(--signal);
   --color-signal-ink: var(--signal-ink);
+  --color-glow: var(--glow);
 
   /* Fluid type scale. Hierarchy has to come from size alone here: one colour, one rule
      weight, no boxes, and a display face with only two weights.
@@ -201,6 +202,9 @@
      for rules, live indicators, and the machine view's field keys. */
   --signal: oklch(0 0 0);
   --signal-ink: oklch(0 0 0);
+  /* The one accent on a grey site: a light ice-to-lavender gradient, kept to small marks. */
+  --glow: oklch(0.6000 0.0900 230);
+  --glow-2: oklch(0.5800 0.1000 295);
 
   /* The pale bloom behind the employer that is being withheld. Grey, like everything else. */
   --withheld-tint: oklch(0.5500 0 0);
@@ -264,6 +268,8 @@
 
   --signal: oklch(1 0 0);
   --signal-ink: oklch(0.8600 0 0);
+  --glow: oklch(0.8800 0.0600 225);
+  --glow-2: oklch(0.8400 0.0800 295);
   /* Lifted for a dark ground. */
   --withheld-tint: oklch(0.7000 0 0);
   --chart-1: oklch(0.2000 0 0);
@@ -858,16 +864,32 @@ body {
     mix-blend-mode: normal;
 }
 
-/* Selection is a straight ink/paper inversion. The old rule painted a teal gradient behind
-   selected text, which was the only saturated colour left on the site. */
+/* Selection takes the accent: the light ice tone behind dark text. */
 *::selection {
-  background-color: var(--foreground);
+  background-color: var(--glow);
   color: var(--background);
 }
 
 *::-moz-selection {
-  background-color: var(--foreground);
+  background-color: var(--glow);
   color: var(--background);
+}
+
+/* The accent as a fill: the ice-to-lavender gradient for small marks of emphasis — counts,
+   the current role, the active mode. Kept to a handful of words so the page stays grey. */
+.glow-text {
+  background: linear-gradient(100deg, var(--glow), var(--glow-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-glow-gradient {
+  background: linear-gradient(100deg, var(--glow), var(--glow-2));
+}
+
+@media (forced-colors: active) {
+  .glow-text { background: none; -webkit-text-fill-color: currentColor; }
 }
 
 /**
@@ -1062,7 +1084,7 @@ body {
   left: 100%;
   width: calc(var(--rail-ruler) + 4px);
   height: 1px;
-  background: var(--foreground);
+  background: linear-gradient(90deg, var(--glow), var(--glow-2));
 }
 
 @supports (animation-timeline: scroll()) {
@@ -1125,7 +1147,7 @@ body {
   line-height: 1;
   letter-spacing: 0.04em;
   text-align: center;
-  color: var(--foreground);
+  color: var(--glow);
   background: var(--background);
 }
 
@@ -1213,9 +1235,10 @@ body {
 
 /* ── Project cards ─────────────────────────────────────────────────────────────────────────
    Screenshots wait in greyscale and take their colour back when pointed at. The hatch is the
-   rails' own, for projects with no site to show. */
+   rails' own, for projects with no site to show. Screens keep a trace of colour at rest so the
+   grid is not flat grey. */
 .project-shot {
-  filter: grayscale(1) contrast(1.05) brightness(0.8);
+  filter: grayscale(0.7) contrast(1.05) brightness(0.8);
   transform: scale(1.001);
   transition: filter 420ms var(--ease-out-quint), transform 900ms var(--ease-out-quint);
 }
@@ -1233,22 +1256,24 @@ body {
 .project-focus {
   --corner: 0.875rem;
   --stroke: 2px;
-  --ink: var(--foreground);
   position: absolute;
   inset: -0.75rem;
   z-index: 10;
   pointer-events: none;
   opacity: 0;
-  background:
-    linear-gradient(var(--ink), var(--ink)) top left / var(--corner) var(--stroke),
-    linear-gradient(var(--ink), var(--ink)) top left / var(--stroke) var(--corner),
-    linear-gradient(var(--ink), var(--ink)) top right / var(--corner) var(--stroke),
-    linear-gradient(var(--ink), var(--ink)) top right / var(--stroke) var(--corner),
-    linear-gradient(var(--ink), var(--ink)) bottom left / var(--corner) var(--stroke),
-    linear-gradient(var(--ink), var(--ink)) bottom left / var(--stroke) var(--corner),
-    linear-gradient(var(--ink), var(--ink)) bottom right / var(--corner) var(--stroke),
-    linear-gradient(var(--ink), var(--ink)) bottom right / var(--stroke) var(--corner);
-  background-repeat: no-repeat;
+  /* The frame is one soft gradient; the mask cuts it down to the eight corner strokes. */
+  background: linear-gradient(135deg, var(--glow), var(--glow-2));
+  --stroke-layer: linear-gradient(#000, #000);
+  mask:
+    var(--stroke-layer) top left / var(--corner) var(--stroke),
+    var(--stroke-layer) top left / var(--stroke) var(--corner),
+    var(--stroke-layer) top right / var(--corner) var(--stroke),
+    var(--stroke-layer) top right / var(--stroke) var(--corner),
+    var(--stroke-layer) bottom left / var(--corner) var(--stroke),
+    var(--stroke-layer) bottom left / var(--stroke) var(--corner),
+    var(--stroke-layer) bottom right / var(--corner) var(--stroke),
+    var(--stroke-layer) bottom right / var(--stroke) var(--corner);
+  mask-repeat: no-repeat;
   transition:
     inset 520ms cubic-bezier(0.34, 1.56, 0.64, 1),
     opacity 200ms var(--ease-out-quint);
