@@ -59,3 +59,7 @@ CNAME
 .cursor/
 # Playwright MCP session logs
 /.playwright-mcp/
+
+# tinacms admin build output
+/public/admin
+/tina/__generated__

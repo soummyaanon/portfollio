@@ -411,9 +411,6 @@ function ProjectCard({
   )
 }
 
-/** The four projects the homepage leads with; the rest are on /projects. */
-const FEATURED = ['engineering-os', 'agent-island', 'purge', 'bixai-starter'] as const
-
 /**
  * A boxed two-by-two grid: the cells share one hairline, the way the rails and section lines do,
  * and every card is the same size so four projects stay compact. Only the featured projects are
@@ -425,9 +422,8 @@ function Projects() {
     t,
     profile: { projects },
   } = useI18n()
-  const featured = FEATURED.map((id) => projects.find((project) => project.id === id)).filter(
-    (project): project is Project => Boolean(project),
-  )
+  // Picked in the CMS with the "featured" switch, in the order of the project list.
+  const featured = projects.filter((project) => project.featured)
 
   return (
     <section className="mt-[var(--space-section)]">

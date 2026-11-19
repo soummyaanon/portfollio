@@ -1,0 +1,293 @@
+{
+  "projects": [
+    {
+      "name": "Engineering OS",
+      "id": "engineering-os",
+      "status": "live",
+      "featured": true,
+      "url": "https://engineering-os-hazel.vercel.app/",
+      "image": "/engineering-os.webp",
+      "tagline": "Operating system for coding agents",
+      "linkLabel": "Visit site",
+      "summary": "One command gives Claude Code, Codex, Cursor or any other agent the same vetted skills, safety guards and playbooks in every project you open, and tells you when a new version ships.",
+      "capabilities": [
+        "Installs the plugin, guards, working rules and vetted skills in one command",
+        "Guards that block destructive commands and stop secrets landing in source",
+        "Detects the stack and loads the matching playbook on its own",
+        "Grades your agent setup and fires fake attacks at your guards",
+        "Finds, vets and installs new skills on every machine you work on"
+      ],
+      "hi": {
+        "tagline": "कोडिंग एजेंट्स के लिए ऑपरेटिंग सिस्टम",
+        "linkLabel": "साइट देखें",
+        "summary": "एक कमांड से Claude Code, Codex, Cursor या किसी भी दूसरे एजेंट को हर प्रोजेक्ट में वही जाँची-परखी स्किल्स, सेफ़्टी गार्ड और प्लेबुक मिलती हैं, और नया वर्ज़न आने पर यह आपको बता देता है।",
+        "capabilities": [
+          "एक ही कमांड से प्लगइन, गार्ड, काम के नियम और जाँची-परखी स्किल्स इंस्टॉल",
+          "गार्ड, जो विनाशकारी कमांड रोकते हैं और सीक्रेट्स को सोर्स कोड में जाने नहीं देते",
+          "स्टैक पहचानकर सही प्लेबुक अपने-आप लोड करता है",
+          "आपके एजेंट सेटअप को ग्रेड देता है और आपके गार्ड्स पर नकली हमले करता है",
+          "नई स्किल्स ढूँढता है, जाँचता है और आपकी हर मशीन पर इंस्टॉल करता है"
+        ]
+      }
+    },
+    {
+      "name": "Agent Island",
+      "id": "agent-island",
+      "status": "live",
+      "featured": true,
+      "url": "https://github.com/soummyaanon/DEV-island-releases/releases/latest",
+      "image": "/agent-island.webp",
+      "tagline": "Dynamic Island for coding agents",
+      "linkLabel": "Download for macOS",
+      "summary": "A macOS overlay that wraps the MacBook notch and reports on Claude Code, Codex, and Cursor sessions running in parallel — who is working, who is finished, and who is waiting on you.",
+      "capabilities": [
+        "Live session rows with project, elapsed time, and current activity",
+        "Approve Claude permission requests from the notch with ⌘Y and ⌘N",
+        "Answer an agent’s multiple-choice question with ⌘1–9",
+        "Click a session to raise the exact terminal tab hosting it",
+        "Entirely local — no accounts, no API keys, no telemetry"
+      ],
+      "hi": {
+        "tagline": "कोडिंग एजेंट्स के लिए Dynamic Island",
+        "linkLabel": "macOS के लिए डाउनलोड करें",
+        "summary": "एक macOS ओवरले, जो MacBook के नॉच को घेरकर साथ-साथ चल रहे Claude Code, Codex और Cursor सेशन की ख़बर देता है — कौन काम कर रहा है, किसका काम पूरा हुआ, और कौन आपका इंतज़ार कर रहा है।",
+        "capabilities": [
+          "प्रोजेक्ट, बीते समय और मौजूदा गतिविधि के साथ लाइव सेशन की पंक्तियाँ",
+          "Claude की परमिशन रिक्वेस्ट नॉच से ही ⌘Y और ⌘N से मंज़ूर करें",
+          "एजेंट के बहुविकल्पीय सवाल का जवाब ⌘1–9 से दें",
+          "किसी सेशन पर क्लिक करें, और ठीक वही टर्मिनल टैब सामने आ जाता है जिसमें वह चल रहा है",
+          "पूरी तरह लोकल — कोई अकाउंट नहीं, कोई API key नहीं, कोई टेलीमेट्री नहीं"
+        ]
+      }
+    },
+    {
+      "name": "Purge",
+      "id": "purge",
+      "status": "live",
+      "featured": true,
+      "url": "https://purge.bixai.dev/",
+      "image": "/purge.webp",
+      "tagline": "Mac storage cleaner for developers",
+      "linkLabel": "Visit site",
+      "summary": "A terminal tool that scans your entire Mac home directory for regenerable build output, caches, and logs, then lets you review and selectively delete them to reclaim gigabytes of disk space.",
+      "capabilities": [
+        "Scans the whole home directory for junk files in one pass",
+        "Review interface — only checked items are deleted",
+        "Runs entirely in the terminal, installed via npm",
+        "Handles macOS permission restrictions with a fallback path",
+        "No dependencies, no telemetry"
+      ],
+      "hi": {
+        "tagline": "डेवलपर्स के लिए Mac स्टोरेज क्लीनर",
+        "linkLabel": "साइट देखें",
+        "summary": "एक टर्मिनल टूल, जो आपकी पूरी Mac होम डायरेक्टरी में दोबारा बन सकने वाले बिल्ड आउटपुट, कैश और लॉग ढूँढता है, फिर उन्हें देखकर चुन-चुनकर डिलीट करने देता है, ताकि गीगाबाइट्स की जगह वापस मिल सके।",
+        "capabilities": [
+          "एक ही बार में पूरी होम डायरेक्टरी में जंक फ़ाइलें स्कैन करता है",
+          "रिव्यू इंटरफ़ेस — सिर्फ़ चुनी गई चीज़ें ही डिलीट होती हैं",
+          "पूरी तरह टर्मिनल में चलता है, npm से इंस्टॉल होता है",
+          "macOS की परमिशन पाबंदियों को एक वैकल्पिक रास्ते से संभालता है",
+          "कोई डिपेंडेंसी नहीं, कोई टेलीमेट्री नहीं"
+        ]
+      }
+    },
+    {
+      "name": "Arthion AI",
+      "id": "arthion",
+      "status": "in-development",
+      "featured": false,
+      "url": "https://arthionai.app/",
+      "image": "/arthion.webp",
+      "logo": "/arthion-logo.ico",
+      "tagline": "Financial intelligence",
+      "linkLabel": "Visit site",
+      "summary": "Financial intelligence platform giving real-time stock analysis, technical indicators, market sentiment tracking, and insights you can act on.",
+      "capabilities": [
+        "Real-time stock charts with OHLC and line views",
+        "Technical indicators including RSI and MACD",
+        "Top movers tracking across gainers, losers, and most active",
+        "News and sentiment analysis",
+        "AI-generated stock recommendations"
+      ],
+      "hi": {
+        "tagline": "फ़ाइनेंशियल इंटेलिजेंस",
+        "linkLabel": "साइट देखें",
+        "summary": "फ़ाइनेंशियल इंटेलिजेंस प्लेटफ़ॉर्म, जो रियल-टाइम स्टॉक एनालिसिस, टेक्निकल इंडिकेटर, मार्केट सेंटिमेंट ट्रैकिंग और ऐसी जानकारी देता है जिस पर आप अमल कर सकें।",
+        "capabilities": [
+          "OHLC और लाइन व्यू के साथ रियल-टाइम स्टॉक चार्ट",
+          "RSI और MACD समेत टेक्निकल इंडिकेटर",
+          "गेनर्स, लूज़र्स और सबसे सक्रिय शेयरों की ट्रैकिंग",
+          "ख़बरें और सेंटिमेंट एनालिसिस",
+          "AI से बनी स्टॉक सिफ़ारिशें"
+        ]
+      }
+    },
+    {
+      "name": "God of Debugger",
+      "id": "god-of-debugger",
+      "status": "live",
+      "featured": false,
+      "url": "https://godofdebugger.bixai.dev/",
+      "image": "/god-of-debugger.webp",
+      "tagline": "Debugging plugin for Claude Code",
+      "linkLabel": "Visit site",
+      "summary": "Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.",
+      "capabilities": [
+        "Bootstraps a deterministic repro before hypothesising",
+        "Generates competing primary and adversarial hypotheses",
+        "One falsification experiment per hypothesis, run by parallel subagents",
+        "Survival table scoring each hypothesis killed, survived, or inconclusive",
+        "Promotes surviving experiments into permanent regression tests"
+      ],
+      "hi": {
+        "tagline": "Claude Code के लिए डीबगिंग प्लगइन",
+        "linkLabel": "साइट देखें",
+        "summary": "ग़लत साबित करके डीबग करें। एक स्लैश कमांड बग रिपोर्ट को फ़ॉल्सिफ़िकेशन प्रोटोकॉल में बदल देता है, और फ़िक्स तभी सुझाया जाता है जब सिर्फ़ एक हाइपोथीसिस बची रह जाए।",
+        "capabilities": [
+          "हाइपोथीसिस बनाने से पहले एक डिटर्मिनिस्टिक रिप्रो तैयार करता है",
+          "आपस में टकराती प्राइमरी और एडवर्सेरियल हाइपोथीसिस बनाता है",
+          "हर हाइपोथीसिस के लिए एक फ़ॉल्सिफ़िकेशन एक्सपेरिमेंट, जिन्हें पैरेलल सबएजेंट चलाते हैं",
+          "सर्वाइवल टेबल, जो हर हाइपोथीसिस को ख़ारिज, बची हुई या अनिर्णीत आँकती है",
+          "बचे हुए एक्सपेरिमेंट को स्थायी रिग्रेशन टेस्ट में बदल देता है"
+        ]
+      }
+    },
+    {
+      "name": "Marcko",
+      "id": "marcko",
+      "status": "live",
+      "featured": false,
+      "url": "https://marcko.bixai.dev",
+      "image": "/marcko-og.webp",
+      "tagline": "Open source markdown editor",
+      "linkLabel": "Visit site",
+      "summary": "Markdown editor with real-time preview, secure document sharing, and encryption at rest. Free for developers and writers.",
+      "capabilities": [
+        "Real-time markdown preview",
+        "Secure enterprise document sharing",
+        "Encryption at rest",
+        "AI integration for writing"
+      ],
+      "hi": {
+        "tagline": "ओपन सोर्स मार्कडाउन एडिटर",
+        "linkLabel": "साइट देखें",
+        "summary": "रियल-टाइम प्रीव्यू, सुरक्षित डॉक्यूमेंट शेयरिंग और एन्क्रिप्शन एट रेस्ट वाला मार्कडाउन एडिटर। डेवलपर्स और लेखकों के लिए मुफ़्त।",
+        "capabilities": [
+          "रियल-टाइम मार्कडाउन प्रीव्यू",
+          "एंटरप्राइज़ स्तर की सुरक्षित डॉक्यूमेंट शेयरिंग",
+          "एन्क्रिप्शन एट रेस्ट",
+          "लिखने के लिए AI इंटीग्रेशन"
+        ]
+      }
+    },
+    {
+      "name": "Bixai Agent SDK Starter",
+      "id": "bixai-starter",
+      "status": "live",
+      "featured": true,
+      "url": "https://create.bixai.dev",
+      "image": "/create-bixai-og.jpg",
+      "tagline": "Next.js AI agent template",
+      "linkLabel": "Visit site",
+      "summary": "Template for production-ready agent apps built on Next.js and the OpenAI Agents SDK, with a modular tool structure and a fast path to deployment.",
+      "capabilities": [
+        "Production-ready Next.js integration",
+        "OpenAI Agents SDK support",
+        "Modular tool and agent structure"
+      ],
+      "hi": {
+        "tagline": "Next.js AI एजेंट टेम्पलेट",
+        "linkLabel": "साइट देखें",
+        "summary": "Next.js और OpenAI Agents SDK पर बने, प्रोडक्शन के लिए तैयार एजेंट ऐप्स का टेम्पलेट — मॉड्यूलर टूल स्ट्रक्चर और डिप्लॉयमेंट तक के तेज़ रास्ते के साथ।",
+        "capabilities": [
+          "प्रोडक्शन के लिए तैयार Next.js इंटीग्रेशन",
+          "OpenAI Agents SDK सपोर्ट",
+          "मॉड्यूलर टूल और एजेंट स्ट्रक्चर"
+        ]
+      }
+    },
+    {
+      "name": "Aarekhit AI",
+      "id": "aarekhit",
+      "status": "live",
+      "featured": false,
+      "url": "https://www.aarekhit.com/",
+      "image": "/aarekhit.webp",
+      "logo": "/aarekhit-logo.png",
+      "tagline": "Data visualisation",
+      "linkLabel": "Visit site",
+      "summary": "Graph visualisation and analysis platform that turns text and data into interactive visualisations in seconds.",
+      "capabilities": [
+        "Interactive graph visualisation",
+        "AI-powered data analysis",
+        "Real-time collaboration",
+        "Custom styling and theming"
+      ],
+      "hi": {
+        "tagline": "डेटा विज़ुअलाइज़ेशन",
+        "linkLabel": "साइट देखें",
+        "summary": "ग्राफ़ विज़ुअलाइज़ेशन और एनालिसिस प्लेटफ़ॉर्म, जो टेक्स्ट और डेटा को सेकंडों में इंटरैक्टिव विज़ुअलाइज़ेशन में बदल देता है।",
+        "capabilities": [
+          "इंटरैक्टिव ग्राफ़ विज़ुअलाइज़ेशन",
+          "AI से चलने वाला डेटा एनालिसिस",
+          "रियल-टाइम कोलैबोरेशन",
+          "कस्टम स्टाइलिंग और थीमिंग"
+        ]
+      }
+    },
+    {
+      "name": "Notex",
+      "id": "notex",
+      "status": "live",
+      "featured": false,
+      "url": "https://noteex.vercel.app/",
+      "image": "/notex.webp",
+      "logo": "/notex1.png",
+      "tagline": "AI note-taking",
+      "linkLabel": "Visit site",
+      "summary": "Note-taking with AI-generated insights and the noteX assistance bot, organised so thoughts stay in order and private.",
+      "capabilities": [
+        "noteX assistance bot",
+        "Smart organisation for structured notes",
+        "Cross-platform synchronisation"
+      ],
+      "hi": {
+        "tagline": "AI नोट-टेकिंग",
+        "linkLabel": "साइट देखें",
+        "summary": "AI से निकली जानकारियों और noteX असिस्टेंस बॉट के साथ नोट-टेकिंग, इस तरह व्यवस्थित कि विचार क्रम में भी रहें और निजी भी।",
+        "capabilities": [
+          "noteX असिस्टेंस बॉट",
+          "व्यवस्थित नोट्स के लिए स्मार्ट ऑर्गनाइज़ेशन",
+          "क्रॉस-प्लेटफ़ॉर्म सिंक"
+        ]
+      }
+    },
+    {
+      "name": "Readany",
+      "id": "readany",
+      "status": "live",
+      "featured": false,
+      "url": "https://readany.vercel.app/",
+      "image": "/readny.webp",
+      "tagline": "PDF book reader",
+      "linkLabel": "Visit site",
+      "summary": "PDF reader that turns static documents into a reading experience, with realistic page flipping and heavy customisation.",
+      "capabilities": [
+        "Realistic page-flip animation",
+        "Customisable reading themes",
+        "Bookmarks and annotation",
+        "Text-to-speech"
+      ],
+      "hi": {
+        "tagline": "PDF बुक रीडर",
+        "linkLabel": "साइट देखें",
+        "summary": "PDF रीडर, जो स्थिर डॉक्यूमेंट को पढ़ने के अनुभव में बदल देता है — असली जैसे पन्ने पलटने और ढेर सारे कस्टमाइज़ेशन के साथ।",
+        "capabilities": [
+          "असली जैसा पेज-फ़्लिप एनिमेशन",
+          "कस्टमाइज़ होने वाली रीडिंग थीम",
+          "बुकमार्क और एनोटेशन",
+          "टेक्स्ट-टू-स्पीच"
+        ]
+      }
+    }
+  ]
+}

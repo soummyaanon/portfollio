@@ -74,17 +74,6 @@
   - Grades your agent setup and fires fake attacks at your guards
   - Finds, vets and installs new skills on every machine you work on
 
-### Purge — Mac storage cleaner for developers
-- URL: https://purge.bixai.dev/
-- Status: live
-- Summary: A terminal tool that scans your entire Mac home directory for regenerable build output, caches, and logs, then lets you review and selectively delete them to reclaim gigabytes of disk space.
-- Capabilities:
-  - Scans the whole home directory for junk files in one pass
-  - Review interface — only checked items are deleted
-  - Runs entirely in the terminal, installed via npm
-  - Handles macOS permission restrictions with a fallback path
-  - No dependencies, no telemetry
-
 ### Agent Island — Dynamic Island for coding agents
 - URL: https://github.com/soummyaanon/DEV-island-releases/releases/latest
 - Status: live
@@ -95,6 +84,17 @@
   - Answer an agent’s multiple-choice question with ⌘1–9
   - Click a session to raise the exact terminal tab hosting it
   - Entirely local — no accounts, no API keys, no telemetry
+
+### Purge — Mac storage cleaner for developers
+- URL: https://purge.bixai.dev/
+- Status: live
+- Summary: A terminal tool that scans your entire Mac home directory for regenerable build output, caches, and logs, then lets you review and selectively delete them to reclaim gigabytes of disk space.
+- Capabilities:
+  - Scans the whole home directory for junk files in one pass
+  - Review interface — only checked items are deleted
+  - Runs entirely in the terminal, installed via npm
+  - Handles macOS permission restrictions with a fallback path
+  - No dependencies, no telemetry
 
 ### Arthion AI — Financial intelligence
 - URL: https://arthionai.app/

@@ -13,6 +13,8 @@
  * the machine view prints them raw. Same fact, two encodings — that is the whole thesis.
  */
 
+import { projectContent } from './project-content'
+
 export interface Link {
   readonly label: string
   readonly url: string
@@ -101,6 +103,8 @@ export interface Project {
   readonly capabilities: readonly string[]
   readonly image?: string
   readonly logo?: string
+  /** Shown on the homepage, in list order. */
+  readonly featured: boolean
 }
 
 export interface SkillGroup {
@@ -235,187 +239,22 @@ export const education: readonly Education[] = [
   },
 ]
 
-export const projects: readonly Project[] = [
-  {
-    id: 'engineering-os',
-    name: 'Engineering OS',
-    tagline: 'Operating system for coding agents',
-    status: 'live',
-    url: 'https://engineering-os-hazel.vercel.app/',
-    linkLabel: 'Visit site',
-    summary:
-      'One command gives Claude Code, Codex, Cursor or any other agent the same vetted skills, safety guards and playbooks in every project you open, and tells you when a new version ships.',
-    capabilities: [
-      'Installs the plugin, guards, working rules and vetted skills in one command',
-      'Guards that block destructive commands and stop secrets landing in source',
-      'Detects the stack and loads the matching playbook on its own',
-      'Grades your agent setup and fires fake attacks at your guards',
-      'Finds, vets and installs new skills on every machine you work on',
-    ],
-    image: '/engineering-os.webp',
-  },
-  {
-    id: 'purge',
-    name: 'Purge',
-    tagline: 'Mac storage cleaner for developers',
-    status: 'live',
-    url: 'https://purge.bixai.dev/',
-    linkLabel: 'Visit site',
-    summary:
-      'A terminal tool that scans your entire Mac home directory for regenerable build output, caches, and logs, then lets you review and selectively delete them to reclaim gigabytes of disk space.',
-    capabilities: [
-      'Scans the whole home directory for junk files in one pass',
-      'Review interface — only checked items are deleted',
-      'Runs entirely in the terminal, installed via npm',
-      'Handles macOS permission restrictions with a fallback path',
-      'No dependencies, no telemetry',
-    ],
-    image: '/purge.webp',
-  },
-  {
-    // Source repo is private; the releases repo is public and is what the link points at.
-    id: 'agent-island',
-    name: 'Agent Island',
-    tagline: 'Dynamic Island for coding agents',
-    status: 'live',
-    url: 'https://github.com/soummyaanon/DEV-island-releases/releases/latest',
-    linkLabel: 'Download for macOS',
-    summary:
-      'A macOS overlay that wraps the MacBook notch and reports on Claude Code, Codex, and Cursor sessions running in parallel — who is working, who is finished, and who is waiting on you.',
-    capabilities: [
-      'Live session rows with project, elapsed time, and current activity',
-      'Approve Claude permission requests from the notch with ⌘Y and ⌘N',
-      'Answer an agent’s multiple-choice question with ⌘1–9',
-      'Click a session to raise the exact terminal tab hosting it',
-      'Entirely local — no accounts, no API keys, no telemetry',
-    ],
-    image: '/agent-island.webp',
-  },
-  {
-    id: 'arthion',
-    name: 'Arthion AI',
-    tagline: 'Financial intelligence',
-    status: 'in-development',
-    url: 'https://arthionai.app/',
-    linkLabel: 'Visit site',
-    summary:
-      'Financial intelligence platform giving real-time stock analysis, technical indicators, market sentiment tracking, and insights you can act on.',
-    capabilities: [
-      'Real-time stock charts with OHLC and line views',
-      'Technical indicators including RSI and MACD',
-      'Top movers tracking across gainers, losers, and most active',
-      'News and sentiment analysis',
-      'AI-generated stock recommendations',
-    ],
-    image: '/arthion.webp',
-    logo: '/arthion-logo.ico',
-  },
-  {
-    // Source repo is private. The plugin ships on npm (@bixai/god-of-debugger); the link goes to
-    // its own site, which explains the protocol and links to the package.
-    id: 'god-of-debugger',
-    name: 'God of Debugger',
-    tagline: 'Debugging plugin for Claude Code',
-    status: 'live',
-    url: 'https://godofdebugger.bixai.dev/',
-    linkLabel: 'Visit site',
-    summary:
-      'Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.',
-    capabilities: [
-      'Bootstraps a deterministic repro before hypothesising',
-      'Generates competing primary and adversarial hypotheses',
-      'One falsification experiment per hypothesis, run by parallel subagents',
-      'Survival table scoring each hypothesis killed, survived, or inconclusive',
-      'Promotes surviving experiments into permanent regression tests',
-    ],
-    image: '/god-of-debugger.webp',
-  },
-  {
-    id: 'marcko',
-    name: 'Marcko',
-    tagline: 'Open source markdown editor',
-    status: 'live',
-    url: 'https://marcko.bixai.dev',
-    linkLabel: 'Visit site',
-    summary:
-      'Markdown editor with real-time preview, secure document sharing, and encryption at rest. Free for developers and writers.',
-    capabilities: [
-      'Real-time markdown preview',
-      'Secure enterprise document sharing',
-      'Encryption at rest',
-      'AI integration for writing',
-    ],
-    image: '/marcko-og.webp',
-  },
-  {
-    id: 'bixai-starter',
-    name: 'Bixai Agent SDK Starter',
-    tagline: 'Next.js AI agent template',
-    status: 'live',
-    url: 'https://create.bixai.dev',
-    linkLabel: 'Visit site',
-    summary:
-      'Template for production-ready agent apps built on Next.js and the OpenAI Agents SDK, with a modular tool structure and a fast path to deployment.',
-    capabilities: [
-      'Production-ready Next.js integration',
-      'OpenAI Agents SDK support',
-      'Modular tool and agent structure',
-    ],
-    image: '/create-bixai-og.jpg',
-  },
-  {
-    id: 'aarekhit',
-    name: 'Aarekhit AI',
-    tagline: 'Data visualisation',
-    status: 'live',
-    url: 'https://www.aarekhit.com/',
-    linkLabel: 'Visit site',
-    summary:
-      'Graph visualisation and analysis platform that turns text and data into interactive visualisations in seconds.',
-    capabilities: [
-      'Interactive graph visualisation',
-      'AI-powered data analysis',
-      'Real-time collaboration',
-      'Custom styling and theming',
-    ],
-    image: '/aarekhit.webp',
-    logo: '/aarekhit-logo.png',
-  },
-  {
-    id: 'notex',
-    name: 'Notex',
-    tagline: 'AI note-taking',
-    status: 'live',
-    url: 'https://noteex.vercel.app/',
-    linkLabel: 'Visit site',
-    summary:
-      'Note-taking with AI-generated insights and the noteX assistance bot, organised so thoughts stay in order and private.',
-    capabilities: [
-      'noteX assistance bot',
-      'Smart organisation for structured notes',
-      'Cross-platform synchronisation',
-    ],
-    image: '/notex.webp',
-    logo: '/notex1.png',
-  },
-  {
-    id: 'readany',
-    name: 'Readany',
-    tagline: 'PDF book reader',
-    status: 'live',
-    url: 'https://readany.vercel.app/',
-    linkLabel: 'Visit site',
-    summary:
-      'PDF reader that turns static documents into a reading experience, with realistic page flipping and heavy customisation.',
-    capabilities: [
-      'Realistic page-flip animation',
-      'Customisable reading themes',
-      'Bookmarks and annotation',
-      'Text-to-speech',
-    ],
-    image: '/readny.webp',
-  },
-]
+/** Edited in the CMS: see `content/projects.json` and `src/data/project-content.ts`. */
+export const projects: readonly Project[] = projectContent.map(
+  ({ id, name, tagline, status, url, linkLabel, summary, capabilities, image, logo, featured }) => ({
+    id,
+    name,
+    tagline,
+    status,
+    url,
+    linkLabel,
+    summary,
+    capabilities,
+    image,
+    logo,
+    featured,
+  }),
+)
 
 export const skills: readonly SkillGroup[] = [
   {
