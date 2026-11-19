@@ -237,6 +237,24 @@ export const education: readonly Education[] = [
 
 export const projects: readonly Project[] = [
   {
+    id: 'engineering-os',
+    name: 'Engineering OS',
+    tagline: 'Operating system for coding agents',
+    status: 'live',
+    url: 'https://engineering-os-hazel.vercel.app/',
+    linkLabel: 'Visit site',
+    summary:
+      'One command gives Claude Code, Codex, Cursor or any other agent the same vetted skills, safety guards and playbooks in every project you open, and tells you when a new version ships.',
+    capabilities: [
+      'Installs the plugin, guards, working rules and vetted skills in one command',
+      'Guards that block destructive commands and stop secrets landing in source',
+      'Detects the stack and loads the matching playbook on its own',
+      'Grades your agent setup and fires fake attacks at your guards',
+      'Finds, vets and installs new skills on every machine you work on',
+    ],
+    image: '/engineering-os.webp',
+  },
+  {
     id: 'purge',
     name: 'Purge',
     tagline: 'Mac storage cleaner for developers',

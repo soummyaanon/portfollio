@@ -63,6 +63,17 @@
 
 ## Projects
 
+### Engineering OS — Operating system for coding agents
+- URL: https://engineering-os-hazel.vercel.app/
+- Status: live
+- Summary: One command gives Claude Code, Codex, Cursor or any other agent the same vetted skills, safety guards and playbooks in every project you open, and tells you when a new version ships.
+- Capabilities:
+  - Installs the plugin, guards, working rules and vetted skills in one command
+  - Guards that block destructive commands and stop secrets landing in source
+  - Detects the stack and loads the matching playbook on its own
+  - Grades your agent setup and fires fake attacks at your guards
+  - Finds, vets and installs new skills on every machine you work on
+
 ### Purge — Mac storage cleaner for developers
 - URL: https://purge.bixai.dev/
 - Status: live

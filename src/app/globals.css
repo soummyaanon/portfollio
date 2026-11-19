@@ -1226,11 +1226,56 @@ body {
   transform: scale(1.025);
 }
 
+/* The focus indicator is a camera viewfinder locking on: four corner brackets wait outside the
+   card, then close in with a small overshoot and settle on the grid's own hairline, like crop
+   marks, where they never cover the card's content. One element draws all four corners with
+   eight gradient strokes, so the frame animates as a single inset. */
+.project-focus {
+  --corner: 0.875rem;
+  --stroke: 2px;
+  --ink: var(--foreground);
+  position: absolute;
+  inset: -0.75rem;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(var(--ink), var(--ink)) top left / var(--corner) var(--stroke),
+    linear-gradient(var(--ink), var(--ink)) top left / var(--stroke) var(--corner),
+    linear-gradient(var(--ink), var(--ink)) top right / var(--corner) var(--stroke),
+    linear-gradient(var(--ink), var(--ink)) top right / var(--stroke) var(--corner),
+    linear-gradient(var(--ink), var(--ink)) bottom left / var(--corner) var(--stroke),
+    linear-gradient(var(--ink), var(--ink)) bottom left / var(--stroke) var(--corner),
+    linear-gradient(var(--ink), var(--ink)) bottom right / var(--corner) var(--stroke),
+    linear-gradient(var(--ink), var(--ink)) bottom right / var(--stroke) var(--corner);
+  background-repeat: no-repeat;
+  transition:
+    inset 520ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 200ms var(--ease-out-quint);
+}
+
+.project-card:hover .project-focus,
+.project-card:focus-visible .project-focus {
+  inset: -1px;
+  opacity: 1;
+}
+
+/* Keyboard focus gets a longer corner, so it reads as focus rather than a passing pointer. */
+.project-card:focus-visible .project-focus {
+  --corner: 1.375rem;
+}
+
+@media (forced-colors: active) {
+  .project-focus { display: none; }
+  .project-card:focus-visible { outline: 2px solid CanvasText; outline-offset: -2px; }
+}
+
 .project-hatch {
   background-image: repeating-linear-gradient(-45deg, oklch(1 0 0 / 0.13) 0 1px, transparent 1px 7px);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .project-shot { transition: none; }
+  .project-focus { transition: opacity 120ms linear; }
   .project-card:hover .project-shot { transform: none; }
 }

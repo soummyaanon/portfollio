@@ -340,22 +340,22 @@ function hostOf(url: string) {
 function ProjectCard({
   project,
   index,
-  wide,
 }: {
   readonly project: Project
   readonly index: number
-  readonly wide: boolean
 }) {
   const { t } = useI18n()
 
   return (
-    <li className={`bg-background ${wide ? 'sm:col-span-2' : ''}`}>
+    <li className="bg-background">
       <a
         href={project.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="project-card group flex h-full flex-col focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal"
+        className="project-card group relative flex h-full flex-col focus-visible:outline-none"
       >
+        {/* Viewfinder corners: they close in and lock on the card that has hover or focus. */}
+        <span aria-hidden className="project-focus" />
         <span className="flex h-7 items-center gap-1.5 border-b border-border px-3">
           {[0, 1, 2].map((dot) => (
             <span key={dot} aria-hidden className="size-1.5 rounded-full bg-border transition-colors group-hover:bg-muted-foreground/60" />
@@ -369,14 +369,14 @@ function ProjectCard({
           />
         </span>
 
-        <span className={`relative block overflow-hidden border-b border-border ${wide ? 'aspect-[16/8]' : 'aspect-[16/10]'}`}>
+        <span className="relative block aspect-[16/10] overflow-hidden border-b border-border">
           {project.image ? (
             <Image
               src={project.image}
               alt={t.interfaceAlt(project.name)}
               fill
               className="project-shot object-cover object-top"
-              sizes={wide ? '(max-width: 640px) 100vw, 46rem' : '(max-width: 640px) 100vw, 23rem'}
+              sizes="(max-width: 640px) 100vw, 23rem"
             />
           ) : (
             <span className="project-hatch absolute inset-0 grid place-items-center">
@@ -400,7 +400,7 @@ function ProjectCard({
           <span className="mt-1.5 block pl-[calc(1.5ch+0.75rem)] text-fine text-muted-foreground">
             <Fact id={`project.${project.id}.tagline`}>{project.tagline}</Fact>
           </span>
-          <span className={`mt-[var(--space-tight)] block pl-[calc(1.5ch+0.75rem)] text-caption leading-[1.55] text-muted-foreground/75 ${wide ? 'max-w-[60ch]' : 'line-clamp-3'}`}>
+          <span className="mt-[var(--space-tight)] block pl-[calc(1.5ch+0.75rem)] text-caption leading-[1.55] text-muted-foreground/75 line-clamp-3">
             {project.summary}
           </span>
         </span>
@@ -409,13 +409,13 @@ function ProjectCard({
   )
 }
 
-/** The three projects the homepage leads with; the rest are on /projects. */
-const FEATURED = ['agent-island', 'purge', 'bixai-starter'] as const
+/** The four projects the homepage leads with; the rest are on /projects. */
+const FEATURED = ['engineering-os', 'agent-island', 'purge', 'bixai-starter'] as const
 
 /**
- * A boxed grid: the cells share one hairline, the way the rails and section lines do, and the
- * lead project takes the full width of the first row. Only the featured three are here; the
- * last cell of the box is the way through to every project.
+ * A boxed two-by-two grid: the cells share one hairline, the way the rails and section lines do,
+ * and every card is the same size so four projects stay compact. Only the featured projects are
+ * here; the last cell of the box is the way through to every project.
  */
 function Projects() {
   const {
@@ -434,7 +434,7 @@ function Projects() {
       <div className="measure-column mt-[var(--space-group)] border border-border bg-border">
         <ol className="grid gap-px sm:grid-cols-2">
           {featured.map((project, index) => (
-            <ProjectCard key={project.id} project={project} index={index} wide={index === 0} />
+            <ProjectCard key={project.id} project={project} index={index} />
           ))}
         </ol>
         <Link
