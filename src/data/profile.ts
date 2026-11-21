@@ -23,6 +23,9 @@ export interface Link {
 /** The portrait the site serves, built from the TinaCMS upload by scripts/prepare-avatar.ts. */
 export const AVATAR_PATH = '/generated/avatar.jpg'
 
+/** The whole photo, uncropped and web-sized, for the full view the avatar opens. */
+export const PORTRAIT_PATH = '/generated/portrait.jpg'
+
 export interface Person {
   readonly id: string
   readonly name: string

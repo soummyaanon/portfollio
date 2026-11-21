@@ -3,7 +3,7 @@ import path from 'path'
 
 import sharp from 'sharp'
 
-import { AVATAR_PATH } from '../src/data/profile'
+import { AVATAR_PATH, PORTRAIT_PATH } from '../src/data/profile'
 import { profileContent } from '../src/data/profile-content'
 
 /**
@@ -17,6 +17,8 @@ import { profileContent } from '../src/data/profile-content'
  */
 
 const SIZE = 256
+/** The full view's long edge: sharp on a 2× laptop screen, still ~100 KB. */
+const PORTRAIT_EDGE = 1400
 
 async function main() {
   const source = path.join(process.cwd(), 'public', profileContent.avatar)
@@ -53,7 +55,15 @@ async function main() {
     .jpeg({ quality: 82, mozjpeg: true })
     .toFile(output)
 
+  // The whole photo, for the full view. Never upscaled; loaded only when someone reaches
+  // for the avatar, so it costs the first view nothing.
+  const portrait = await sharp(data)
+    .resize(PORTRAIT_EDGE, PORTRAIT_EDGE, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 80, mozjpeg: true, progressive: true })
+    .toFile(path.join(process.cwd(), 'public', PORTRAIT_PATH))
+
   const kb = (bytes: number) => `${Math.round(bytes / 1024)} KB`
+  console.log(`✅ Full portrait → public${PORTRAIT_PATH} (${portrait.width}×${portrait.height}, ${kb(portrait.size)})`)
   console.log(
     `✅ Profile picture: public${profileContent.avatar} (${kb(fs.statSync(source).size)}, zoom ${zoom}) → public${AVATAR_PATH} (${info.width}×${info.height}, ${kb(info.size)})`,
   )

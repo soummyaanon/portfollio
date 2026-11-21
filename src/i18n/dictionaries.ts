@@ -72,6 +72,10 @@ const en = {
   },
   inDevelopment: 'In development',
   founderOf: (studio: string) => `Founder, ${studio}`,
+  portrait: {
+    open: (name: string) => `View ${name}’s photo`,
+    close: 'Close photo',
+  },
   experimental: 'Experimental',
   seeAllProjects: 'See all projects',
   entries: (count: string) => `${count} entries`,
@@ -157,6 +161,10 @@ const hi: Dictionary = {
   },
   inDevelopment: 'डेवलपमेंट में',
   founderOf: (studio) => `${studio} के संस्थापक`,
+  portrait: {
+    open: (name) => `${name} की फ़ोटो देखें`,
+    close: 'फ़ोटो बंद करें',
+  },
   experimental: 'प्रायोगिक',
   seeAllProjects: 'सभी प्रोजेक्ट देखें',
   entries: (count) => `${count} प्रोजेक्ट`,

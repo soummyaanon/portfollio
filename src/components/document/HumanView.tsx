@@ -12,6 +12,7 @@ import { useI18n } from '@/i18n/useLocale'
 import { Connective, Fact } from './Fact'
 import { BenchRails } from './BenchRails'
 import { HumanSpan } from './HumanSpan'
+import { PortraitViewer } from './PortraitViewer'
 import { Workbench, type WorkbenchSlide } from './Workbench'
 import { SectionHead } from './SectionHead'
 import { SignalPlate } from './SignalPlate'
@@ -78,14 +79,12 @@ function Masthead() {
             </span>
           </h1>
           <div className="elevate size-[clamp(3.25rem,5.5vw,4.5rem)] shrink-0 overflow-hidden rounded-full bg-card ring-1 ring-border">
-            <Image
-              src={person.avatar}
-              alt={person.name}
-              width={256}
-              height={256}
-              className="h-full w-full object-cover"
-              sizes="(max-width: 640px) 18vw, 5vw"
-              priority
+            <PortraitViewer
+              avatar={person.avatar}
+              name={person.name}
+              openLabel={t.portrait.open(person.name)}
+              closeLabel={t.portrait.close}
+              className="h-full w-full rounded-full"
             />
           </div>
         </div>
