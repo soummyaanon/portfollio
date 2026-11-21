@@ -62,4 +62,6 @@ CNAME
 
 # tinacms admin build output
 /public/admin
+# Built from the TinaCMS upload by scripts/prepare-avatar.ts
+/public/generated
 /tina/__generated__

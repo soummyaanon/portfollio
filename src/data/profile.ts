@@ -13,13 +13,15 @@
  * the machine view prints them raw. Same fact, two encodings — that is the whole thesis.
  */
 
-import { profileContent } from './profile-content'
 import { projectContent } from './project-content'
 
 export interface Link {
   readonly label: string
   readonly url: string
 }
+
+/** The portrait the site serves, built from the TinaCMS upload by scripts/prepare-avatar.ts. */
+export const AVATAR_PATH = '/generated/avatar.jpg'
 
 export interface Person {
   readonly id: string
@@ -146,8 +148,9 @@ export const person: Person = {
   // wider than 80, and a five-minute cache lifetime GitHub sets and nobody here can change.
   // The same face is now 15 KB of JPEG at 256px sitting next to the HTML.
   //
-  // Editable in TinaCMS (content/profile.json); scripts/check-avatar.ts holds it to that size.
-  avatar: profileContent.avatar,
+  // The photo itself is chosen in TinaCMS (content/profile.json); scripts/prepare-avatar.ts
+  // turns whatever was uploaded into this 256px JPEG at build time, and the page uses that.
+  avatar: AVATAR_PATH,
   focus: ['healthcare AI', 'agentic automation', 'fully autonomous software'],
   interests: ['deep space'],
   links: [

@@ -8,7 +8,7 @@
 - Location: भारत
 - Timezone: Asia/Kolkata
 - Site: https://soumyapanda.dev
-- Avatar: /avatar.jpg
+- Avatar: /generated/avatar.jpg
 - Focus: healthcare AI, agentic automation, fully autonomous software
 - Interests: deep space
 - GitHub: https://github.com/soummyaanon

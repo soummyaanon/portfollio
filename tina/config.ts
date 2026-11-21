@@ -69,7 +69,13 @@ export default defineConfig({
             label: 'Profile picture',
             required: true,
             description:
-              'Square, about 256×256, JPEG or WebP, under 60 KB. It is the first image the page loads, so the build fails on anything heavier.',
+              'Any photo (JPEG, PNG or WebP); straight from your phone is fine. The site crops it to a square and shrinks it to 256×256 when it builds.',
+          },
+          {
+            type: 'number',
+            name: 'avatarZoom',
+            label: 'Profile picture zoom',
+            description: '1 shows the whole photo; 2 is twice as close. Zooms toward the upper middle, where a face usually is. Between 1 and 4.',
           },
         ],
       },

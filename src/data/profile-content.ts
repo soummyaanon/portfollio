@@ -13,6 +13,16 @@ const profileSchema = z.object({
   avatar: z
     .string()
     .regex(/^\/[^/].*\.(jpe?g|png|webp|avif)$/i, 'the avatar must be an image in public/, e.g. "/avatar.jpg"'),
+  /**
+   * How far to zoom into the photo before cropping: 1 keeps the whole frame, 2 is twice as
+   * close. The zoom aims a little above centre, where a portrait keeps the face.
+   */
+  avatarZoom: z
+    .number()
+    .min(1, 'zoom starts at 1 (the whole photo)')
+    .max(4, 'zoom is at most 4')
+    .nullish()
+    .transform((value) => value ?? 1),
 })
 
 export const profileContent = profileSchema.parse(raw)
