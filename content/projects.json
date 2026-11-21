@@ -28,7 +28,26 @@
           "आपके एजेंट सेटअप को ग्रेड देता है और आपके गार्ड्स पर नकली हमले करता है",
           "नई स्किल्स ढूँढता है, जाँचता है और आपकी हर मशीन पर इंस्टॉल करता है"
         ]
-      }
+      },
+      "why": "Every new project, I was setting up my coding agent from scratch: the same skills, the same rules, the same “please don’t force-push to main”. And every agent keeps them somewhere different.\n\nSo I put it all in one harness that installs with a single command. It only takes skills from official vendors or well-known authors, it guards the commands that can hurt you, and it loads the right playbook for the stack it finds. Then I pointed a red team at my own guards. It found 13 holes in version 0.5.0, which is why the red team now ships with it.",
+      "howItWorks": [
+        "The installer clones the repo to ~/engineering-os, links the plugin and puts the eos command on your PATH. The whole script sits inside one main() function, so bash reads all of it before running anything from a curl pipe.",
+        "Skills come from a registry of 161: 84 installed by default and 77 on demand, so the agent isn’t flooded. To get in, a skill needs an official vendor or a well-known author, at least 1,000 installs, and no install-time scripts.",
+        "When a session starts, a hook detects the project’s stack and routes the agent to the matching playbook.",
+        "Before every shell command, a guard sorts it. Some are blocked outright (rm -rf ~, mkfs, a fork bomb). Others need your yes: force-push, git reset --hard, DROP TABLE, curl | sh, production deploys. A second guard stops secrets from being written into source files.",
+        "eos redteam fires 51 fake attacks and 35 everyday commands at your own guards without running any of them, and scores what got through.",
+        "Whatever the guards catch is logged locally with secrets redacted. Nothing is uploaded."
+      ],
+      "stack": [
+        "Python 3 (standard library only)",
+        "Bash",
+        "Claude Code plugins and hooks",
+        "Skills CLI",
+        "Vercel"
+      ],
+      "install": "curl -fsSL https://engineering-os-hazel.vercel.app/install | bash",
+      "source": "https://github.com/soummyaanon/engineering-os",
+      "platform": "macOS, Linux"
     },
     {
       "name": "Agent Island",
@@ -58,7 +77,26 @@
           "किसी सेशन पर क्लिक करें, और ठीक वही टर्मिनल टैब सामने आ जाता है जिसमें वह चल रहा है",
           "पूरी तरह लोकल — कोई अकाउंट नहीं, कोई API key नहीं, कोई टेलीमेट्री नहीं"
         ]
-      }
+      },
+      "why": "I run Claude Code, Codex and Cursor side by side, usually across a few terminal tabs. A lot of my time was going to tab-hunting: which one finished, which one is stuck waiting for me to approve something.\n\nThe MacBook notch was just sitting there. So I turned it into a status bar for my agents. I can see who is working, approve a permission request with ⌘Y, and get back to what I was doing. Everything runs on my Mac. No accounts, no API keys, no telemetry.",
+      "howItWorks": [
+        "The app runs a small local server on 127.0.0.1:7433. It turns each agent’s signals into one shared set of events, keeps state per session and streams it to the island.",
+        "For Claude Code and Cursor it merges hooks into their settings files. It never removes your own hooks, writes a timestamped backup first, and skips any file it can’t parse.",
+        "Claude’s events go through a small bridge script instead of an HTTP hook. If the app is closed, an HTTP hook would show an error on every call; the script fails quietly.",
+        "Permission requests are held open for up to 120 seconds, so you can answer them from the notch. “Always allow” writes the same rule as Claude Code’s own “don’t ask again”.",
+        "Codex is read-only: the app tails its session logs.",
+        "Every request to the local server needs a token. The Ask bar runs on Apple’s on-device model, which only ever sees one line per session."
+      ],
+      "stack": [
+        "Swift 6.2",
+        "SwiftUI",
+        "AppKit",
+        "Network.framework",
+        "Apple Foundation Models (on-device)",
+        "CryptoKit"
+      ],
+      "source": "https://github.com/soummyaanon/DEV-island",
+      "platform": "macOS 14+ (Apple Silicon)"
     },
     {
       "name": "Purge",
@@ -88,12 +126,32 @@
           "macOS की परमिशन पाबंदियों को एक वैकल्पिक रास्ते से संभालता है",
           "कोई डिपेंडेंसी नहीं, कोई टेलीमेट्री नहीं"
         ]
-      }
+      },
+      "why": "On a developer’s Mac, the disk rarely fills up with your own files. It fills up with node_modules from forgotten projects, Xcode DerivedData, Electron caches and scratch files left behind by coding agents. Often tens of gigabytes, and all of it can be rebuilt.\n\nGeneral cleaners either miss that kind of junk or delete things you can’t get back. So I built purge around one rule: it deletes only what you leave checked, and anything risky starts unchecked. No telemetry, no network calls, zero runtime dependencies.",
+      "howItWorks": [
+        "One scan covers build output, package caches, Xcode, Electron apps, coding agents, browsers, editors, logs, orphans and heavy files. Each group has its own scanner.",
+        "Every row passes a chain of guards: home, your keep list, danger paths, cloud-sync folders (iCloud, Dropbox, Google Drive, OneDrive), fragile paths, symlinks, volumes and git.",
+        "The git guard asks git which paths are ignored, in one batched call per repo with a 10-second timeout. If git fails, it leaves those rows unchecked. Failing toward caution is deliberate.",
+        "Sizes come from disk blocks, not file size, so iCloud placeholders that aren’t really on disk don’t count as space you’d get back.",
+        "Right before deleting, every guard runs again. Trash mode moves files to ~/.Trash, and every run writes a manifest, so purge undo can put things back.",
+        "Only one file in the codebase is allowed to delete anything. CI enforces that, and fails the build if a runtime dependency ever sneaks in."
+      ],
+      "stack": [
+        "TypeScript",
+        "Node.js 22",
+        "Zero runtime dependencies",
+        "esbuild",
+        "node:test",
+        "Homebrew"
+      ],
+      "install": "brew install soummyaanon/tap/purge",
+      "source": "https://github.com/soummyaanon/purge",
+      "platform": "macOS"
     },
     {
       "name": "Arthion AI",
       "id": "arthion",
-      "status": "in-development",
+      "status": "experimental",
       "featured": false,
       "url": "https://arthionai.app/",
       "image": "/arthion.webp",
@@ -119,7 +177,26 @@
           "ख़बरें और सेंटिमेंट एनालिसिस",
           "AI से बनी स्टॉक सिफ़ारिशें"
         ]
-      }
+      },
+      "why": "Arthion was my experiment in a financial research agent: ask about a company or a market, and get an answer grounded in real financial data and charts instead of a model’s memory.\n\nI’m no longer developing it, but it taught me a lot about splitting fast chat from slow, long-running agent work.",
+      "howItWorks": [
+        "Chat streams through the Vercel AI SDK, with tools for financial data and charts and a web search fallback. The number of agent steps is capped.",
+        "There are two agents: one for financial questions and one for markets.",
+        "Long-running research tasks go onto a Redis-backed queue and run on a separate worker service. They report progress and can be cancelled.",
+        "A guardrail wraps the model and keeps conversations on finance.",
+        "Chat history and a knowledge base are embedded, so the agent can recall relevant context by similarity."
+      ],
+      "stack": [
+        "Next.js",
+        "React",
+        "Vercel AI SDK",
+        "OpenAI",
+        "PostgreSQL",
+        "Prisma",
+        "BullMQ",
+        "Redis",
+        "Express"
+      ]
     },
     {
       "name": "God of Debugger",
@@ -149,7 +226,25 @@
           "सर्वाइवल टेबल, जो हर हाइपोथीसिस को ख़ारिज, बची हुई या अनिर्णीत आँकती है",
           "बचे हुए एक्सपेरिमेंट को स्थायी रिग्रेशन टेस्ट में बदल देता है"
         ]
-      }
+      },
+      "why": "Coding agents debug the way tired people do: they latch onto the first plausible cause and ship a fix. Sometimes it’s right. Often it just moves the bug.\n\nGod of Debugger makes the agent work like a scientist instead. It writes down several competing explanations, tries to kill each one with an experiment, and is only allowed to fix the bug when exactly one explanation survives.",
+      "howItWorks": [
+        "/god-of-debugger:go reproduces the bug, narrows it to 2–5 files, then writes 5–8 hypotheses that cover at least 4 of 7 causes: data, control flow, concurrency, config, dependencies, environment and contracts.",
+        "An adversary subagent adds 2–3 more hypotheses in the categories the first list missed, including “the premise is wrong”.",
+        "Each hypothesis gets one experiment, with its kill and survive conditions written down before it runs. Runners can’t rewrite them after seeing the output.",
+        "One runner per hypothesis works in parallel and sees only its own hypothesis and files. Each returns killed, survived or inconclusive.",
+        "A fix is allowed only when exactly one hypothesis survives, and a hook enforces it: until then, edits to production files are blocked.",
+        "The surviving experiment becomes a regression test that fails before the fix and passes after it."
+      ],
+      "stack": [
+        "JavaScript",
+        "Node.js",
+        "Claude Code plugins, subagents and hooks",
+        "Bash"
+      ],
+      "install": "npm i -g @bixai/god-of-debugger && god install",
+      "source": "https://github.com/soummyaanon/god-of-debugger",
+      "platform": "Node.js 18+"
     },
     {
       "name": "Marcko",
@@ -177,7 +272,26 @@
           "एन्क्रिप्शन एट रेस्ट",
           "लिखने के लिए AI इंटीग्रेशन"
         ]
-      }
+      },
+      "why": "I write a lot of Markdown, and more and more of it comes out of AI assistants. Getting it from a chat window into something I can share always meant copy, paste and fix the formatting.\n\nMarcko is a Markdown editor built for that. It renders what developers actually write, like math, diagrams and live code, and it gives AI assistants a way to publish straight into your library.",
+      "howItWorks": [
+        "A live editor and preview with GitHub-flavoured Markdown, math, syntax highlighting and Mermaid diagrams.",
+        "HTML, CSS and JavaScript code blocks run in a sandboxed iframe, so a snippet can be tried right in the document.",
+        "Documents can be shared as public or private. Content is encrypted at rest with AES-256-GCM, and every save keeps a version.",
+        "The marcko-mcp server gives AI clients like Claude Code a publish_to_marcko tool, so an assistant can publish a document without any copy-paste.",
+        "API keys are stored only as a SHA-256 hash plus their last four characters, and compared in constant time."
+      ],
+      "stack": [
+        "Next.js",
+        "React",
+        "Supabase Postgres",
+        "Better Auth",
+        "react-markdown",
+        "KaTeX",
+        "Mermaid",
+        "Model Context Protocol"
+      ],
+      "source": "https://github.com/soummyaanon/Marcko"
     },
     {
       "name": "Bixai Agent SDK Starter",
@@ -203,7 +317,26 @@
           "OpenAI Agents SDK सपोर्ट",
           "मॉड्यूलर टूल और एजेंट स्ट्रक्चर"
         ]
-      }
+      },
+      "why": "Every agent project I started began with the same hour of setup: Next.js, the OpenAI Agents SDK, a streaming API route, input validation, sessions. So I turned that hour into one command.\n\nYou get a working agent app with typed tools, streaming and a choice of two templates, ready to change into whatever you’re building.",
+      "howItWorks": [
+        "The CLI copies one of two templates: a single agent with tools, or a triage agent that hands off to specialists. It sets up your package manager of choice (npm, pnpm, yarn or bun) and runs git init.",
+        "The /api/agent route returns plain JSON, or a stream of server-sent events, and tells the UI which agent is active after a handoff.",
+        "Every request is validated with a strict Zod schema: messages up to 4,000 characters, between 1 and 20 agent turns.",
+        "Server sessions live in memory with a 30-minute timeout and a cap of 200, both configurable.",
+        "The default model is gpt-5-mini, and one environment variable changes it."
+      ],
+      "stack": [
+        "TypeScript",
+        "Next.js 16",
+        "React 19",
+        "OpenAI Agents SDK",
+        "Zod",
+        "Tailwind CSS"
+      ],
+      "install": "npx @bixai/create-agent-sdk-starter",
+      "source": "https://github.com/soummyaanon/bixai-nextjs-agentsdk-statter-kit",
+      "platform": "Node.js 22.11+"
     },
     {
       "name": "Aarekhit AI",
@@ -232,7 +365,25 @@
           "रियल-टाइम कोलैबोरेशन",
           "कस्टम स्टाइलिंग और थीमिंग"
         ]
-      }
+      },
+      "why": "Most people with a spreadsheet have a question about it, not a chart in mind. Aarekhit lets you upload your data and ask in plain English, and it picks and draws the chart for you.",
+      "howItWorks": [
+        "Upload a CSV or Excel file (up to 10 MB) and you get a preview of the first rows.",
+        "Each prompt is classified as a new chart or a follow-up question about the current one. If the classifier is unavailable, simple local scoring takes over.",
+        "The model, Gemini or OpenAI, which you can choose, returns a chart spec. Model output is repaired in stages if it isn’t valid JSON, with up to three retries.",
+        "Charts render with Plotly: bar, line, pie, scatter, area, radar, funnel, sunburst, sankey, treemap and tables.",
+        "A Deep Research mode pulls in web sources and adds them to the analysis."
+      ],
+      "stack": [
+        "React",
+        "Vite",
+        "Google Gemini",
+        "OpenAI",
+        "Plotly",
+        "Appwrite",
+        "SheetJS",
+        "Tailwind CSS"
+      ]
     },
     {
       "name": "Notex",
@@ -259,7 +410,25 @@
           "व्यवस्थित नोट्स के लिए स्मार्ट ऑर्गनाइज़ेशन",
           "क्रॉस-प्लेटफ़ॉर्म सिंक"
         ]
-      }
+      },
+      "why": "Notex is an AI note-taking app I built to find out what an assistant inside your notes should actually do. Search that understands meaning, writing help that stays out of the way, and notes you can listen to.",
+      "howItWorks": [
+        "Sign-in is passwordless, by a one-time code over email or phone, through Appwrite.",
+        "Semantic search runs entirely in your browser: TensorFlow.js embeds your query and notes with the Universal Sentence Encoder and ranks them by cosine similarity. No embedding API is involved.",
+        "Around a dozen AI actions (outline, improve, summarise, tags, translate, mind map and more) each use their own Gemini prompt and temperature.",
+        "The editor autosaves after three seconds of quiet and previews Markdown as you type.",
+        "You can dictate with the Web Speech API and have notes read back to you."
+      ],
+      "stack": [
+        "React",
+        "Vite",
+        "Google Gemini",
+        "TensorFlow.js",
+        "Appwrite",
+        "Tailwind CSS",
+        "shadcn/ui"
+      ],
+      "source": "https://github.com/soummyaanon/-noteX"
     },
     {
       "name": "Readany",
@@ -287,7 +456,24 @@
           "बुकमार्क और एनोटेशन",
           "टेक्स्ट-टू-स्पीच"
         ]
-      }
+      },
+      "why": "A PDF is a fine way to store a book and a poor way to read one. Readany turns a PDF into something that feels like a book, with pages you actually turn.",
+      "howItWorks": [
+        "You upload a PDF. pdf.js renders each page to an image in the browser, with a progress bar as it goes.",
+        "Pages are pre-rendered at twice the resolution, so the page-flip animation stays smooth.",
+        "The pages are bound between a generated front and back cover, with a drawn spine.",
+        "Read with the arrow keys, zoom from half size to double, or go fullscreen.",
+        "Three themes (light, dark and warm paper) and three reading modes (normal, high contrast and sepia)."
+      ],
+      "stack": [
+        "Next.js 16",
+        "React 19",
+        "TypeScript",
+        "pdf.js",
+        "react-pageflip",
+        "Tailwind CSS"
+      ],
+      "source": "https://github.com/soummyaanon/Bookish"
     }
   ]
 }

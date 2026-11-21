@@ -42,9 +42,9 @@ export function ProjectIndex({ locale }: { readonly locale: Locale }) {
                     {project.name}
                   </Link>
                 </h2>
-                {project.status === 'in-development' && (
+                {project.status !== 'live' && (
                   <span className="text-caption uppercase tracking-[0.14em] text-signal-ink">
-                    {t.inDevelopment}
+                    {project.status === 'experimental' ? t.experimental : t.inDevelopment}
                   </span>
                 )}
               </div>

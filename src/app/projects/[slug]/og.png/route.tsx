@@ -9,6 +9,8 @@ import { BenchFooter, clip, GROUND, INK, MUTED, OG_SIZE, ogFonts, Rail } from '@
  * unfurls as that project instead of as the portfolio.
  */
 
+const STATUS_LABEL = { live: 'Live', 'in-development': 'In development', experimental: 'Experimental' } as const
+
 export const dynamic = 'force-static'
 export const dynamicParams = false
 
@@ -21,7 +23,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
   const project = projects.find((candidate) => candidate.id === slug)
   if (!project) return new Response('Not found', { status: 404 })
 
-  const label = `Project · ${project.status === 'live' ? 'Live' : 'In development'} · ${new URL(project.url).host}`
+  const label = `Project · ${STATUS_LABEL[project.status]} · ${new URL(project.url).host}`
   const nameSize = project.name.length > 16 ? 76 : 96
 
   return new ImageResponse(

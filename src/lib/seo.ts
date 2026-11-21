@@ -279,16 +279,21 @@ export function websiteSchema(description: string): JsonLd {
 
 /** Projects are shipped web apps, so `WebApplication` rather than `CreativeWork`. */
 export function projectSchema(project: (typeof projects)[number]): JsonLd {
+  // A Mac app or a CLI is not a WebApplication; only claim "runs in a browser" when it does.
+  const platform = project.platform ?? 'Web'
+
   return {
-    '@type': 'WebApplication',
+    '@type': platform === 'Web' ? 'WebApplication' : 'SoftwareApplication',
     '@id': `${absoluteUrl('/projects/')}#${project.id}`,
     name: project.name,
     description: project.summary,
     url: project.url,
     applicationCategory: 'DeveloperApplication',
-    operatingSystem: 'Web',
+    operatingSystem: platform,
     featureList: [...project.capabilities],
     author: { '@id': PERSON_ID },
+    ...(project.stack.length ? { keywords: project.stack.join(', ') } : {}),
+    ...(project.source ? { sameAs: [project.source] } : {}),
     ...(project.image ? { image: `${SITE_URL}${project.image}` } : {}),
   }
 }

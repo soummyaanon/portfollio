@@ -307,13 +307,13 @@ function Education() {
  * "amber means unfinished" available, so the status has to be legible as a shape: a rule
  * around it says this is a stamp on the record, not part of the sentence.
  */
-function ProjectStatus({ status }: { readonly status: 'live' | 'in-development' }) {
+function ProjectStatus({ status }: { readonly status: Project['status'] }) {
   const { t } = useI18n()
 
   if (status === 'live') return null
   return (
     <span className="field-label shrink-0 border border-border px-1.5 py-[0.15rem] leading-none text-muted-foreground">
-      {t.inDevelopment}
+      {status === 'experimental' ? t.experimental : t.inDevelopment}
     </span>
   )
 }

@@ -94,6 +94,7 @@ export default defineConfig({
                 options: [
                   { value: 'live', label: 'Live' },
                   { value: 'in-development', label: 'In development' },
+                  { value: 'experimental', label: 'Experimental (no longer developed)' },
                 ],
               },
               { type: 'boolean', name: 'featured', label: 'Featured on homepage' },
@@ -102,6 +103,20 @@ export default defineConfig({
               { type: 'image', name: 'logo', label: 'Logo' },
               ...proseFields('English'),
               { type: 'object', name: 'hi', label: 'Hindi', required: true, fields: [...proseFields('Hindi')] },
+              // The project's own page (/projects/<id>/). English only, all optional: the page
+              // shows the sections that are filled in.
+              {
+                type: 'string',
+                name: 'why',
+                label: 'Page: why I built it',
+                description: 'First person. Separate paragraphs with a blank line.',
+                ui: { component: 'textarea' },
+              },
+              { type: 'string', name: 'howItWorks', label: 'Page: how it works', list: true, description: 'One step per line, in order.' },
+              { type: 'string', name: 'stack', label: 'Page: built with', list: true, description: 'One technology per line.' },
+              { type: 'string', name: 'install', label: 'Page: install command', description: 'Shown as "Try it", e.g. "brew install …".' },
+              { type: 'string', name: 'source', label: 'Page: source code URL', description: 'Public repositories only.' },
+              { type: 'string', name: 'platform', label: 'Platform', description: 'What it runs on, e.g. "macOS". Blank means Web.' },
             ],
           },
         ],

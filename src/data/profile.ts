@@ -87,11 +87,14 @@ export interface Education {
   readonly logo?: string
 }
 
+export type ProjectStatus = 'live' | 'in-development' | 'experimental'
+
 export interface Project {
   readonly id: string
   readonly name: string
   readonly tagline: string
-  readonly status: 'live' | 'in-development'
+  /** `experimental`: shipped as an experiment and no longer being developed. */
+  readonly status: ProjectStatus
   readonly url: string
   /**
    * What the link actually leads to. Not every project is a website — some are a DMG,
@@ -105,6 +108,15 @@ export interface Project {
   readonly logo?: string
   /** Shown on the homepage, in list order. */
   readonly featured: boolean
+  /** The project page's long form, in the owner's voice. Paragraphs split on blank lines. */
+  readonly why?: string
+  readonly howItWorks: readonly string[]
+  readonly stack: readonly string[]
+  /** A command a reader can paste to try it. */
+  readonly install?: string
+  /** Public source code, when there is some. */
+  readonly source?: string
+  readonly platform?: string
 }
 
 export interface SkillGroup {
@@ -241,7 +253,7 @@ export const education: readonly Education[] = [
 
 /** Edited in the CMS: see `content/projects.json` and `src/data/project-content.ts`. */
 export const projects: readonly Project[] = projectContent.map(
-  ({ id, name, tagline, status, url, linkLabel, summary, capabilities, image, logo, featured }) => ({
+  ({ id, name, tagline, status, url, linkLabel, summary, capabilities, image, logo, featured, why, howItWorks, stack, install, source, platform }) => ({
     id,
     name,
     tagline,
@@ -253,6 +265,12 @@ export const projects: readonly Project[] = projectContent.map(
     image,
     logo,
     featured,
+    why,
+    howItWorks,
+    stack,
+    install,
+    source,
+    platform,
   }),
 )
 
@@ -296,8 +314,8 @@ export const skills: readonly SkillGroup[] = [
 export const now = {
   building: {
     id: 'now.building',
-    name: 'Arthion AI',
-    url: 'https://arthionai.app/',
+    name: 'Engineering OS',
+    url: 'https://engineering-os-hazel.vercel.app/',
   },
   learning: {
     id: 'now.learning',

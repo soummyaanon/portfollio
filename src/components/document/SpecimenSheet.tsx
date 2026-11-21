@@ -316,7 +316,7 @@ export function SpecimenSheet({ posts }: { readonly posts: readonly PostSummary[
             <Fact id={`project.${project.id}.tagline`}>{project.tagline}</Fact>
           </FieldRow>
           <FieldRow name="status">
-            <span className={project.status === 'in-development' ? 'text-signal-ink' : undefined}>
+            <span className={project.status !== 'live' ? 'text-signal-ink' : undefined}>
               {project.status}
             </span>
           </FieldRow>

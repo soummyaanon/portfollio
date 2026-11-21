@@ -102,7 +102,7 @@
 ### Arthion AI — Financial intelligence
 - URL: https://arthionai.app/
 - Page: https://soumyapanda.dev/projects/arthion/
-- Status: in-development
+- Status: experimental
 - Summary: Financial intelligence platform giving real-time stock analysis, technical indicators, market sentiment tracking, and insights you can act on.
 - Capabilities:
   - Real-time stock charts with OHLC and line views

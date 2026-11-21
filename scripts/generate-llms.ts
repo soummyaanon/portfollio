@@ -94,7 +94,7 @@ export function buildIndex(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): 
 
   out.push('## Projects')
   for (const project of projects) {
-    const status = project.status === 'in-development' ? ', in development' : ''
+    const status = project.status === 'live' ? '' : `, ${project.status.replace('-', ' ')}`
     out.push(`- [${project.name}](${project.url}) — ${project.tagline}${status}: ${project.summary}`)
   }
   out.push('')
