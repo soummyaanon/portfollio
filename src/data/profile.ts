@@ -256,6 +256,11 @@ export const projects: readonly Project[] = projectContent.map(
   }),
 )
 
+/** Where a project's own page lives. Its `id` is the slug, which is why ids must not change casually. */
+export function projectPath(id: string): string {
+  return `/projects/${id}/`
+}
+
 export const skills: readonly SkillGroup[] = [
   {
     id: 'languages',

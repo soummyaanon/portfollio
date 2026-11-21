@@ -1,6 +1,8 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
+import { projectPath } from '@/data/profile'
 import type { Locale } from '@/i18n/config'
 import { dictionary } from '@/i18n/dictionaries'
 import { localizedProfile } from '@/i18n/profile'
@@ -32,7 +34,13 @@ export function ProjectIndex({ locale }: { readonly locale: Locale }) {
             <div className="min-w-0">
               <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <h2 className="font-display text-[length:clamp(1.75rem,1.2rem+1.6vw,2.5rem)] leading-[1.02] tracking-[-0.015em] text-foreground">
-                  {project.name}
+                  {/* Each project's own page; English only, like the posts, so both indexes link there. */}
+                  <Link
+                    href={projectPath(project.id)}
+                    className="underline decoration-transparent decoration-1 underline-offset-[8px] transition-colors hover:decoration-signal"
+                  >
+                    {project.name}
+                  </Link>
                 </h2>
                 {project.status === 'in-development' && (
                   <span className="text-caption uppercase tracking-[0.14em] text-signal-ink">

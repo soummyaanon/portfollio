@@ -16,6 +16,7 @@ import {
   education,
   formatPeriod,
   person,
+  projectPath,
   projects,
   roles,
   skills,
@@ -173,6 +174,7 @@ export function buildFull(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): s
     out.push('')
     out.push(`### ${project.name} — ${project.tagline}`)
     out.push(`- URL: ${project.url}`)
+    out.push(`- Page: ${BASE_URL}${projectPath(project.id)}`)
     out.push(`- Status: ${project.status}`)
     out.push(`- Summary: ${project.summary}`)
     out.push('- Capabilities:')

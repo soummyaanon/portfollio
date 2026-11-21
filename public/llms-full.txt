@@ -65,6 +65,7 @@
 
 ### Engineering OS — Operating system for coding agents
 - URL: https://engineering-os-hazel.vercel.app/
+- Page: https://soumyapanda.dev/projects/engineering-os/
 - Status: live
 - Summary: One command gives Claude Code, Codex, Cursor or any other agent the same vetted skills, safety guards and playbooks in every project you open, and tells you when a new version ships.
 - Capabilities:
@@ -76,6 +77,7 @@
 
 ### Agent Island — Dynamic Island for coding agents
 - URL: https://github.com/soummyaanon/DEV-island-releases/releases/latest
+- Page: https://soumyapanda.dev/projects/agent-island/
 - Status: live
 - Summary: A macOS overlay that wraps the MacBook notch and reports on Claude Code, Codex, and Cursor sessions running in parallel — who is working, who is finished, and who is waiting on you.
 - Capabilities:
@@ -87,6 +89,7 @@
 
 ### Purge — Mac storage cleaner for developers
 - URL: https://purge.bixai.dev/
+- Page: https://soumyapanda.dev/projects/purge/
 - Status: live
 - Summary: A terminal tool that scans your entire Mac home directory for regenerable build output, caches, and logs, then lets you review and selectively delete them to reclaim gigabytes of disk space.
 - Capabilities:
@@ -98,6 +101,7 @@
 
 ### Arthion AI — Financial intelligence
 - URL: https://arthionai.app/
+- Page: https://soumyapanda.dev/projects/arthion/
 - Status: in-development
 - Summary: Financial intelligence platform giving real-time stock analysis, technical indicators, market sentiment tracking, and insights you can act on.
 - Capabilities:
@@ -109,6 +113,7 @@
 
 ### God of Debugger — Debugging plugin for Claude Code
 - URL: https://godofdebugger.bixai.dev/
+- Page: https://soumyapanda.dev/projects/god-of-debugger/
 - Status: live
 - Summary: Debug by disproving. One slash command turns a bug report into a falsification protocol, and a fix is proposed only when exactly one hypothesis is left standing.
 - Capabilities:
@@ -120,6 +125,7 @@
 
 ### Marcko — Open source markdown editor
 - URL: https://marcko.bixai.dev
+- Page: https://soumyapanda.dev/projects/marcko/
 - Status: live
 - Summary: Markdown editor with real-time preview, secure document sharing, and encryption at rest. Free for developers and writers.
 - Capabilities:
@@ -130,6 +136,7 @@
 
 ### Bixai Agent SDK Starter — Next.js AI agent template
 - URL: https://create.bixai.dev
+- Page: https://soumyapanda.dev/projects/bixai-starter/
 - Status: live
 - Summary: Template for production-ready agent apps built on Next.js and the OpenAI Agents SDK, with a modular tool structure and a fast path to deployment.
 - Capabilities:
@@ -139,6 +146,7 @@
 
 ### Aarekhit AI — Data visualisation
 - URL: https://www.aarekhit.com/
+- Page: https://soumyapanda.dev/projects/aarekhit/
 - Status: live
 - Summary: Graph visualisation and analysis platform that turns text and data into interactive visualisations in seconds.
 - Capabilities:
@@ -149,6 +157,7 @@
 
 ### Notex — AI note-taking
 - URL: https://noteex.vercel.app/
+- Page: https://soumyapanda.dev/projects/notex/
 - Status: live
 - Summary: Note-taking with AI-generated insights and the noteX assistance bot, organised so thoughts stay in order and private.
 - Capabilities:
@@ -158,6 +167,7 @@
 
 ### Readany — PDF book reader
 - URL: https://readany.vercel.app/
+- Page: https://soumyapanda.dev/projects/readany/
 - Status: live
 - Summary: PDF reader that turns static documents into a reading experience, with realistic page flipping and heavy customisation.
 - Capabilities:

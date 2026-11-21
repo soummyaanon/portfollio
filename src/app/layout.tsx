@@ -77,6 +77,14 @@ export const metadata: Metadata = {
   authors: [{ name: person.name, url: SITE_URL }],
   creator: person.name,
   robots: 'index, follow, max-image-preview:large, max-snippet:-1',
+  // Ownership tokens for Google Search Console and Bing Webmaster Tools, read at build time.
+  // Both are public by design (they ship in the HTML); env vars only so a re-verification is
+  // a dashboard change, not a commit. Unset, no tag is emitted. A DNS-verified domain
+  // property needs neither.
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+    other: process.env.BING_SITE_VERIFICATION ? { 'msvalidate.01': process.env.BING_SITE_VERIFICATION } : undefined,
+  },
   // Not a ranking signal — a topical fingerprint for retrieval systems that embed the head
   // alongside the body. Derived from the profile so it cannot drift from what the page says.
   keywords: [
@@ -97,7 +105,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     creator: '@SoumyapX',
-    images: ['/og.png?v=2'],
+    images: ['/og.png?v=3'],
   },
 }
 

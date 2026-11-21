@@ -1,6 +1,7 @@
+import { execFileSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import { person } from '../src/data/profile'
+import { person, projectPath, projects } from '../src/data/profile'
 import { getAllBlogPosts } from '../src/lib/blogs'
 
 const BASE_URL = person.site
@@ -36,6 +37,30 @@ function generateSitemapXml(urls: SitemapUrl[]): string {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urlEntries}
 </urlset>`
+}
+
+/**
+ * The date (YYYY-MM-DD) of the last commit that touched any of `paths`, or undefined when
+ * history cannot say. Vercel builds from a shallow clone, where every file older than the
+ * clone appears to arrive in the boundary commit; a date from that commit would claim the
+ * page changed today, so it is treated as unknown rather than guessed.
+ */
+function lastCommitDate(...paths: string[]): string | undefined {
+  try {
+    const git = (...args: string[]) => execFileSync('git', args, { encoding: 'utf-8' }).trim()
+    const [hash, date] = git('log', '-1', '--format=%H %cs', '--', ...paths).split(' ')
+    if (!hash || !date) return undefined
+    const shallowFile = git('rev-parse', '--git-path', 'shallow')
+    const boundaries = fs.existsSync(shallowFile) ? fs.readFileSync(shallowFile, 'utf-8').split('\n') : []
+    return boundaries.includes(hash) ? undefined : date
+  } catch {
+    return undefined
+  }
+}
+
+/** The latest of some YYYY-MM-DD dates, any of which may be unknown. */
+function latest(...dates: (string | undefined)[]): string | undefined {
+  return dates.filter((date): date is string => Boolean(date)).sort().at(-1)
 }
 
 async function generateSitemap() {
@@ -77,15 +102,30 @@ async function generateSitemap() {
 
     const posts = await getAllBlogPosts()
 
-    // Google ignores changefreq and priority but does use lastmod, so each post carries
-    // its own date and the listing pages carry the newest one.
-    const newest = posts[0]?.date
-    if (newest) {
-      urls[0].lastmod = newest
-      urls[1].lastmod = newest
-      urls[3].lastmod = newest
-      urls[4].lastmod = newest
-    }
+    // Google ignores changefreq and priority but does use lastmod, so each page carries the
+    // date its content last changed: a post its own date, the writing index the newest post,
+    // the project pages the last edit to the project list, and the homepage — which shows
+    // posts, projects and the profile — whichever of those is latest.
+    const newestPost = posts[0]?.date
+    const projectsChanged = lastCommitDate('content/projects.json')
+    const profileChanged = lastCommitDate('src/data/profile.ts', 'src/i18n/profile.ts', 'src/i18n/dictionaries.ts')
+    const home = latest(newestPost, projectsChanged, profileChanged)
+    urls[0].lastmod = home
+    urls[1].lastmod = newestPost
+    urls[2].lastmod = projectsChanged
+    urls[3].lastmod = home
+    urls[4].lastmod = newestPost
+    urls[5].lastmod = projectsChanged
+
+    // Each project's own page. English only, like the posts.
+    projects.forEach((project) => {
+      urls.push({
+        loc: `${BASE_URL}${projectPath(project.id)}`,
+        lastmod: projectsChanged,
+        changefreq: 'monthly',
+        priority: 0.7,
+      })
+    })
 
     posts.forEach((post) => {
       urls.push({
@@ -115,6 +155,7 @@ async function generateSitemap() {
     console.log(`   - Blog listing: 1`)
     console.log(`   - Projects: 1`)
     console.log(`   - Hindi translations: 3`)
+    console.log(`   - Project pages: ${projects.length}`)
     console.log(`   - Blog posts: ${posts.length}`)
   } catch (error) {
     console.error('❌ Error generating sitemap:', error)

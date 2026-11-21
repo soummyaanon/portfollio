@@ -7,7 +7,7 @@
  * reference them.
  */
 
-import { education, person, projects, roles, skills } from '@/data/profile'
+import { education, person, projectPath, projects, roles, skills } from '@/data/profile'
 import { DEFAULT_LOCALE, LOCALES, localizePath, OG_LOCALES, type Locale } from '@/i18n/config'
 
 import type { Metadata } from 'next'
@@ -34,7 +34,7 @@ export const OPEN_GRAPH_DEFAULTS = {
   locale: 'en_US',
   images: [
     {
-      url: '/og.png?v=2',
+      url: '/og.png?v=3',
       width: 1200,
       height: 630,
       alt: `${person.name} — ${person.title}`,
@@ -290,6 +290,27 @@ export function projectSchema(project: (typeof projects)[number]): JsonLd {
     featureList: [...project.capabilities],
     author: { '@id': PERSON_ID },
     ...(project.image ? { image: `${SITE_URL}${project.image}` } : {}),
+  }
+}
+
+/**
+ * A project's own page. The project node keeps the `@id` it has always had on /projects/, so
+ * this page and the index describe one entity rather than two.
+ */
+export function projectPageSchema(project: (typeof projects)[number]): JsonLd {
+  const url = absoluteUrl(projectPath(project.id))
+
+  return {
+    '@type': 'WebPage',
+    '@id': `${url}#page`,
+    url,
+    name: `${project.name} — ${project.tagline}`,
+    description: project.summary,
+    inLanguage: DEFAULT_LOCALE,
+    isPartOf: { '@id': WEBSITE_ID },
+    about: { '@id': PERSON_ID },
+    mainEntity: { '@id': `${absoluteUrl('/projects/')}#${project.id}` },
+    ...(project.image ? { primaryImageOfPage: `${SITE_URL}${project.image}` } : {}),
   }
 }
 
