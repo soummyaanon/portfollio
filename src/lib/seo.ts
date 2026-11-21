@@ -53,6 +53,16 @@ export function openGraphLocale(locale: Locale) {
   } satisfies Metadata['openGraph']
 }
 
+/**
+ * A `YYYY-MM-DD` date as a full ISO 8601 date-time, midnight in the owner's time zone.
+ * Google's structured-data validator rejects a bare date for `dateModified` on a
+ * ProfilePage ("Invalid datetime value") and asks for a time zone on articles. India has
+ * no daylight saving, so `person.timezone` (Asia/Kolkata) is always +05:30.
+ */
+export function isoDateTime(date: string): string {
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? `${date}T00:00:00+05:30` : date
+}
+
 export const PERSON_ID = `${SITE_URL}/#person`
 export const WEBSITE_ID = `${SITE_URL}/#website`
 
@@ -203,7 +213,7 @@ export function profilePageSchema({
     description,
     inLanguage: locale,
     ...(english ? {} : { translationOfWork: { '@id': PROFILE_PAGE_ID } }),
-    dateModified,
+    dateModified: isoDateTime(dateModified),
     isPartOf: { '@id': WEBSITE_ID },
     mainEntity: { '@id': PERSON_ID },
     about: { '@id': PERSON_ID },
@@ -336,8 +346,8 @@ export function blogPostingSchema(post: BlogPostingInput): JsonLd {
     '@id': `${url}#post`,
     headline: post.title,
     description: post.excerpt,
-    datePublished: post.date,
-    dateModified: post.date,
+    datePublished: isoDateTime(post.date),
+    dateModified: isoDateTime(post.date),
     url,
     mainEntityOfPage: url,
     author: { '@id': PERSON_ID },
