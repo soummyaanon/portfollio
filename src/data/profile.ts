@@ -310,6 +310,17 @@ export const skills: readonly SkillGroup[] = [
   },
 ]
 
+/**
+ * The studio the owner runs and takes client work through. Several projects are hosted on
+ * its domain, which is how the structured data ties them to it.
+ */
+export const studio = {
+  id: 'studio',
+  name: 'Bixai',
+  url: 'https://bixai.dev',
+  role: 'Founder',
+} as const
+
 /** What is true right now — the two live signals the human view surfaces. */
 export const now = {
   building: {

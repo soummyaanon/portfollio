@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
-import { formatMonth, skills, type Project, type Role } from '@/data/profile'
+import { formatMonth, skills, studio, type Project, type Role } from '@/data/profile'
 import { localizePath } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/dictionaries'
 import { useI18n } from '@/i18n/useLocale'
@@ -134,6 +134,16 @@ function Masthead() {
             </Fragment>
           ))}
           <Connective>{t.lead.afterInterests}</Connective>
+          <Connective>{t.lead.beforeStudio}</Connective>
+          <a
+            href={studio.url}
+            target="_blank"
+            rel="noopener"
+            className="text-foreground underline decoration-signal/50 decoration-1 underline-offset-[6px] transition-colors hover:decoration-signal"
+          >
+            <Fact id="studio.name" className="shimmer-hover">{studio.name}</Fact>
+          </a>
+          <Connective>{t.lead.afterStudio}</Connective>
         </p>
       </div>
     </header>

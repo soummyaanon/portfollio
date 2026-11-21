@@ -21,6 +21,7 @@ import {
   roles,
   skills,
   now,
+  studio,
 } from '../src/data/profile'
 import { getAllBlogPosts } from '../src/lib/blogs'
 
@@ -84,6 +85,7 @@ export function buildIndex(posts: Awaited<ReturnType<typeof getAllBlogPosts>>): 
   out.push('')
 
   out.push('## Now')
+  out.push(`- Studio: [${studio.name}](${studio.url}), founder; takes on client work`)
   out.push(`- Building: [${now.building.name}](${now.building.url})`)
   out.push(`- Learning: ${now.learning.language} — [${now.learning.repo}](${now.learning.url})`)
   // Only an ongoing role belongs under "Now"; a past one would claim a job that has ended.

@@ -46,6 +46,8 @@ const en = {
     before: 'I’m a builder making ',
     afterFocus: ' that make life easier. Off the clock, I follow ',
     afterInterests: '.',
+    beforeStudio: ' I take on client work through my studio, ',
+    afterStudio: '.',
   },
   list: {
     comma: ', ',
@@ -128,6 +130,8 @@ const hi: Dictionary = {
     before: 'मैं ',
     afterFocus: ' बनाता हूँ, जो ज़िंदगी आसान बनाते हैं। काम के बाद मैं ',
     afterInterests: ' की खोजों पर नज़र रखता हूँ।',
+    beforeStudio: ' क्लाइंट का काम मैं अपने स्टूडियो ',
+    afterStudio: ' के ज़रिए करता हूँ।',
   },
   list: {
     comma: ', ',

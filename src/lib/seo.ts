@@ -7,7 +7,7 @@
  * reference them.
  */
 
-import { education, person, projectPath, projects, roles, skills } from '@/data/profile'
+import { education, person, projectPath, projects, roles, skills, studio } from '@/data/profile'
 import { DEFAULT_LOCALE, LOCALES, localizePath, OG_LOCALES, type Locale } from '@/i18n/config'
 
 import type { Metadata } from 'next'
@@ -106,7 +106,26 @@ export function organisationSchemas(): JsonLd[] {
     name: entry.institution,
   }))
 
-  return [...employers, ...schools]
+  // The owner's own studio. It points at the Person as founder, so "who runs Bixai" and
+  // "what does Soumyaranjan do" resolve to the same two nodes.
+  const ownStudio = {
+    '@type': 'Organization',
+    '@id': STUDIO_ID,
+    name: studio.name,
+    url: studio.url,
+    founder: { '@id': PERSON_ID },
+  }
+
+  return [...employers, ...schools, ownStudio]
+}
+
+export const STUDIO_ID = `${SITE_URL}/#studio`
+
+/** Projects served from the studio's domain are the studio's releases. */
+function fromStudio(url: string): boolean {
+  const studioHost = new URL(studio.url).host
+  const host = new URL(url).host
+  return host === studioHost || host.endsWith(`.${studioHost}`)
 }
 
 /**
@@ -302,6 +321,7 @@ export function projectSchema(project: (typeof projects)[number]): JsonLd {
     operatingSystem: platform,
     featureList: [...project.capabilities],
     author: { '@id': PERSON_ID },
+    ...(fromStudio(project.url) ? { publisher: { '@id': STUDIO_ID } } : {}),
     ...(project.stack.length ? { keywords: project.stack.join(', ') } : {}),
     ...(project.source ? { sameAs: [project.source] } : {}),
     ...(project.image ? { image: `${SITE_URL}${project.image}` } : {}),

@@ -3,7 +3,7 @@
 import { Fragment, useCallback, useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 
-import { education, person, projects, roles, skills, now } from '@/data/profile'
+import { education, person, projects, roles, skills, now, studio } from '@/data/profile'
 import { Connective, Fact } from './Fact'
 import { orgVeilClass } from './withheld'
 import type { PostSummary } from './types'
@@ -71,6 +71,7 @@ function serialise(posts: readonly PostSummary[]): string {
   lines.push(`timezone  ${person.timezone}`)
   lines.push(`site      ${person.site}`)
   lines.push(`focus     ${arrayLiteral(person.focus)}`)
+  lines.push(`studio    ${studio.name} (${studio.url})`)
   lines.push(`building  ${now.building.name}`)
   lines.push(`learning  ${now.learning.language}`)
   for (const link of person.links) lines.push(`${link.label.toLowerCase().padEnd(9)} ${link.url}`)
@@ -230,6 +231,16 @@ export function SpecimenSheet({ posts }: { readonly posts: readonly PostSummary[
             </Fragment>
           ))}
           <Connective>&quot;]</Connective>
+        </FieldRow>
+        <FieldRow name="studio">
+          <a
+            href={studio.url}
+            target="_blank"
+            rel="noopener"
+            className="underline decoration-border decoration-1 underline-offset-4 transition-colors hover:decoration-signal"
+          >
+            <Fact id="studio.name">{studio.name}</Fact>
+          </a>
         </FieldRow>
         <FieldRow name="building">
           <Fact id="now.building">{now.building.name}</Fact>
