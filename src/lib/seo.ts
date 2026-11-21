@@ -156,7 +156,7 @@ export function personSchema(description: string): JsonLd {
     alternateName: [...person.alternateNames],
     givenName: person.givenName,
     familyName: person.familyName,
-    jobTitle: person.title,
+    jobTitle: [person.title, `Founder of ${studio.name}`],
     // The same sentence the page leads with. Answer engines quote `description` verbatim
     // far more often than they synthesise one, so it is worth it being the good sentence.
     description,
@@ -192,9 +192,8 @@ export function personSchema(description: string): JsonLd {
       credentialCategory: 'degree',
       recognizedBy: { '@id': organisationId(entry.institution) },
     })),
-    ...(current.length
-      ? { worksFor: current.map((role) => ({ '@id': organisationId(role.org) })) }
-      : {}),
+    // The current employer, and the studio the owner founded and runs alongside it.
+    worksFor: [...current.map((role) => ({ '@id': organisationId(role.org) })), { '@id': STUDIO_ID }],
     hasOccupationalExperience: employmentSchema(),
     alumniOf: education.map((entry) => ({ '@id': organisationId(entry.institution) })),
   }

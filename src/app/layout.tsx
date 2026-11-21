@@ -8,7 +8,7 @@ import { ThemeProvider } from './components/ThemeProvider'
 import { NavigationDock } from '@/components/ui/dock'
 import { PostHogProvider } from '../components/PostHogProvider'
 import { OPEN_GRAPH_DEFAULTS, SITE_URL } from '@/lib/seo'
-import { person, roles, skills } from '@/data/profile'
+import { person, roles, skills, studio } from '@/data/profile'
 import { HtmlLang } from '@/i18n/HtmlLang'
 
 /**
@@ -69,7 +69,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${person.name} — ${person.title}`,
+    default: `${person.name} — ${person.title}, Founder of ${studio.name}`,
     template: `%s — ${person.name}`,
   },
   description:

@@ -13,6 +13,7 @@
  * the machine view prints them raw. Same fact, two encodings — that is the whole thesis.
  */
 
+import { profileContent } from './profile-content'
 import { projectContent } from './project-content'
 
 export interface Link {
@@ -144,7 +145,9 @@ export const person: Person = {
   // lookup and TLS handshake to another origin, 95 KB of PNG at 460px for a slot that is never
   // wider than 80, and a five-minute cache lifetime GitHub sets and nobody here can change.
   // The same face is now 15 KB of JPEG at 256px sitting next to the HTML.
-  avatar: '/avatar.jpg',
+  //
+  // Editable in TinaCMS (content/profile.json); scripts/check-avatar.ts holds it to that size.
+  avatar: profileContent.avatar,
   focus: ['healthcare AI', 'agentic automation', 'fully autonomous software'],
   interests: ['deep space'],
   links: [

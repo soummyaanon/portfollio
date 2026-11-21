@@ -11,7 +11,8 @@
     "test": "npm run generate-llms && vitest run",
     "test:watch": "vitest",
     "verify:output": "tsx scripts/verify-output.ts",
-    "generate": "npm run generate-github && npm run generate-sitemap && npm run generate-llms",
+    "generate": "npm run check-avatar && npm run generate-github && npm run generate-sitemap && npm run generate-llms",
+    "check-avatar": "npx tsx scripts/check-avatar.ts",
     "generate-github": "npx tsx scripts/generate-github.ts",
     "generate-sitemap": "npx tsx scripts/generate-sitemap.ts",
     "generate-llms": "npx tsx scripts/generate-llms.ts"

@@ -17,7 +17,7 @@ import {
   SITE_URL,
   websiteSchema,
 } from '@/lib/seo'
-import { person, projects, roles } from '@/data/profile'
+import { person, projects, roles, studio } from '@/data/profile'
 import { DEFAULT_LOCALE, languageAlternates, localizePath, type Locale } from '@/i18n/config'
 import { dictionary } from '@/i18n/dictionaries'
 import { localizedProfile } from '@/i18n/profile'
@@ -35,7 +35,7 @@ export function homeMetadata(locale: Locale): Metadata {
 
   return {
     // The layout's default title carries the English job title; a translation names its own.
-    ...(locale === DEFAULT_LOCALE ? {} : { title: { absolute: `${person.name} — ${translated.title}` } }),
+    ...(locale === DEFAULT_LOCALE ? {} : { title: { absolute: `${person.name} — ${translated.title}, ${dictionary(locale).founderOf(studio.name)}` } }),
     description,
     // Declared per route. The root layout deliberately sets no canonical, because one set
     // there resolves to the same URL everywhere and marks every page a duplicate of this one.

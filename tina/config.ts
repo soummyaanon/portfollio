@@ -53,6 +53,27 @@ export default defineConfig({
   schema: {
     collections: [
       {
+        name: 'profile',
+        label: 'Profile',
+        path: 'content',
+        format: 'json',
+        match: { include: 'profile' },
+        ui: {
+          // One file, always there: it can be edited, not added or deleted.
+          allowedActions: { create: false, delete: false },
+        },
+        fields: [
+          {
+            type: 'image',
+            name: 'avatar',
+            label: 'Profile picture',
+            required: true,
+            description:
+              'Square, about 256×256, JPEG or WebP, under 60 KB. It is the first image the page loads, so the build fails on anything heavier.',
+          },
+        ],
+      },
+      {
         name: 'projects',
         label: 'Projects',
         path: 'content',

@@ -98,6 +98,13 @@ function Masthead() {
           <Connective>
             <span aria-hidden className="block h-2.5 w-px bg-border" />
           </Connective>
+          {/* Said in the byline, not only in the lead, because the byline is what a reader
+              (and a crawler) takes as the job line. The machine view carries it as the
+              studio row, so it fades here rather than travelling. */}
+          <Connective>{t.founderOf(studio.name)}</Connective>
+          <Connective>
+            <span aria-hidden className="block h-2.5 w-px bg-border" />
+          </Connective>
           <span lang="hi" className="tracking-normal">
             <Fact id="person.location">{person.location}</Fact>
           </span>
